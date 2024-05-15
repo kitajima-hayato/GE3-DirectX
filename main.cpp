@@ -459,6 +459,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	vertexBufferView.StrideInBytes = sizeof(Vector4);
 
+	//
+	Vector4* vertexDate = nullptr;
+	//
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
+	//
+	vertexDate[0] = { -0.5f,-0.5f,0.0f,1.0f };
+	vertexDate[1] = { 0.0f,0.5f,0.0f,1.0f };
+	vertexDate[2] = { 0.5f,-0.5f,0.0f,1.0f };
+
+	//
+	D3D12_VIEWPORT viewport{};
+	viewport.Width = kClienWidth;
+	viewport.Height = kClientHeight;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	//
+	D3D12_RECT scissorRect{};
+	//
+	scissorRect.left = 0;
+	scissorRect.right = kClienWidth;
+	scissorRect.top = 0;
+	scissorRect.bottom = kClientHeight;
+
+	
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -491,6 +518,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//指定した色で画面全体をクリアする
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
+
+			commandList->RSSetViewports(1, &viewport);//
+			commandList->RSSetScissorRects(1, &scissorRect);
+			//
+			commandList->SetGraphicsRootSignature(rootSignature);
+			commandList->SetPipelineState(graphicsPipelineState);//
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);//
+			//
+			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			//
+			commandList->DrawInstanced(3, 1, 0, 0);
+
+
 			//画面に描く処理は終わり、画面に映すので状態を遷移
 			//今回はRenderTargetからPresentにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -543,6 +584,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
+
+	vertexResource->Release();
+	graphicsPipelineState->Release();
+	signatureBlob->Release();
+	if (errorBlob) {
+		errorBlob->Release();
+	}
+	rootSignature->Release();
+	pixelShaderBlob->Release();
+	vertexShaderBlob->Release();
 #pragma endregion
 
 #ifdef _DEBUG
