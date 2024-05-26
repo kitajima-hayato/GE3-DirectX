@@ -522,11 +522,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 	//
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDescs[1].SemanticName = "TEXCOORD";
+	inputElementDescs[1].SemanticIndex = 0;
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDescs{};
 	inputLayoutDescs.pInputElementDescs = inputElementDescs;
 	inputLayoutDescs.NumElements = _countof(inputElementDescs);
@@ -578,9 +582,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(Vector4) * 3);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 3);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
 	//マテリアルデータに書き込む
 	Vector4* materialDate = nullptr;
 	//書き込むためのアドレスを取得
@@ -593,9 +597,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//
-	vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
 	//
-	vertexBufferView.StrideInBytes = sizeof(Vector4);
+	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
 
 	//2-2-8
@@ -608,14 +612,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*wvpData = MekeIdentity4x4();
 
 
-	//
-	Vector4* vertexDate = nullptr;
-	//
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
-	//
-	vertexDate[0] = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexDate[1] = { 0.0f,0.5f,0.0f,1.0f };
-	vertexDate[2] = { 0.5f,-0.5f,0.0f,1.0f };
+	
 
 
 
@@ -673,7 +670,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVの生成  シェーダーリソースビュー
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
 
+	// input
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+		//頂点リソースにデータを書き込む
+	VertexData* vertexData = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//左下
+	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	//上
+	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	vertexData[1].texcoord = { 0.5f,0.0f };
+	//左下
+	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
+
+
 	
+
 
 
 	MSG msg{};
@@ -748,20 +765,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//
 			commandList->DrawInstanced(3, 1, 0, 0);
 
-			////////////////////////////////////////////////////////////////////////////////////////////
-			//頂点リソースにデータを書き込む
-			VertexData* vertexData = nullptr;
-			//書き込むためのアドレスを取得
-			vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexDate));
-			//左下
-			vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-			vertexData[0].texcoord = { 0.0f,1.0f };
-			//上
-			vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-			vertexData[1].texcoord = { 0.5f,0.0f };
-			//左下
-			vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-			vertexData[2].texcoord = { 1.0f,1.0f };
+			
 
 			//画面に描く処理は終わり、画面に映すので状態を遷移
 			//今回はRenderTargetからPresentにする
