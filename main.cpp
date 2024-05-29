@@ -756,9 +756,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("SetColor");
 			ImGui::ColorEdit4("*materialData", &materialDate->x);
-			ImGui::InputFloat3("*scale", &transform.scale.x);
-			ImGui::InputFloat3("*rotate", &transform.rotate.x);
-			ImGui::InputFloat3("*translate", &transform.translate.x);
+			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
+			ImGui::DragFloat3("*rotate", &transform.rotate.x);//DragFloatにすればカーソルでも値を変更できる
+			ImGui::DragFloat3("*translate", &transform.translate.x);
 			ImGui::End();
 			ImGui::Render();
 
