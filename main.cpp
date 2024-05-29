@@ -719,7 +719,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[2].texcoord = { 1.0f,1.0f };
 
 
-
+	//利用するHeapの設定する。非常に有用な運用
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;//細かい設定を行う
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでCPUアクセス可能
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
 
 
 	MSG msg{};
@@ -752,6 +756,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("SetColor");
 			ImGui::ColorEdit4("*materialData", &materialDate->x);
+			ImGui::InputFloat3("*scale", &transform.scale.x);
+			ImGui::InputFloat3("*rotate", &transform.rotate.x);
+			ImGui::InputFloat3("*translate", &transform.translate.x);
 			ImGui::End();
 			ImGui::Render();
 
