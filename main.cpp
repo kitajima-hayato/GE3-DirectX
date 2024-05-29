@@ -194,13 +194,13 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
 	//1. metadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width		 = UINT(metadata.width);//Textureの幅
-	resourceDesc.Height		 = UINT(metadata.height);//textureの高さ
-	resourceDesc.MipLevels	 = UINT16(metadata.mipLevels);//mipmapの数
+	resourceDesc.Width = UINT(metadata.width);//Textureの幅
+	resourceDesc.Height = UINT(metadata.height);//textureの高さ
+	resourceDesc.MipLevels = UINT16(metadata.mipLevels);//mipmapの数
 	resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize);//奥行or配列Textureの配列数
-	resourceDesc.Format		 = metadata.format;//TextureのFormat
+	resourceDesc.Format = metadata.format;//TextureのFormat
 	resourceDesc.SampleDesc.Count = 1; //サンプリングカウント1固定
-	resourceDesc.Dimension	 = D3D12_RESOURCE_DIMENSION(metadata.dimension);//Textureの次元数。普段使っているのは２次元
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);//Textureの次元数。普段使っているのは２次元
 	//2. 利用するHeapの設定
 	//利用するHeapの設定。非常に特殊な運用。
 	D3D12_HEAP_PROPERTIES heapProperties{};
@@ -433,7 +433,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region DescriptorHEAPの生成
 	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDescropterHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDescropterHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
-	
+
 	//ディスクリプタヒープの生成
 	//ID3D12DescriptorHeap* rtvDescroptorHEAP = nullptr;
 	//D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
@@ -567,7 +567,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	inputLayoutDescs.pInputElementDescs = inputElementDescs;
 	inputLayoutDescs.NumElements = _countof(inputElementDescs);
 
-	
+
 
 
 
@@ -644,7 +644,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*wvpData = MekeIdentity4x4();
 
 
-	
+
 
 
 
@@ -683,8 +683,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
-	
-	
+
+
 	//metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = metadata.format;
@@ -719,7 +719,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[2].texcoord = { 1.0f,1.0f };
 
 
-	
+
 
 
 	MSG msg{};
@@ -737,7 +737,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			//ゲームの処理
-			ImGui::ShowDemoWindow();////IMGUI
+
 			//三角形の回転
 			transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 			/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
@@ -750,10 +750,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 worldViewProhection = Multiply(worldMatrix, Multiply(viewMatrix, prohectionMatirx));
 			*wvpData = worldViewProhection;
 
-
+			ImGui::Begin("SetColor");
+			ImGui::ColorEdit4("*materialData", &materialDate->x);
+			ImGui::End();
 			ImGui::Render();
 
-			
+
 
 			//これから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
