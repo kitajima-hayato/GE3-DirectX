@@ -14,6 +14,7 @@
 #include"externals/imgui/imgui_impl_win32.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
+#include<vector>
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
@@ -204,7 +205,7 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 	//2. 利用するHeapの設定
 	//利用するHeapの設定。非常に特殊な運用。
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;//細かい設定を行う
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;//細かい設定を行う
 	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでCPUアクセス可能
 	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くには配置
 	//3. Resourceを生成する
@@ -213,7 +214,7 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 		&heapProperties,//Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定,特になし
 		&resourceDesc,//Resourceの設定
-		D3D12_RESOURCE_STATE_GENERIC_READ,//初回のResourceState.Textureは基本読むだけ
+		D3D12_RESOURCE_STATE_COPY_DEST,//データ転送される設定
 		nullptr,//Clear最適値 使わないのでnullptr
 		IID_PPV_ARGS(&resource));//作成するResourceポインタへのポインタ
 	assert(SUCCEEDED(hr));
@@ -221,6 +222,7 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 }
 #pragma endregion
 #pragma region テクスチャリソースにデータ転送関数
+
 void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
 {
 	//meta情報を取得
@@ -719,11 +721,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[2].texcoord = { 1.0f,1.0f };
 
 
-	//利用するHeapの設定する。非常に有用な運用
-	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;//細かい設定を行う
-	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでCPUアクセス可能
-	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
+	
 
 
 	MSG msg{};
