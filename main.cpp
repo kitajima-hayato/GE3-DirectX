@@ -737,7 +737,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			//ゲームの処理
-			ImGui::ShowDemoWindow();////IMGUI
+			
 			//三角形の回転
 			transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 			/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
@@ -750,7 +750,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 worldViewProhection = Multiply(worldMatrix, Multiply(viewMatrix, prohectionMatirx));
 			*wvpData = worldViewProhection;
 
-
+			ImGui::Begin("SetColor");
+			ImGui::ColorEdit4("*materialData", &materialDate->x);
+			ImGui::End();
 			ImGui::Render();
 
 			
