@@ -611,7 +611,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 3);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
 	//マテリアルデータに書き込む
@@ -626,7 +626,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
 	//
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
@@ -719,10 +719,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//左下
 	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
-
-
-
-	
+	//左下2
+	vertexData[2].position = { -0.5f,-0.5f,0.5f,1.0f };
+	vertexData[2].texcoord = { 0.0f,1.0f };
+	//上2
+	vertexData[2].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData[2].texcoord = { 0.5f, 0.0f };
+	//右下2
+	vertexData[2].position = { 0.5f,-0.5f,-0.5f,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -741,7 +746,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ゲームの処理
 
 			//三角形の回転
-			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
+			transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 			/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			*wvpData = worldMatrix;*/
 			//座標変換
@@ -802,7 +807,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//SRVのDescriptorTableの先頭を設定。２はrootParamater[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-			commandList->DrawInstanced(3, 1, 0, 0);
+			commandList->DrawInstanced(6, 1, 0, 0);
 
 			//画面に描く処理は終わり、画面に映すので状態を遷移
 			//今回はRenderTargetからPresentにする
