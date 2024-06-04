@@ -723,6 +723,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	
+	//Sprite
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
