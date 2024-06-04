@@ -799,7 +799,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	
+	 
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
