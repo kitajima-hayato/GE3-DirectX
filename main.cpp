@@ -763,7 +763,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-		//頂点リソースにデータを書き込む
+	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
@@ -787,6 +787,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[5].texcoord = { 1.0f,1.0f };
 
 
+	//Sphereの頂点情報///////////////////////////////////////////////////////////////////////////////////////////
+	VertexData* vertexSphere = nullptr;
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexSphere));
 
 	//DepthStencilTextureをウィンドウのサイズで作成
 	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeigth);
