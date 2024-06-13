@@ -304,7 +304,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const int kClientWidth = 1280;
 	const int kClientHeigth = 720;
 
-	
+
 #pragma region Windowの生成
 
 	WNDCLASS wc{};
@@ -843,11 +843,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[startIndex + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
 
 			//C-2
-			vertexData[startIndex +3].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[startIndex +3].position.y = sin(lat);
-			vertexData[startIndex +3].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[startIndex +3].position.w = 1.0f;
-			vertexData[startIndex +3].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+			vertexData[startIndex + 3].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexData[startIndex + 3].position.y = sin(lat);
+			vertexData[startIndex + 3].position.z = cos(lat) * sin(lon + kLonEvery);
+			vertexData[startIndex + 3].position.w = 1.0f;
+			vertexData[startIndex + 3].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
 			//B-2
 			vertexData[startIndex + 4].position.x = cos(lat + kLatEvery) * cos(lon);
 			vertexData[startIndex + 4].position.y = sin(lat + kLatEvery);
@@ -1001,10 +1001,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//2枚目のTextureを読んで転送する
-	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterball.png");
+	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterBall.png");
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 	ID3D12Resource* textureResource2 = CreateTextureResource(device, metadata2);
-	ID3D12Resource* intermediateResource2 = UploadTextureData(textureResource2, mipImages2,device,commandList);
+	ID3D12Resource* intermediateResource2 = UploadTextureData(textureResource2, mipImages2, device, commandList);
+
+	//metaDataを基にSRVの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
+	srvDesc2.Format = metadata2.format;
+	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
+
+	//SRVを作成するDescriptorHeapの場所を決める
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
+
+	device->CreateShaderResourceView(textureResource2, &srvDesc2, textureSrvHandleCPU2);
+
+	bool useMonsterBall = true;
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -1054,6 +1069,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
 			ImGui::DragFloat3("*rotate", &transform.rotate.x);//DragFloatにすればカーソルでも値を変更できる
 			ImGui::DragFloat3("*translate", &transform.translate.x);
+			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			ImGui::End();
 			ImGui::Render();
 
@@ -1107,12 +1123,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
 			// SRVのDescriptorTableの先頭を設定。2はrootPrameter[2]である。
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
 			// 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(16 * 16 * 6, 1, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
-
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  // VBVを設定
 			// TransformationMatrixCBufferの場所を設定
