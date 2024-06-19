@@ -247,7 +247,7 @@ ID3D12Resource* UploadTextureData(ID3D12Resource* texture, const DirectX::Scratc
 
 #pragma endregion
 
-#pragma region 3-1の関数
+#pragma region 関数
 ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t heigth) {
 	//生成するResourceの設定
 	D3D12_RESOURCE_DESC resorceDesc{};
@@ -608,7 +608,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 	//
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -618,6 +618,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
+	inputElementDescs[2].SemanticName = "NORMAL";
+	inputElementDescs[2].SemanticIndex = 0;
+	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDescs{};
 	inputLayoutDescs.pInputElementDescs = inputElementDescs;
@@ -686,17 +690,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+	Material* materialDataSprite;
+	//Sprite用のマテリアルリソースをつくる
+	ID3D12Resource* materialResorceSprite = CreateBufferResource(device, sizeof(Material));
 
+	//書き込むためのアドレスを取得
+	materialResorceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
+	materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//Lightingを有効にする
+	//SpriteはLightingしないのでfalseを設定する
+	materialDataSprite->enableLighting = true;
+
+
+	
+
+	//頂点リソースを作る
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 16 * 16 * 6);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルデータに書き込む
-	Vector4* materialDate = nullptr;
+	Material* materialDate = nullptr;
 	//書き込むためのアドレスを取得
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
 	//今回は赤を書き込む
-	*materialDate = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
+	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDate->enableLighting = true;
 	//
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//
@@ -717,8 +735,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*wvpData = MekeIdentity4x4();
 
 
+	
+	
+	
 
-
+	
+	
+	
 
 
 	//
@@ -864,77 +887,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[startIndex + 5].position.w = 1.0f;
 			vertexData[startIndex + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
 
-
+			for (int i = 0; i < 6; ++i) {
+				vertexData[i].normal.x = vertexData[i].position.x;
+				vertexData[i].normal.y = vertexData[i].position.y;
+				vertexData[i].normal.z = vertexData[i].position.z;
+			}
+			
 		}
 	}
 #pragma endregion
-#pragma region きれいな奴魔法陣
-	/*
-	//Sphereの頂点情報//////////////////////
-	const uint32_t kSubdivision = 16;		//分割数 16or32
-	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
-	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
 
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-		//経度の方向に分割しながら線を描く
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-
-			float u = float(lonIndex) / float(kSubdivision);
-			float v = 1.0f - float(latIndex) / float(kSubdivision);
-
-
-			uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;//φ
-
-			//頂点にデータを入力する。
-			//基準点A
-			vertexData[startIndex].position.x = cos(lat) * cos(lon);
-			vertexData[startIndex].position.y = sin(lat);
-			vertexData[startIndex].position.z = cos(lat) * sin(lon);
-			vertexData[startIndex].position.w = 1.0f;
-			vertexData[startIndex].texcoord = { u,v };
-
-			//B
-			vertexData[startIndex + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[startIndex + 1].position.y = sin(lat + kLatEvery);
-			vertexData[startIndex + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[startIndex + 1].position.w = 1.0f;
-			vertexData[startIndex + 1].texcoord = { u,v };
-
-			//C
-			vertexData[startIndex + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[startIndex + 2].position.y = sin(lat);
-			vertexData[startIndex + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[startIndex + 2].position.w = 1.0f;
-			vertexData[startIndex + 2].texcoord = { u,v };
-
-			//B-2
-			vertexData[startIndex + 3].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[startIndex + 3].position.y = sin(lat + kLatEvery);
-			vertexData[startIndex + 3].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[startIndex + 3].position.w = 1.0f;
-			vertexData[startIndex + 3].texcoord = { u,v };
-
-			//C-2
-			vertexData[startIndex + 4].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[startIndex + 4].position.y = sin(lat);
-			vertexData[startIndex + 4].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[startIndex + 4].position.w = 1.0f;
-			vertexData[startIndex + 4].texcoord = { u,v };
-
-			//D
-			vertexData[startIndex + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-			vertexData[startIndex + 5].position.y = sin(lat + kLatEvery);
-			vertexData[startIndex + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-			vertexData[startIndex + 5].position.w = 1.0f;
-			vertexData[startIndex + 5].texcoord = { u,v };
-
-
-		}
-	}
-	*/
-#pragma endregion
 
 	//DepthStencilTextureをウィンドウのサイズで作成
 	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeigth);
@@ -962,6 +924,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+	
+	vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
 	//１枚目の三角形
 	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
@@ -977,6 +941,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
 
+	
 
 	//Sprite用のTrandformaitionMatrix用のリソースをつくる。Matrix4x4 １つ分のサイズを用意する
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
@@ -1066,7 +1031,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			ImGui::Begin("SetColor");
-			ImGui::ColorEdit4("*materialData", &materialDate->x);
+			ImGui::ColorEdit4("*materialData", &materialDate->color.x);
 			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
 			ImGui::DragFloat3("*rotate", &transform.rotate.x);//DragFloatにすればカーソルでも値を変更できる
 			ImGui::DragFloat3("*translate", &transform.translate.x);
@@ -1119,7 +1084,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// マテリアルCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(0, materialResorceSprite->GetGPUVirtualAddress());
 			// wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
@@ -1219,6 +1184,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixResourceSprite->Release();
 	textureResource2->Release();
 	intermediateResource2->Release();
+	materialResorceSprite->Release();
 #pragma endregion
 
 #ifdef _DEBUG
