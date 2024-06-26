@@ -2,16 +2,12 @@
 #include <assert.h>
 #include <cmath>
 #include <stdio.h>
-
+#include"Math.h"
 
 struct Matrix4x4 {
 	float m[4][4];
 };
-struct Vector3 {
-	float x;
-	float y;
-	float z;
-};
+
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;

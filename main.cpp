@@ -701,6 +701,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//今回は赤を書き込む
 	*materialDate = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
+	//Sprite用のマテリアルリソースを作る
+	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+	Vector4* materialDataSprite = nullptr;
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
+	*materialDataSprite = Vector4(255.0f, 255.0f, 255.0f, 1.0f);
 	//
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//
@@ -788,7 +793,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	
+
 
 #pragma region スフィアの表示
 	//Sphereの頂点情報//////////////////////
@@ -816,6 +821,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[startIndex].position.w = 1.0f;
 			vertexData[startIndex].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
 
+			vertexData[startIndex].normal.x = vertexData[startIndex].position.x;
+
 			//B
 			vertexData[startIndex + 1].position.x = cos(lat + kLatEvery) * cos(lon);
 			vertexData[startIndex + 1].position.y = sin(lat + kLatEvery);
@@ -823,12 +830,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[startIndex + 1].position.w = 1.0f;
 			vertexData[startIndex + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
 
+			vertexData[startIndex + 1].normal.x = vertexData[startIndex + 1].position.x;
+
 			//C
 			vertexData[startIndex + 2].position.x = cos(lat) * cos(lon + kLonEvery);
 			vertexData[startIndex + 2].position.y = sin(lat);
 			vertexData[startIndex + 2].position.z = cos(lat) * sin(lon + kLonEvery);
 			vertexData[startIndex + 2].position.w = 1.0f;
 			vertexData[startIndex + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+
+			vertexData[startIndex + 2].normal.x = vertexData[startIndex + 2].position.x;
 
 			//C-2
 			vertexData[startIndex + 3].position.x = cos(lat) * cos(lon + kLonEvery);
@@ -851,7 +862,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[startIndex + 5].position.w = 1.0f;
 			vertexData[startIndex + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
 
-			vertexData[startIndex].normal.x = vertexData[startIndex].position.x;
+			vertexData[startIndex + 5].normal.x = vertexData[startIndex + 5].position.x;
 		}
 	}
 #pragma endregion
@@ -883,6 +894,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+
+	vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
+
 	//１枚目の三角形
 	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
