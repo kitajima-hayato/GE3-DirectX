@@ -564,7 +564,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//RootParamater作成。複数設定できるので配列。今回は結果が１つだけなので長さ１の配列
 	//2-2-6
-	D3D12_ROOT_PARAMETER rootParamaters[3] = {};
+	D3D12_ROOT_PARAMETER rootParamaters[4] = {};
 	rootParamaters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 	rootParamaters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParamaters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
@@ -575,6 +575,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParamaters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParamaters[2].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身の配列を指定
 	rootParamaters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する数
+	rootParamaters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//CBVで使う
+	rootParamaters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//PixelShaderで使う
+	rootParamaters[3].Descriptor.ShaderRegister = 1;//レジスタ番号１を使う
 	descriptionRootSignature.pParameters = rootParamaters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParamaters);//
 #pragma endregion
@@ -703,9 +706,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Sprite用のマテリアルリソースを作る
 	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-	Vector4* materialDataSprite = nullptr;
+	Material* materialDataSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-	*materialDataSprite = Vector4(255.0f, 255.0f, 255.0f, 1.0f);
+	materialDataSprite->color = Vector4(1,1,1, 1.0f);
+	materialDataSprite->enableLighting = false;
+
+	ID3D12Resource* directionalLight = CreateBufferResource(device, sizeof(DirectionalLight));
+	DirectionalLight* directionalLightData = nullptr;
+	directionalLight->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
+	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightData->intensity = 1.0f;
+
 	//
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//
@@ -1054,7 +1066,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// マテリアルCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			// wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
@@ -1063,7 +1075,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(16 * 16 * 6, 1, 0, 0);
-			//commandList->DrawInstanced(6, 1, 0, 0);
+			
+
+
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  // VBVを設定
@@ -1154,6 +1168,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixResourceSprite->Release();
 	textureResource2->Release();
 	intermediateResource2->Release();
+	materialResourceSprite->Release();
+	directionalLight->Release();
 #pragma endregion
 
 #ifdef _DEBUG
