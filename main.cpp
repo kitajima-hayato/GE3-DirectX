@@ -872,73 +872,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 #pragma endregion
-#pragma region きれいな奴魔法陣
-	/*
-	//Sphereの頂点情報//////////////////////
-	const uint32_t kSubdivision = 16;		//分割数 16or32
-	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
-	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
 
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-		//経度の方向に分割しながら線を描く
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-
-			float u = float(lonIndex) / float(kSubdivision);
-			float v = 1.0f - float(latIndex) / float(kSubdivision);
-
-
-			uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;//φ
-
-			//頂点にデータを入力する。
-			//基準点A
-			vertexData[startIndex].position.x = cos(lat) * cos(lon);
-			vertexData[startIndex].position.y = sin(lat);
-			vertexData[startIndex].position.z = cos(lat) * sin(lon);
-			vertexData[startIndex].position.w = 1.0f;
-			vertexData[startIndex].texcoord = { u,v };
-
-			//B
-			vertexData[startIndex + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[startIndex + 1].position.y = sin(lat + kLatEvery);
-			vertexData[startIndex + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[startIndex + 1].position.w = 1.0f;
-			vertexData[startIndex + 1].texcoord = { u,v };
-
-			//C
-			vertexData[startIndex + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[startIndex + 2].position.y = sin(lat);
-			vertexData[startIndex + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[startIndex + 2].position.w = 1.0f;
-			vertexData[startIndex + 2].texcoord = { u,v };
-
-			//B-2
-			vertexData[startIndex + 3].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[startIndex + 3].position.y = sin(lat + kLatEvery);
-			vertexData[startIndex + 3].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[startIndex + 3].position.w = 1.0f;
-			vertexData[startIndex + 3].texcoord = { u,v };
-
-			//C-2
-			vertexData[startIndex + 4].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[startIndex + 4].position.y = sin(lat);
-			vertexData[startIndex + 4].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[startIndex + 4].position.w = 1.0f;
-			vertexData[startIndex + 4].texcoord = { u,v };
-
-			//D
-			vertexData[startIndex + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-			vertexData[startIndex + 5].position.y = sin(lat + kLatEvery);
-			vertexData[startIndex + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-			vertexData[startIndex + 5].position.w = 1.0f;
-			vertexData[startIndex + 5].texcoord = { u,v };
-
-
-		}
-	}
-	*/
-#pragma endregion
 
 	//DepthStencilTextureをウィンドウのサイズで作成
 	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeigth);
