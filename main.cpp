@@ -691,12 +691,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	assert(SUCCEEDED(hr));
 
+	const uint32_t kSubdivision = 64;		//分割数 16or32
 
 
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 16 * 16 * 6);
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルデータに書き込む
 	Material* materialDate = nullptr;
 	//書き込むためのアドレスを取得
@@ -725,7 +726,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 16 * 16 * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
 	//
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 	//頂点リソースにデータを書き込む
@@ -807,7 +808,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region スフィアの表示
 	//Sphereの頂点情報//////////////////////
-	const uint32_t kSubdivision = 16;		//分割数 16or32
 	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
 	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
 
@@ -1023,12 +1023,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 			transformationMatrixDataSprite->World = worldMatrixSprite;
 
-			// //Spriteの描画。変更が必要なものだけを変更する
-			// commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//VBVを設定
-			// //TransformationMatrixBufferの場所指定
-			// commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			// //描画！(DrawCall/ドローコール)
-			//commandList->DrawInstanced(6, 1, 0, 0);
+			
 
 
 
@@ -1037,6 +1032,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
 			ImGui::DragFloat3("*rotate", &transform.rotate.x);//DragFloatにすればカーソルでも値を変更できる
 			ImGui::DragFloat3("*translate", &transform.translate.x);
+			ImGui::DragFloat3("*shadow", &directionalLightData->direction.x);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			ImGui::End();
 			ImGui::Render();
@@ -1089,10 +1085,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			// wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-
+			
 			// SRVのDescriptorTableの先頭を設定。2はrootPrameter[2]である。
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			// 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 
