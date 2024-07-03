@@ -19,3 +19,7 @@ struct VertexData {
 	Vector2 texcoord;
 	Vector3 normal;
 };
+struct Material {
+	Vector4 color;
+	int enableLighting;
+};
