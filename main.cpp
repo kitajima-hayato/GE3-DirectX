@@ -693,8 +693,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	const uint32_t kSubdivision = 64;		//分割数 16or32
 
-
-
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
@@ -824,7 +822,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			float lon = lonIndex * kLonEvery;//φ
 
 			//頂点にデータを入力する。
-			//基準点A
+			//A
 			vertexData[Index].position.x = cos(lat) * cos(lon);
 			vertexData[Index].position.y = sin(lat);
 			vertexData[Index].position.z = cos(lat) * sin(lon);
@@ -858,20 +856,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[Index + 2].normal.z = vertexData[Index + 2].position.z;
 
 			//C-2
-			vertexData[Index + 3].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[Index + 3].position.y = sin(lat);
-			vertexData[Index + 3].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[Index + 3].position.w = 1.0f;
-			vertexData[Index + 3].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+			vertexData[Index + 3] = vertexData[Index + 2];
+			
 			vertexData[Index + 3].normal.x = vertexData[Index + 3].position.x;
 			vertexData[Index + 3].normal.y = vertexData[Index + 3].position.y;
 			vertexData[Index + 3].normal.z = vertexData[Index + 3].position.z;
+
 			//B-2
-			vertexData[Index + 4].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[Index + 4].position.y = sin(lat + kLatEvery);
-			vertexData[Index + 4].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[Index + 4].position.w = 1.0f;
-			vertexData[Index + 4].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
+			vertexData[Index + 4] = vertexData[Index + 1];
 
 			vertexData[Index + 4].normal.x = vertexData[Index + 4].position.x;
 			vertexData[Index + 4].normal.y = vertexData[Index + 4].position.y;
@@ -907,7 +899,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Sprite用の頂点リソースをつくる
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
-
+	
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
 	//リソースの先頭のアドレスから使う
@@ -920,6 +912,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
+	/////////////////////////////////////////////////////////////
+	//Indexのあれやこれや
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+	uint32_t* indexSpriteData = nullptr;
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(indexSpriteData));
+	
+	/////////////////////////////////////////////////////////////
+	
+
 	vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
 	vertexDataSprite[1].normal = { 0.0f,0.0f,-1.0f };
 	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
@@ -927,19 +928,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
 	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 	//１枚目の三角形
-	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
 	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
 	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
 	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
 	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
 	//２枚目の三角形
-	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[3].position = vertexDataSprite[1].position;
+	vertexDataSprite[3].texcoord = vertexDataSprite[1].texcoord;
 	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
 	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
+	vertexDataSprite[5].position = vertexDataSprite[2].position;
+	vertexDataSprite[5].texcoord = vertexDataSprite[2].texcoord;
 
 
 	//Sprite用のTrandformaitionMatrix用のリソースをつくる。Matrix4x4 １つ分のサイズを用意する
@@ -986,6 +987,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource2, &srvDesc2, textureSrvHandleCPU2);
 
 	bool useMonsterBall = true;
+
+
+	
+
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
