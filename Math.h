@@ -14,6 +14,9 @@ struct Vector4 {
 	float z;
 	float w;
 };
+struct Matrix4x4 {
+	float m[4][4];
+};
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
@@ -22,4 +25,13 @@ struct VertexData {
 struct Material {
 	Vector4 color;
 	int enableLighting;
+};
+struct TransformationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};
+struct DirectionalLight {
+	Vector4 color;		//ライトの色
+	Vector3 direction;	//ライトの向き
+	float intensity;	//輝度
 };

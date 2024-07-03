@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include"Math.h"
 
-struct Matrix4x4 {
-	float m[4][4];
-};
+
 
 struct Transform {
 	Vector3 scale;
