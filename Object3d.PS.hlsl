@@ -4,6 +4,7 @@ struct Material
 {
     float32_t4 color;
     int32_t enableLighting;
+    float32_t3x3 ubTransform;
 };
 struct PixelShaderOutput
 {

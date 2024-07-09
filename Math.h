@@ -16,9 +16,13 @@ struct Vector4 {
 	float w;
 };
 #pragma endregion
+struct Matrix3x3 {
+	float m[3][3];
+};
 struct Matrix4x4 {
 	float m[4][4];
 };
+
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
@@ -27,6 +31,7 @@ struct VertexData {
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
+	Matrix3x3 uvTransform;
 };
 struct TransformationMatrix {
 	Matrix4x4 WVP;
