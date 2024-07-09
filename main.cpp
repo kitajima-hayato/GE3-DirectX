@@ -691,7 +691,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	assert(SUCCEEDED(hr));
 
-	const uint32_t kSubdivision = 64;		//分割数 16or32
+	const uint32_t kSubdivision = 4;		//分割数 16or32
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する

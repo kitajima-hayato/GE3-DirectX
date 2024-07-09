@@ -31,7 +31,6 @@ struct VertexData {
 struct Material {
 	Vector4 color;
 	int32_t enableLighting;
-	Matrix3x3 uvTransform;
 };
 struct TransformationMatrix {
 	Matrix4x4 WVP;
