@@ -281,7 +281,7 @@ Matrix4x4 Transpose(const Matrix4x4& mt1) {
 	return ans;
 }
 
-Matrix4x4 MekeIdentity4x4() {
+Matrix4x4 MakeIdentity4x4() {
 
 	Matrix4x4 ans;
 

@@ -21,7 +21,7 @@ Matrix4x4 Inverse(const Matrix4x4& mt1);
 
 //Matrix4x4 Transpose(const Matrix4x4& mt1);
 
-Matrix4x4 MekeIdentity4x4();
+Matrix4x4 MakeIdentity4x4();
 // 回転
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 // 拡大
