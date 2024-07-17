@@ -15,6 +15,8 @@
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include<vector>
+#include<fstream>
+#include<sstream>
 #include"numbers"
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
@@ -302,6 +304,68 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 struct ModelData {
 	std::vector<VertexData>vertices;
 };
+#pragma region objファイルの読み込み
+//objファイルの読み込み関数
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+	//1.必要な変数の宣言
+	ModelData modelData;			//構築するModelData
+	std::vector<Vector4>positions;	//位置
+	std::vector<Vector3>normals;	//法線
+	std::vector<Vector2>texcoords;	//テクスチャ座標
+	std::string line;				//ファイルから飲んだ1行を格納するもの
+	//2.ファイルを開く
+	std::ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());//ファイルを開けなかったら止める
+
+#pragma region ファイル読み込み
+	//3.実際にファイルを読みModelDataを構築していく
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;//先頭の識別子を読む
+		if (identifier == "v") {
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.w = 1.0f;
+			positions.push_back(position);
+		}
+		else if (identifier == "vt") {
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);
+		}
+		else if (identifier == "vn") {
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normals.push_back(normal);
+		}
+		else if (identifier == "f") {
+			//面は三角形限定。その他は未対応
+			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+				std::string vertexDefinition;
+				s >> vertexDefinition;
+				//頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する
+				std::istringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (int32_t element = 0; element < 3; ++element) {
+					std::string index;
+					std::getline(v, index, '/');//区切りでインデックスを読んでいく
+					elementIndices[element] = std::stoi(index);
+				}
+				//要素へのIndexから、実際の要素の値を取得して、頂点を構築する
+				Vector4 position = positions[elementIndices[0] - 1];
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				Vector3 normal = normals[elementIndices[2] - 1];
+				VertexData vertex = { position,texcoord,normal };
+				modelData.vertices.push_back(vertex);
+			}
+		}
+	}
+#pragma endregion
+	//4.ModelDataを返す
+	return modelData;
+}
+#pragma endregion
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -702,7 +766,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,0.0f},
 	};
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルデータに書き込む
@@ -731,18 +794,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->intensity = 1.0f;
 
 
-	//
+	//モデル読み込み
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
-	//
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();//リソースの先頭のアドレスから使う
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());//使用するリソースのサイズは頂点のサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());//頂点データをリソースにコピー
+
 
 	//2-2-8
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -813,87 +877,87 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
 
 
-
+	
 
 
 #pragma region スフィアの表示
-	//Sphereの頂点情報//////////////////////
-	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
-	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
-
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-		//経度の方向に分割しながら線を描く
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-
-			float u = float(lonIndex) / float(kSubdivision);
-			float v = 1.0f - float(latIndex) / float(kSubdivision);
-
-
-			uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;//φ
-
-			//頂点にデータを入力する。
-			//A
-			vertexData[Index].position.x = cos(lat) * cos(lon);
-			vertexData[Index].position.y = sin(lat);
-			vertexData[Index].position.z = cos(lat) * sin(lon);
-			vertexData[Index].position.w = 1.0f;
-			vertexData[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-
-			vertexData[Index].normal.x = vertexData[Index].position.x;
-			vertexData[Index].normal.y = vertexData[Index].position.y;
-			vertexData[Index].normal.z = vertexData[Index].position.z;
-
-			//B
-			vertexData[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[Index + 1].position.y = sin(lat + kLatEvery);
-			vertexData[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[Index + 1].position.w = 1.0f;
-			vertexData[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
-
-			vertexData[Index + 1].normal.x = vertexData[Index + 1].position.x;
-			vertexData[Index + 1].normal.y = vertexData[Index + 1].position.y;
-			vertexData[Index + 1].normal.z = vertexData[Index + 1].position.z;
-
-			//C
-			vertexData[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[Index + 2].position.y = sin(lat);
-			vertexData[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[Index + 2].position.w = 1.0f;
-			vertexData[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-
-			vertexData[Index + 2].normal.x = vertexData[Index + 2].position.x;
-			vertexData[Index + 2].normal.y = vertexData[Index + 2].position.y;
-			vertexData[Index + 2].normal.z = vertexData[Index + 2].position.z;
-
-			//C-2
-			vertexData[Index + 3] = vertexData[Index + 2];
-
-			vertexData[Index + 3].normal.x = vertexData[Index + 3].position.x;
-			vertexData[Index + 3].normal.y = vertexData[Index + 3].position.y;
-			vertexData[Index + 3].normal.z = vertexData[Index + 3].position.z;
-
-			//B-2
-			vertexData[Index + 4] = vertexData[Index + 1];
-
-			vertexData[Index + 4].normal.x = vertexData[Index + 4].position.x;
-			vertexData[Index + 4].normal.y = vertexData[Index + 4].position.y;
-			vertexData[Index + 4].normal.z = vertexData[Index + 4].position.z;
-
-
-			//D
-			vertexData[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-			vertexData[Index + 5].position.y = sin(lat + kLatEvery);
-			vertexData[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-			vertexData[Index + 5].position.w = 1.0f;
-			vertexData[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
-
-			vertexData[Index + 5].normal.x = vertexData[Index + 5].position.x;
-			vertexData[Index + 5].normal.y = vertexData[Index + 5].position.y;
-			vertexData[Index + 5].normal.z = vertexData[Index + 5].position.z;
-		}
-	}
+//	//Sphereの頂点情報//////////////////////
+//	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
+//	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
+//
+//	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+//		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
+//		//経度の方向に分割しながら線を描く
+//		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+//
+//			float u = float(lonIndex) / float(kSubdivision);
+//			float v = 1.0f - float(latIndex) / float(kSubdivision);
+//
+//
+//			uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
+//			float lon = lonIndex * kLonEvery;//φ
+//
+//			//頂点にデータを入力する。
+//			//A
+//			vertexData[Index].position.x = cos(lat) * cos(lon);
+//			vertexData[Index].position.y = sin(lat);
+//			vertexData[Index].position.z = cos(lat) * sin(lon);
+//			vertexData[Index].position.w = 1.0f;
+//			vertexData[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+//
+//			vertexData[Index].normal.x = vertexData[Index].position.x;
+//			vertexData[Index].normal.y = vertexData[Index].position.y;
+//			vertexData[Index].normal.z = vertexData[Index].position.z;
+//
+//			//B
+//			vertexData[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+//			vertexData[Index + 1].position.y = sin(lat + kLatEvery);
+//			vertexData[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+//			vertexData[Index + 1].position.w = 1.0f;
+//			vertexData[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
+//
+//			vertexData[Index + 1].normal.x = vertexData[Index + 1].position.x;
+//			vertexData[Index + 1].normal.y = vertexData[Index + 1].position.y;
+//			vertexData[Index + 1].normal.z = vertexData[Index + 1].position.z;
+//
+//			//C
+//			vertexData[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+//			vertexData[Index + 2].position.y = sin(lat);
+//			vertexData[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
+//			vertexData[Index + 2].position.w = 1.0f;
+//			vertexData[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+//
+//			vertexData[Index + 2].normal.x = vertexData[Index + 2].position.x;
+//			vertexData[Index + 2].normal.y = vertexData[Index + 2].position.y;
+//			vertexData[Index + 2].normal.z = vertexData[Index + 2].position.z;
+//
+//			//C-2
+//			vertexData[Index + 3] = vertexData[Index + 2];
+//
+//			vertexData[Index + 3].normal.x = vertexData[Index + 3].position.x;
+//			vertexData[Index + 3].normal.y = vertexData[Index + 3].position.y;
+//			vertexData[Index + 3].normal.z = vertexData[Index + 3].position.z;
+//
+//			//B-2
+//			vertexData[Index + 4] = vertexData[Index + 1];
+//
+//			vertexData[Index + 4].normal.x = vertexData[Index + 4].position.x;
+//			vertexData[Index + 4].normal.y = vertexData[Index + 4].position.y;
+//			vertexData[Index + 4].normal.z = vertexData[Index + 4].position.z;
+//
+//
+//			//D
+//			vertexData[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+//			vertexData[Index + 5].position.y = sin(lat + kLatEvery);
+//			vertexData[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+//			vertexData[Index + 5].position.w = 1.0f;
+//			vertexData[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
+//
+//			vertexData[Index + 5].normal.x = vertexData[Index + 5].position.x;
+//			vertexData[Index + 5].normal.y = vertexData[Index + 5].position.y;
+//			vertexData[Index + 5].normal.z = vertexData[Index + 5].position.z;
+//		}
+//	}
 #pragma endregion
 
 
@@ -908,6 +972,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
+	
 
 	//Sprite用の頂点リソースをつくる
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -1015,7 +1080,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useMonsterBall = true;
 
 
-
+	
 
 
 	MSG msg{};
@@ -1035,7 +1100,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ゲームの処理
 
 			//三角形の回転
-			transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
+			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 
 			//座標変換
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
@@ -1064,13 +1129,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Begin("SetColor");
 			ImGui::ColorEdit4("*materialData", &materialDate->color.x);
 			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
-			ImGui::DragFloat3("*rotate", &transform.rotate.x);//DragFloatにすればカーソルでも値を変更できる
+			ImGui::DragFloat3("*rotate", &transform.rotate.x,0.01f);//DragFloatにすればカーソルでも値を変更できる
 			ImGui::DragFloat3("*translate", &transform.translate.x);
 			ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+
+			
+
 			ImGui::End();
 			ImGui::Render();
 
@@ -1127,8 +1195,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			// 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-
+			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
@@ -1139,8 +1207,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// TransformationMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			// 描画！（DrawCall/ドローコール）
-			commandList->DrawInstanced(6, 1, 0, 0);
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 
