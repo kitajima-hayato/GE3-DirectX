@@ -349,7 +349,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				//要素へのIndexから、実際の要素の値を取得して、頂点を構築する
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2 - 1]];
+				Vector3 normal = normals[elementIndices[2] - 1];
 				VertexData vertex={ position,texcoord,normal };
 				modelData.vertices.push_back(vertex);
 			}
@@ -357,7 +357,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 	}
 #pragma endregion
 	//4.ModelDataを返す
-
+	return modelData;
 }
 #pragma endregion
 
@@ -745,23 +745,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	assert(SUCCEEDED(hr));
 
-	const uint32_t kSubdivision = 64;		//分割数 16or32
-	Transform uvTransformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f},
-	};
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
-	//マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
-	//マテリアルデータに書き込む
-	Material* materialDate = nullptr;
-	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
-	//今回は赤を書き込む
-	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDate->enableLighting = true;
-	materialDate->uvTransform = MakeIdentity4x4();
+	//const uint32_t kSubdivision = 64;		//分割数 16or32
+	//Transform uvTransformSprite{
+	//	{1.0f,1.0f,1.0f},
+	//	{0.0f,0.0f,0.0f},
+	//	{0.0f,0.0f,0.0f},
+	//};
+	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+	////マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
+	//ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
+	////マテリアルデータに書き込む
+	//Material* materialDate = nullptr;
+	////書き込むためのアドレスを取得
+	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
+	////今回は赤を書き込む
+	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//materialDate->enableLighting = true;
+	//materialDate->uvTransform = MakeIdentity4x4();
 
 
 
@@ -779,19 +779,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightData->intensity = 1.0f;
 
+#pragma region obj読み込みのために一時削除
+	////
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
+	////
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+#pragma endregion
 
-	//
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
-	//
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	//頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
 
 	//2-2-8
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -943,7 +946,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //	}
 //#pragma endregion
 	
-	//モデル読み込み
+	//objモデル読み込み
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
 	//頂点リソースを作る
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -955,7 +958,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(vertexData));//書き込むためのアドレスを取得
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());//頂点データをリソースにコピー
 
 
@@ -970,66 +973,69 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
+	#pragma region objファイルの読み込みの為に一時削除
 
-	//Sprite用の頂点リソースをつくる
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	
+	////Sprite用の頂点リソースをつくる
+	//ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 
-	//頂点バッファービューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-	//使用するリソースのサイズは頂点６個部宇野サイズ
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
-	//頂点当たりのサイズ
-	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+	////頂点バッファービューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+	////使用するリソースのサイズは頂点６個部宇野サイズ
+	//vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+	////頂点当たりのサイズ
+	//vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 
-	VertexData* vertexDataSprite = nullptr;
-	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-
-
-	/////////////////////////////////////////////////////////////
-	//Indexのあれやこれや
-	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
-	uint32_t* indexSpriteData = nullptr;
-	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(indexSpriteData));
-
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-	//リソースの先頭のアドレスから使う
-	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	//使用するリソースのサイズはインデックス６つ分のサイズ
-	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
-	//インデックスはuint32_tとする
-	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-	//インデックスリソースにデータを書き込む
-	uint32_t* indexDataSprite = nullptr;
-	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
-
-	/////////////////////////////////////////////////////////////
+	//VertexData* vertexDataSprite = nullptr;
+	//vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 
 
-	vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
-	//１枚目の三角形
-	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
-	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-	//２枚目の三角形
-	vertexDataSprite[3].position = vertexDataSprite[1].position;
-	vertexDataSprite[3].texcoord = vertexDataSprite[1].texcoord;
-	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[5].position = vertexDataSprite[2].position;
-	vertexDataSprite[5].texcoord = vertexDataSprite[2].texcoord;
+	///////////////////////////////////////////////////////////////
+	////Indexのあれやこれや
+	//ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+	//uint32_t* indexSpriteData = nullptr;
+	//indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(indexSpriteData));
 
+	//D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	////リソースの先頭のアドレスから使う
+	//indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+	////使用するリソースのサイズはインデックス６つ分のサイズ
+	//indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+	////インデックスはuint32_tとする
+	//indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+	////インデックスリソースにデータを書き込む
+	//uint32_t* indexDataSprite = nullptr;
+	//indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	//indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
+	//indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
+
+	///////////////////////////////////////////////////////////////
+
+
+	//vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
+	//vertexDataSprite[1].normal = { 0.0f,0.0f,-1.0f };
+	//vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
+	//vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
+	//vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
+	//vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
+	////１枚目の三角形
+	//vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
+	//vertexDataSprite[0].texcoord = { 0.0f,1.0f };
+	//vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	//vertexDataSprite[1].texcoord = { 0.0f,0.0f };
+	//vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
+	//vertexDataSprite[2].texcoord = { 1.0f,1.0f };
+	////２枚目の三角形
+	//vertexDataSprite[3].position = vertexDataSprite[1].position;
+	//vertexDataSprite[3].texcoord = vertexDataSprite[1].texcoord;
+	//vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
+	//vertexDataSprite[4].texcoord = { 1.0f,0.0f };
+	//vertexDataSprite[5].position = vertexDataSprite[2].position;
+	//vertexDataSprite[5].texcoord = vertexDataSprite[2].texcoord;
+
+#pragma endregion
 
 	//Sprite用のTrandformaitionMatrix用のリソースをつくる。Matrix4x4 １つ分のサイズを用意する
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -1113,23 +1119,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 			transformationMatrixDataSprite->World = worldMatrixSprite;
 
-			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+			/*Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-			materialDataSprite->uvTransform = uvTransformMatrix;
+			materialDataSprite->uvTransform = uvTransformMatrix;*/
 
 
 
 			ImGui::Begin("SetColor");
-			ImGui::ColorEdit4("*materialData", &materialDate->color.x);
+			//ImGui::ColorEdit4("*materialData", &materialDate->color.x);
 			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
 			ImGui::DragFloat3("*rotate", &transform.rotate.x);//DragFloatにすればカーソルでも値を変更できる
 			ImGui::DragFloat3("*translate", &transform.translate.x);
 			ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			//ImGui::DragFloat3("*modelData", &modelData.vertices, 0.1f);
+			//ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			//ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			//ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 			ImGui::End();
 			ImGui::Render();
 
@@ -1178,7 +1185,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// マテリアルCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			// wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
@@ -1191,8 +1198,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVを設定
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  // VBVを設定
+			//commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVを設定
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  // VBVを設定
 			// マテリアルCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			// TransformationMatrixCBufferの場所を設定
@@ -1273,19 +1280,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootSignature->Release();
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
-	materialResource->Release();
+	//materialResource->Release();
 	wvpResource->Release();
 	textureResource->Release();
 	intermediateResource->Release();
 	depthStencilResource->Release();
 	dsvDescriptorHeap->Release();
-	vertexResourceSprite->Release();
+	//vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
 	textureResource2->Release();
 	intermediateResource2->Release();
 	materialResourceSprite->Release();
 	directionalLightResource->Release();
-	indexResourceSprite->Release();
+	//indexResourceSprite->Release();
 #pragma endregion
 
 #ifdef _DEBUG
