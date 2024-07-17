@@ -297,6 +297,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 }
 
 #pragma endregion
+
+
+struct ModelData {
+	std::vector<VertexData>vertices;
+};
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
