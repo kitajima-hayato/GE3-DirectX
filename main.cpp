@@ -301,9 +301,34 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 #pragma endregion
 
 
-struct ModelData {
-	std::vector<VertexData>vertices;
-};
+
+
+
+
+#pragma region Materialファイルの読み込み
+
+MaterialData LoadMaterialTempLateFile(const std::string& directoryPath, const std::string& filename) {
+	MaterialData materialData;	//構築するMaterialData
+	std::string line;			//ファイルから読んだ１行を格納するもの
+	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
+	assert(file.is_open());		//開けなかったら止める
+
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
+		//identifierに応じた処理
+		if (identifier == "map_Kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+			//連結してファイルパスにする
+			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		}
+	}
+	return materialData;
+}
+
+#pragma endregion
 #pragma region objファイルの読み込み
 //objファイルの読み込み関数
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
@@ -327,6 +352,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
 			position.w = 1.0f;
+			position.y *= -1.0f;
 			positions.push_back(position);
 		}
 		else if (identifier == "vt") {
@@ -340,6 +366,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
+			VertexData triangle[3];
 			//面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				std::string vertexDefinition;
@@ -358,14 +385,29 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector3 normal = normals[elementIndices[2] - 1];
 				VertexData vertex = { position,texcoord,normal };
 				modelData.vertices.push_back(vertex);
+				
 			}
+			//頂点を逆順に登録することで、周り順を逆にする
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
 		}
+		else if (identifier == "mtllib") {
+			// materialTemplateLibraryファイルの名前を取得する
+			std::string materialFilename;
+			s >> materialFilename;
+			//基本的にobjファイルと同一階層にmtlは存在させるので。ディレクトリ名とファイル名を渡す
+			modelData.material = LoadMaterialTempLateFile(directoryPath, materialFilename);
+		}
+
 	}
 #pragma endregion
 	//4.ModelDataを返す
 	return modelData;
 }
 #pragma endregion
+
+
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -805,7 +847,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());//頂点データをリソースにコピー
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());//頂点データをリソースにコピー
 
 
 	//2-2-8
@@ -877,87 +919,87 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
 
 
-	
+
 
 
 #pragma region スフィアの表示
-//	//Sphereの頂点情報//////////////////////
-//	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
-//	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
-//
-//	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-//		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-//		//経度の方向に分割しながら線を描く
-//		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-//
-//			float u = float(lonIndex) / float(kSubdivision);
-//			float v = 1.0f - float(latIndex) / float(kSubdivision);
-//
-//
-//			uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
-//			float lon = lonIndex * kLonEvery;//φ
-//
-//			//頂点にデータを入力する。
-//			//A
-//			vertexData[Index].position.x = cos(lat) * cos(lon);
-//			vertexData[Index].position.y = sin(lat);
-//			vertexData[Index].position.z = cos(lat) * sin(lon);
-//			vertexData[Index].position.w = 1.0f;
-//			vertexData[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-//
-//			vertexData[Index].normal.x = vertexData[Index].position.x;
-//			vertexData[Index].normal.y = vertexData[Index].position.y;
-//			vertexData[Index].normal.z = vertexData[Index].position.z;
-//
-//			//B
-//			vertexData[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-//			vertexData[Index + 1].position.y = sin(lat + kLatEvery);
-//			vertexData[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-//			vertexData[Index + 1].position.w = 1.0f;
-//			vertexData[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
-//
-//			vertexData[Index + 1].normal.x = vertexData[Index + 1].position.x;
-//			vertexData[Index + 1].normal.y = vertexData[Index + 1].position.y;
-//			vertexData[Index + 1].normal.z = vertexData[Index + 1].position.z;
-//
-//			//C
-//			vertexData[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-//			vertexData[Index + 2].position.y = sin(lat);
-//			vertexData[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-//			vertexData[Index + 2].position.w = 1.0f;
-//			vertexData[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-//
-//			vertexData[Index + 2].normal.x = vertexData[Index + 2].position.x;
-//			vertexData[Index + 2].normal.y = vertexData[Index + 2].position.y;
-//			vertexData[Index + 2].normal.z = vertexData[Index + 2].position.z;
-//
-//			//C-2
-//			vertexData[Index + 3] = vertexData[Index + 2];
-//
-//			vertexData[Index + 3].normal.x = vertexData[Index + 3].position.x;
-//			vertexData[Index + 3].normal.y = vertexData[Index + 3].position.y;
-//			vertexData[Index + 3].normal.z = vertexData[Index + 3].position.z;
-//
-//			//B-2
-//			vertexData[Index + 4] = vertexData[Index + 1];
-//
-//			vertexData[Index + 4].normal.x = vertexData[Index + 4].position.x;
-//			vertexData[Index + 4].normal.y = vertexData[Index + 4].position.y;
-//			vertexData[Index + 4].normal.z = vertexData[Index + 4].position.z;
-//
-//
-//			//D
-//			vertexData[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-//			vertexData[Index + 5].position.y = sin(lat + kLatEvery);
-//			vertexData[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-//			vertexData[Index + 5].position.w = 1.0f;
-//			vertexData[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
-//
-//			vertexData[Index + 5].normal.x = vertexData[Index + 5].position.x;
-//			vertexData[Index + 5].normal.y = vertexData[Index + 5].position.y;
-//			vertexData[Index + 5].normal.z = vertexData[Index + 5].position.z;
-//		}
-//	}
+	//	//Sphereの頂点情報//////////////////////
+	//	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
+	//	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
+	//
+	//	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+	//		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
+	//		//経度の方向に分割しながら線を描く
+	//		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+	//
+	//			float u = float(lonIndex) / float(kSubdivision);
+	//			float v = 1.0f - float(latIndex) / float(kSubdivision);
+	//
+	//
+	//			uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
+	//			float lon = lonIndex * kLonEvery;//φ
+	//
+	//			//頂点にデータを入力する。
+	//			//A
+	//			vertexData[Index].position.x = cos(lat) * cos(lon);
+	//			vertexData[Index].position.y = sin(lat);
+	//			vertexData[Index].position.z = cos(lat) * sin(lon);
+	//			vertexData[Index].position.w = 1.0f;
+	//			vertexData[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+	//
+	//			vertexData[Index].normal.x = vertexData[Index].position.x;
+	//			vertexData[Index].normal.y = vertexData[Index].position.y;
+	//			vertexData[Index].normal.z = vertexData[Index].position.z;
+	//
+	//			//B
+	//			vertexData[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+	//			vertexData[Index + 1].position.y = sin(lat + kLatEvery);
+	//			vertexData[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+	//			vertexData[Index + 1].position.w = 1.0f;
+	//			vertexData[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
+	//
+	//			vertexData[Index + 1].normal.x = vertexData[Index + 1].position.x;
+	//			vertexData[Index + 1].normal.y = vertexData[Index + 1].position.y;
+	//			vertexData[Index + 1].normal.z = vertexData[Index + 1].position.z;
+	//
+	//			//C
+	//			vertexData[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+	//			vertexData[Index + 2].position.y = sin(lat);
+	//			vertexData[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
+	//			vertexData[Index + 2].position.w = 1.0f;
+	//			vertexData[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+	//
+	//			vertexData[Index + 2].normal.x = vertexData[Index + 2].position.x;
+	//			vertexData[Index + 2].normal.y = vertexData[Index + 2].position.y;
+	//			vertexData[Index + 2].normal.z = vertexData[Index + 2].position.z;
+	//
+	//			//C-2
+	//			vertexData[Index + 3] = vertexData[Index + 2];
+	//
+	//			vertexData[Index + 3].normal.x = vertexData[Index + 3].position.x;
+	//			vertexData[Index + 3].normal.y = vertexData[Index + 3].position.y;
+	//			vertexData[Index + 3].normal.z = vertexData[Index + 3].position.z;
+	//
+	//			//B-2
+	//			vertexData[Index + 4] = vertexData[Index + 1];
+	//
+	//			vertexData[Index + 4].normal.x = vertexData[Index + 4].position.x;
+	//			vertexData[Index + 4].normal.y = vertexData[Index + 4].position.y;
+	//			vertexData[Index + 4].normal.z = vertexData[Index + 4].position.z;
+	//
+	//
+	//			//D
+	//			vertexData[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+	//			vertexData[Index + 5].position.y = sin(lat + kLatEvery);
+	//			vertexData[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+	//			vertexData[Index + 5].position.w = 1.0f;
+	//			vertexData[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
+	//
+	//			vertexData[Index + 5].normal.x = vertexData[Index + 5].position.x;
+	//			vertexData[Index + 5].normal.y = vertexData[Index + 5].position.y;
+	//			vertexData[Index + 5].normal.z = vertexData[Index + 5].position.z;
+	//		}
+	//	}
 #pragma endregion
 
 
@@ -972,7 +1014,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	
+
 
 	//Sprite用の頂点リソースをつくる
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -1059,7 +1101,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//2枚目のTextureを読んで転送する
-	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterBall.png");
+	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 	ID3D12Resource* textureResource2 = CreateTextureResource(device, metadata2);
 	ID3D12Resource* intermediateResource2 = UploadTextureData(textureResource2, mipImages2, device, commandList);
@@ -1079,8 +1121,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool useMonsterBall = true;
 
-
 	
+
 
 
 	MSG msg{};
@@ -1129,7 +1171,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Begin("SetColor");
 			ImGui::ColorEdit4("*materialData", &materialDate->color.x);
 			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
-			ImGui::DragFloat3("*rotate", &transform.rotate.x,0.01f);//DragFloatにすればカーソルでも値を変更できる
+			ImGui::DragFloat3("*rotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
 			ImGui::DragFloat3("*translate", &transform.translate.x);
 			ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
@@ -1137,7 +1179,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
-			
+
 
 			ImGui::End();
 			ImGui::Render();

@@ -1,4 +1,7 @@
 #pragma once
+#include<vector>
+
+#include<string>
 #pragma region ベクトル
 struct Vector2 {
 	float x;
@@ -42,4 +45,12 @@ struct DirectionalLight {
 	Vector4 color; //ライトの色
 	Vector3 direction; //ライトの向き
 	float intensity;	//輝度
+};
+
+struct MaterialData {
+	std::string textureFilePath;
+};
+struct ModelData {
+	std::vector<VertexData>vertices;
+	MaterialData material;
 };
