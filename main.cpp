@@ -24,6 +24,23 @@
 #pragma comment(lib,"dxgi.lib")
 
 
+class ResourceObject {
+public:
+	ResourceObject(ID3D12Resource* resource)
+		:resource_(resource)
+	{}
+	~ResourceObject() {
+		if (resource_) {
+			resource_->Release();
+		}
+	}
+	ID3D12Resource* Get() { return resource_; }
+private:
+	ID3D12Resource* resource_;
+};
+
+
+
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
 
