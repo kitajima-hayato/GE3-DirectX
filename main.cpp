@@ -1198,14 +1198,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("SetColor");
 			ImGui::ColorEdit4("*materialData", &materialDate->color.x);
-			ImGui::DragFloat3("*scale", &transform.scale.x);//InputFloatだと直入力のみ有効
+			ImGui::DragFloat3("*scale", &transform.scale.x,0.01f);//InputFloatだと直入力のみ有効
 			ImGui::DragFloat3("*rotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-			ImGui::DragFloat3("*translate", &transform.translate.x);
+			ImGui::DragFloat3("*translate", &transform.translate.x,0.01f);
 			ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z,0.01f);
 
 
 
