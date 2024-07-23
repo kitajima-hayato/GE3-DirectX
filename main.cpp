@@ -1327,7 +1327,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 #pragma region  解放処理
-	CoUninitialize();
+	
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
@@ -1340,18 +1340,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	debugController->Release();
 #endif
 	CloseWindow(hwnd);
-	return 0;
-	//出力ウィンドウへの文字出力　実行すると出る下の文字
-	OutputDebugStringA("Hello,DirectX!\n");
-	//リソースリークチェック
-	IDXGIDebug1* debug;
-	//ここでの例外エラーはリリース忘れだからリリースしろばか！
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		debug->Release();
-		//ここでの例外エラーはリリース忘れだからリリースしろ
-	}
+	CoUninitialize();
+	////出力ウィンドウへの文字出力　実行すると出る下の文字
+	//OutputDebugStringA("Hello,DirectX!\n");
+	////リソースリークチェック
+	//IDXGIDebug1* debug;
+	////ここでの例外エラーはリリース忘れだからリリースしろばか！
+	//if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+	//	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	//	debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+	//	debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+	//	debug->Release();
+	//	//ここでの例外エラーはリリース忘れだからリリースしろ
+	//}
 	
+	return 0;
 }
