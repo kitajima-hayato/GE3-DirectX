@@ -442,10 +442,12 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
+	CoInitializeEx(0, COINIT_MULTITHREADED);
+
+
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-	CoInitializeEx(0, COINIT_MULTITHREADED);
 	const int kClientWidth = 1280;
 	const int kClientHeigth = 720;
 
@@ -1328,29 +1330,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-	CloseHandle(fenceEvent);
 	
-
+	
+	CloseHandle(fenceEvent);
+	CloseWindow(hwnd);
+	CoUninitialize();
 #pragma endregion
 
 #ifdef _DEBUG
 	debugController->Release();
 
 #endif
-	CloseWindow(hwnd);
-	CoUninitialize();
+	
+	
 	//出力ウィンドウへの文字出力　実行すると出る下の文字
 	OutputDebugStringA("Hello,DirectX!\n");
-	//リソースリークチェック
-	IDXGIDebug1* debug;
-	//ここでの例外エラーはリリース忘れ
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		debug->Release();
-		//ここでの例外エラーはリリース忘れだからリリースしろ
-	}
-	
+
 	return 0;
 }
