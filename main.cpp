@@ -1197,18 +1197,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-			ImGui::Begin("SetColor");
-			ImGui::ColorEdit4("*materialData", &materialDate->color.x);
-			ImGui::DragFloat3("*scale", &transform.scale.x,0.01f);//InputFloatだと直入力のみ有効
-			ImGui::DragFloat3("*rotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-			ImGui::DragFloat3("*translate", &transform.translate.x,0.01f);
-			ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z,0.01f);
-
-
+			ImGui::Begin("Settings");
+			if (ImGui::BeginTabBar("OBJ"))
+			{
+				// Objの値変更
+				if (ImGui::BeginTabItem("OBJ"))
+				{
+					ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
+					ImGui::Checkbox(  "useMonsterBall", &useMonsterBall);
+					ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
+					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+					ImGui::EndTabItem();
+				}
+				//UVの値変更
+				if (ImGui::BeginTabItem("UV"))
+				{
+					ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
+					ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
+					ImGui::DragFloat2("*UVPositionTranslate",&transformSprite.translate.x, 0.5f);
+					ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+					ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+					ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
+					ImGui::EndTabItem();
+				}
+				
+				ImGui::EndTabItem();
+			}
+			
 
 			ImGui::End();
 			ImGui::Render();
@@ -1278,8 +1295,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// TransformationMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			// 描画！（DrawCall/ドローコール）
-			//commandList->DrawInstanced(6, 1, 0, 0);
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 
