@@ -950,6 +950,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Transform transform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
+	Transform transformSphere{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
 	Transform cameraTransform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -5.0f } };
 
 
@@ -1190,7 +1191,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
-	bool useMonsterBall = true;
+	bool useMonsterBall = false;
 
 
 
@@ -1214,30 +1215,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//三角形の回転
 			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
-
-			//座標変換
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 projectionMatirx = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
-			Matrix4x4 worldViewProhection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatirx));
-			wvpData->WVP = worldViewProhection;
+
+			//座標変換<obj>
+			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 worldViewProjection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			wvpData->WVP = worldViewProjection;
 			wvpData->World = worldMatrix;
-			wvpDataSphere->WVP = worldViewProhection;
-			wvpDataSphere->World = worldMatrix;
-			//Sprite用のWorldViewMatrixをつくる
+			//座標変換<sphere>
+			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
+			Matrix4x4 projectionMatrixSphere = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 worldViewProjectionSphere= Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrixSphere));
+			wvpDataSphere->WVP = worldViewProjectionSphere;
+			wvpDataSphere->World = worldMatrixSphere;
+			//座標変換<sprite>
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeigth), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 			transformationMatrixDataSprite->World = worldMatrixSprite;
-
+			//座標変換<UV>
 			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
-
+			
 
 
 			ImGui::Begin("Settings");
@@ -1247,11 +1252,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (ImGui::BeginTabItem("OBJ"))
 				{
 					ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
-					ImGui::Checkbox(  "useMonsterBall", &useMonsterBall);
 					ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
 					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
 					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
 					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+					if(ImGui::Button("*Lighting")) {
+						if (materialDate->enableLighting) {
+							materialDate->enableLighting = false;
+						}else if (!materialDate->enableLighting) {
+							materialDate->enableLighting = true;
+						}
+					}
 					ImGui::EndTabItem();
 				}
 				//UVの値変更
@@ -1268,7 +1279,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//Sphereの値変更
 				if (ImGui::BeginTabItem("Sphere"))
 				{
-					ImGui::DragFloat3("*SpherePosition", &vertexDataSphere->position.x, 0.01f);
+					ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
+					ImGui::DragFloat3("*scale", &transformSphere.scale.x,0.01f);//InputFloatだと直入力のみ有効
+					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x,0.01f);//DragFloatにすればカーソルでも値を変更できる
+					ImGui::DragFloat3("*translate", &transformSphere.translate.x,0.01f);
+					ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
+					ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+					if (ImGui::Button("*Lighting")) {
+						if (materialDataSphere->enableLighting) {
+							materialDataSphere->enableLighting = false;
+						}
+						else if (!materialDataSphere->enableLighting) {
+							materialDataSphere->enableLighting = true;
+						}
+					}
 					ImGui::EndTabItem();
 				}
 				ImGui::EndTabItem();
