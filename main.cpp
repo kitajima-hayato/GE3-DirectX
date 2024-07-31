@@ -855,7 +855,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Material* materialDataSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 	materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDataSprite->enableLighting = false;
+	materialDataSprite->enableLighting = 0;
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
@@ -892,7 +892,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Material* materialDataSphere = nullptr;
 	materialResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
 	materialDataSphere->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDataSphere->enableLighting = true;
+	materialDataSphere->enableLighting = 1;
 	materialDataSphere->uvTransform = MakeIdentity4x4();
 
 	// 頂点バッファービューを作成
@@ -1258,9 +1258,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 					if(ImGui::Button("*Lighting")) {
 						if (materialDate->enableLighting) {
-							materialDate->enableLighting = false;
+							materialDate->enableLighting = 0;
 						}else if (!materialDate->enableLighting) {
-							materialDate->enableLighting = true;
+							materialDate->enableLighting = 1;
+						}
+					}if (ImGui::Button("*HalfLambert")) {
+						if (materialDate->enableLighting) {
+							materialDate->enableLighting = 2;
 						}
 					}
 					ImGui::EndTabItem();
@@ -1287,11 +1291,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 					if (ImGui::Button("*Lighting")) {
 						if (materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = false;
+							materialDataSphere->enableLighting = 0;
 						}
 						else if (!materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = true;
+							materialDataSphere->enableLighting = 1;
 						}
+					}
+					if (ImGui::Button("*HalfLambert")) {
+						if (materialDataSphere->enableLighting) {
+							materialDataSphere->enableLighting = 2;
+						}
+						
 					}
 					ImGui::EndTabItem();
 				}
