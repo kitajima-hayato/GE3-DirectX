@@ -25,20 +25,7 @@
 #pragma comment(lib,"dxgi.lib")
 
 
-class ResourceObject {
-public:
-	ResourceObject(Microsoft::WRL::ComPtr<ID3D12Resource> resource)
-		:resource_(resource)
-	{}
-	~ResourceObject() {
-		if (resource_) {
-			resource_->Release();
-		}
-	}
-	Microsoft::WRL::ComPtr<ID3D12Resource> Get() { return resource_; }
-private:
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource_;
-};
+
 
 struct D3DResourceLeakChecker {
 	~D3DResourceLeakChecker()
@@ -1353,15 +1340,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CloseWindow(hwnd);
 	CoUninitialize();
 #pragma endregion
-
-#ifdef _DEBUG
-	debugController->Release();
-
-#endif
 	
 	
-	//出力ウィンドウへの文字出力　実行すると出る下の文字
-	OutputDebugStringA("Hello,DirectX!\n");
-
+	
 	return 0;
 }
