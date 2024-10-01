@@ -19,7 +19,7 @@
 #include<sstream>
 #include<wrl.h>
 #include"numbers"
-#include "Input.h"
+#include "dinput.h"
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
