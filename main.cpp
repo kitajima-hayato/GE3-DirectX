@@ -19,7 +19,7 @@
 #include<sstream>
 #include<wrl.h>
 #include"numbers"
-#include "dinput.h"
+#include "Input.h"
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
@@ -434,11 +434,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
-
 	const int kClientWidth = 1280;
 	const int kClientHeigth = 720;
-
-
+	
 #pragma region Windowの生成
 
 	WNDCLASS wc{};
@@ -450,19 +448,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	wc.hInstance = GetModuleHandle(nullptr);
 	//カーソル
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	//DirectInputの初期化
-	IDirectInput8* directInput = nullptr;
-	HRESULT result = DirectInput8Create(wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
-		(void**)&directInput, nullptr);
-	assert(SUCCEEDED(result));
-	//キーボードデバイスの作成
-	IDirectInputDevice8* keyboard = nullptr;
-	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-	assert(SUCCEEDED(result));
-
-	//入力データ形式のセット
-	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
-	assert(SUCCEEDED(result));
+	
 
 	
 	
@@ -492,9 +478,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ShowWindow(hwnd, SW_SHOW);
 #pragma endregion 
 
-	//排他制御のレベルのセット
-	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-	assert(SUCCEEDED(result));
+	//入力処理のクラスポインタ
+	Input* input = new Input();
+	input->Initialize(wc.hInstance,hwnd);
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr < ID3D12Debug1> debugController = nullptr;
@@ -638,7 +624,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	//DSV用のヒープでディスクリプタの数は１。DSVはShader内で触るものではないので、ShaderVisibleはfalse
 
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescropterHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 
 
 
@@ -1202,7 +1188,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useMonsterBall = false;
 
 
-
+	
 
 
 	MSG msg{};
@@ -1220,15 +1206,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			//ゲームの処理
-			keyboard->Acquire();
-			//全キーの入力状態を取得する
-			BYTE key[256] = {};
-			keyboard->GetDeviceState(sizeof(key), key);
-
-			//数字キーの０が押されていたら
-			if (key[DIK_0]) {
-				OutputDebugStringA("Hit 0\n");//出力ウィンドウにHit 0を出力
-			}
+			input->Update();
 			
 			//三角形の回転
 			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
@@ -1461,6 +1439,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 	////出力ウィンドウへの文字出力　実行すると出る下の文字
 	//OutputDebugStringA("Hello,DirectX!\n");
-
+	delete input;
 	return 0;
 }
