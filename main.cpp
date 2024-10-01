@@ -479,7 +479,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion 
 
 	//入力処理のクラスポインタ
-	Input* input = new Input();
+	Input* input = new Input(); 
 	input->Initialize(wc.hInstance,hwnd);
 
 #ifdef _DEBUG
