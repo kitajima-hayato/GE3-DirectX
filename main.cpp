@@ -19,12 +19,12 @@
 #include<sstream>
 #include<wrl.h>
 #include"numbers"
+#include "dinput.h"
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
-
-
+using namespace std;
 
 
 struct D3DResourceLeakChecker {
@@ -349,78 +349,75 @@ MaterialData LoadMaterialTempLateFile(const std::string& directoryPath, const st
 #pragma endregion
 #pragma region objファイルの読み込み
 //objファイルの読み込み関数
-ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
-	//1.必要な変数の宣言
-	ModelData modelData;			//構築するModelData
-	std::vector<Vector4>positions;	//位置
-	std::vector<Vector3>normals;	//法線
-	std::vector<Vector2>texcoords;	//テクスチャ座標
-	std::string line;				//ファイルから飲んだ1行を格納するもの
-	//2.ファイルを開く
-	std::ifstream file(directoryPath + "/" + filename);
-	assert(file.is_open());//ファイルを開けなかったら止める
+ModelData LoadObjFile(const string& directoryPath, const string& filename) {
+	// 1. 必要な変数宣言
+	ModelData modelData;     // 構築するModelData
+	vector<Vector4> positions;    // 位置
+	vector<Vector3> normals;    // 法線
+	vector<Vector2> texcoords;    // テクスチャ座標
+	string line;       // ファイルから読んだ1行を格納
 
-#pragma region ファイル読み込み
-	//3.実際にファイルを読みModelDataを構築していく
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier;//先頭の識別子を読む
+	// 2. ファイルを開く
+	ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());         // 開けなかったら止める
+
+	while (getline(file, line)) {
+		string identifier;
+		istringstream s(line);
+		s >> identifier; // 先頭の識別子を読む
+
+		// identifierに応じた処理
 		if (identifier == "v") {
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
+			position.x *= -1;
 			position.w = 1.0f;
-			position.y *= -1.0f;
 			positions.push_back(position);
 		}
 		else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
 		}
 		else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
+			normal.x *= -1;
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
 			VertexData triangle[3];
-			//面は三角形限定。その他は未対応
+			// 面は三角形限定。その他は未定。
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				std::string vertexDefinition;
+				string vertexDefinition;
 				s >> vertexDefinition;
-				//頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する
-				std::istringstream v(vertexDefinition);
+				// 頂点の要素へのIndexは　［位置/UV/法線］　で格納されているので分解してIndexを取得する
+				istringstream v(vertexDefinition);
 				uint32_t elementIndices[3];
 				for (int32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');//区切りでインデックスを読んでいく
-					elementIndices[element] = std::stoi(index);
+					string index;
+					getline(v, index, '/');      // 区切りでインデックスうぃ読んでいく
+					elementIndices[element] = stoi(index);
 				}
-				//要素へのIndexから、実際の要素の値を取得して、頂点を構築する
+				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
-				VertexData vertex = { position,texcoord,normal };
-				modelData.vertices.push_back(vertex);
 
+				triangle[faceVertex] = { position,texcoord,normal };
 			}
-			//頂点を逆順に登録することで、周り順を逆にする
+			// 頂点を逆順すろことで、回り順を逆にする
 			modelData.vertices.push_back(triangle[2]);
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
 		}
 		else if (identifier == "mtllib") {
-			// materialTemplateLibraryファイルの名前を取得する
 			std::string materialFilename;
 			s >> materialFilename;
-			//基本的にobjファイルと同一階層にmtlは存在させるので。ディレクトリ名とファイル名を渡す
 			modelData.material = LoadMaterialTempLateFile(directoryPath, materialFilename);
 		}
-
 	}
-#pragma endregion
-	//4.ModelDataを返す
 	return modelData;
 }
 #pragma endregion
@@ -429,7 +426,9 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
+
 	CoInitializeEx(0, COINIT_MULTITHREADED);
+
 
 
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
@@ -450,6 +449,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	wc.hInstance = GetModuleHandle(nullptr);
 	//カーソル
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	//DirectInputの初期化
+	IDirectInput8* directInput = nullptr;
+	HRESULT result = DirectInput8Create(wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		(void**)&directInput, nullptr);
+	assert(SUCCEEDED(result));
+	//キーボードデバイスの作成
+	IDirectInputDevice8* keyboard = nullptr;
+	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	assert(SUCCEEDED(result));
+
+	//入力データ形式のセット
+	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
+	assert(SUCCEEDED(result));
+
+	
+	
 	//ウィンドウクラスを登録
 	RegisterClass(&wc);
 	//クライアント領域のサイズ
@@ -476,6 +491,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ShowWindow(hwnd, SW_SHOW);
 #pragma endregion 
 
+	//排他制御のレベルのセット
+	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	assert(SUCCEEDED(result));
+
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr < ID3D12Debug1> debugController = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
@@ -492,7 +511,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Factoryの生成
 	//DXGIファクトリーの生成
-	
+
 	//HRESULTはWindows系のエラーコードであり
 	//関数が成功したか動かをSUCCEEDEDマクロ判定できる
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));//IID_PPV_ARGSは引数を一つにしてくれるおまじない
@@ -524,7 +543,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region Deviceの生成
-	
+
 	//昨日レベルとログ出力用の文字列
 	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
@@ -617,9 +636,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	//DSV用のヒープでディスクリプタの数は１。DSVはShader内で触るものではないので、ShaderVisibleはfalse
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-	
-	
+
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescropterHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+
+
 
 #pragma endregion
 
@@ -832,7 +852,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
 	//今回は赤を書き込む
 	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDate->enableLighting = true;
+	materialDate->enableLighting = 0;
 	materialDate->uvTransform = MakeIdentity4x4();
 
 
@@ -842,7 +862,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Material* materialDataSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 	materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDataSprite->enableLighting = false;
+	materialDataSprite->enableLighting = 0;
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
@@ -851,9 +871,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightData->intensity = 1.0f;
 
-
+	
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ModelData modelData = LoadObjFile("resources", "Bunny.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -865,6 +885,48 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());//頂点データをリソースにコピー
 
+	
+
+#pragma region スフィア用の新規作成
+	
+	// スフィア用の新規作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+
+	// マテリアル用のリソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSphere = CreateBufferResource(device, sizeof(Material));
+
+	// マテリアルデータに書き込む
+	Material* materialDataSphere = nullptr;
+	materialResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
+	materialDataSphere->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialDataSphere->enableLighting = 0;
+	materialDataSphere->uvTransform = MakeIdentity4x4();
+
+	// 頂点バッファービューを作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
+	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
+	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
+	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
+
+	// 頂点リソースにデータを書き込む
+	VertexData* vertexDataSphere = nullptr;
+	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+
+	// WVPリソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResourceSphere = CreateBufferResource(device, sizeof(TransformationMatrix));
+	TransformationMatrix* wvpDataSphere = nullptr;
+	wvpResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere));
+	wvpDataSphere->WVP = MakeIdentity4x4();
+	wvpDataSphere->World = MakeIdentity4x4();
+
+	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceSphere = CreateBufferResource(device, sizeof(DirectionalLight));
+	DirectionalLight* directionalLightDataSphere = nullptr;
+	directionalLightResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataSphere));
+	directionalLightDataSphere->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionalLightDataSphere->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightDataSphere->intensity = 1.0f;
+
+#pragma endregion
 
 	//2-2-8
 	Microsoft::WRL::ComPtr < ID3D12Resource> wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -895,6 +957,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Transform transform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
+	Transform transformSphere{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
 	Transform cameraTransform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -5.0f } };
 
 
@@ -939,83 +1002,83 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region スフィアの表示
-	//	//Sphereの頂点情報//////////////////////
-	//	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
-	//	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
-	//
-	//	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-	//		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-	//		//経度の方向に分割しながら線を描く
-	//		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-	//
-	//			float u = float(lonIndex) / float(kSubdivision);
-	//			float v = 1.0f - float(latIndex) / float(kSubdivision);
-	//
-	//
-	//			uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
-	//			float lon = lonIndex * kLonEvery;//φ
-	//
-	//			//頂点にデータを入力する。
-	//			//A
-	//			vertexData[Index].position.x = cos(lat) * cos(lon);
-	//			vertexData[Index].position.y = sin(lat);
-	//			vertexData[Index].position.z = cos(lat) * sin(lon);
-	//			vertexData[Index].position.w = 1.0f;
-	//			vertexData[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-	//
-	//			vertexData[Index].normal.x = vertexData[Index].position.x;
-	//			vertexData[Index].normal.y = vertexData[Index].position.y;
-	//			vertexData[Index].normal.z = vertexData[Index].position.z;
-	//
-	//			//B
-	//			vertexData[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-	//			vertexData[Index + 1].position.y = sin(lat + kLatEvery);
-	//			vertexData[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-	//			vertexData[Index + 1].position.w = 1.0f;
-	//			vertexData[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
-	//
-	//			vertexData[Index + 1].normal.x = vertexData[Index + 1].position.x;
-	//			vertexData[Index + 1].normal.y = vertexData[Index + 1].position.y;
-	//			vertexData[Index + 1].normal.z = vertexData[Index + 1].position.z;
-	//
-	//			//C
-	//			vertexData[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-	//			vertexData[Index + 2].position.y = sin(lat);
-	//			vertexData[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-	//			vertexData[Index + 2].position.w = 1.0f;
-	//			vertexData[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-	//
-	//			vertexData[Index + 2].normal.x = vertexData[Index + 2].position.x;
-	//			vertexData[Index + 2].normal.y = vertexData[Index + 2].position.y;
-	//			vertexData[Index + 2].normal.z = vertexData[Index + 2].position.z;
-	//
-	//			//C-2
-	//			vertexData[Index + 3] = vertexData[Index + 2];
-	//
-	//			vertexData[Index + 3].normal.x = vertexData[Index + 3].position.x;
-	//			vertexData[Index + 3].normal.y = vertexData[Index + 3].position.y;
-	//			vertexData[Index + 3].normal.z = vertexData[Index + 3].position.z;
-	//
-	//			//B-2
-	//			vertexData[Index + 4] = vertexData[Index + 1];
-	//
-	//			vertexData[Index + 4].normal.x = vertexData[Index + 4].position.x;
-	//			vertexData[Index + 4].normal.y = vertexData[Index + 4].position.y;
-	//			vertexData[Index + 4].normal.z = vertexData[Index + 4].position.z;
-	//
-	//
-	//			//D
-	//			vertexData[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-	//			vertexData[Index + 5].position.y = sin(lat + kLatEvery);
-	//			vertexData[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-	//			vertexData[Index + 5].position.w = 1.0f;
-	//			vertexData[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
-	//
-	//			vertexData[Index + 5].normal.x = vertexData[Index + 5].position.x;
-	//			vertexData[Index + 5].normal.y = vertexData[Index + 5].position.y;
-	//			vertexData[Index + 5].normal.z = vertexData[Index + 5].position.z;
-	//		}
-	//	}
+		//Sphereの頂点情報//////////////////////
+		const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
+		const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
+	
+		for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+			float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
+			//経度の方向に分割しながら線を描く
+			for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+	
+				float u = float(lonIndex) / float(kSubdivision);
+				float v = 1.0f - float(latIndex) / float(kSubdivision);
+	
+	
+				uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
+				float lon = lonIndex * kLonEvery;//φ
+	
+				//頂点にデータを入力する。
+				//A
+				vertexDataSphere[Index].position.x = cos(lat) * cos(lon);
+				vertexDataSphere[Index].position.y = sin(lat);
+				vertexDataSphere[Index].position.z = cos(lat) * sin(lon);
+				vertexDataSphere[Index].position.w = 1.0f;
+				vertexDataSphere[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+	
+				vertexDataSphere[Index].normal.x = vertexDataSphere[Index].position.x;
+				vertexDataSphere[Index].normal.y = vertexDataSphere[Index].position.y;
+				vertexDataSphere[Index].normal.z = vertexDataSphere[Index].position.z;
+	
+				//B
+				vertexDataSphere[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+				vertexDataSphere[Index + 1].position.y = sin(lat + kLatEvery);
+				vertexDataSphere[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+				vertexDataSphere[Index + 1].position.w = 1.0f;
+				vertexDataSphere[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
+	
+				vertexDataSphere[Index + 1].normal.x = vertexDataSphere[Index + 1].position.x;
+				vertexDataSphere[Index + 1].normal.y = vertexDataSphere[Index + 1].position.y;
+				vertexDataSphere[Index + 1].normal.z = vertexDataSphere[Index + 1].position.z;
+	
+				//C
+				vertexDataSphere[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+				vertexDataSphere[Index + 2].position.y = sin(lat);
+				vertexDataSphere[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
+				vertexDataSphere[Index + 2].position.w = 1.0f;
+				vertexDataSphere[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+	
+				vertexDataSphere[Index + 2].normal.x = vertexDataSphere[Index + 2].position.x;
+				vertexDataSphere[Index + 2].normal.y = vertexDataSphere[Index + 2].position.y;
+				vertexDataSphere[Index + 2].normal.z = vertexDataSphere[Index + 2].position.z;
+	
+				//C-2
+				vertexDataSphere[Index + 3] = vertexDataSphere[Index + 2];
+	
+				vertexDataSphere[Index + 3].normal.x = vertexDataSphere[Index + 3].position.x;
+				vertexDataSphere[Index + 3].normal.y = vertexDataSphere[Index + 3].position.y;
+				vertexDataSphere[Index + 3].normal.z = vertexDataSphere[Index + 3].position.z;
+	
+				//B-2
+				vertexDataSphere[Index + 4] = vertexDataSphere[Index + 1];
+	
+				vertexDataSphere[Index + 4].normal.x = vertexDataSphere[Index + 4].position.x;
+				vertexDataSphere[Index + 4].normal.y = vertexDataSphere[Index + 4].position.y;
+				vertexDataSphere[Index + 4].normal.z = vertexDataSphere[Index + 4].position.z;
+	
+	
+				//D
+				vertexDataSphere[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+				vertexDataSphere[Index + 5].position.y = sin(lat + kLatEvery);
+				vertexDataSphere[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+				vertexDataSphere[Index + 5].position.w = 1.0f;
+				vertexDataSphere[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
+	
+				vertexDataSphere[Index + 5].normal.x = vertexDataSphere[Index + 5].position.x;
+				vertexDataSphere[Index + 5].normal.y = vertexDataSphere[Index + 5].position.y;
+				vertexDataSphere[Index + 5].normal.z = vertexDataSphere[Index + 5].position.z;
+			}
+		}
 #pragma endregion
 
 
@@ -1135,7 +1198,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
-	bool useMonsterBall = true;
+	bool useMonsterBall = false;
 
 
 
@@ -1156,32 +1219,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			//ゲームの処理
+			keyboard->Acquire();
+			//全キーの入力状態を取得する
+			BYTE key[256] = {};
+			keyboard->GetDeviceState(sizeof(key), key);
 
+			//数字キーの０が押されていたら
+			if (key[DIK_0]) {
+				OutputDebugStringA("Hit 0\n");//出力ウィンドウにHit 0を出力
+			}
+			
 			//三角形の回転
 			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
-
-			//座標変換
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 projectionMatirx = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
-			Matrix4x4 worldViewProhection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatirx));
-			wvpData->WVP = worldViewProhection;
-			wvpData->World = worldMatrix;
 
-			//Sprite用のWorldViewMatrixをつくる
+			//座標変換<obj>
+			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 worldViewProjection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			wvpData->WVP = worldViewProjection;
+			wvpData->World = worldMatrix;
+			//座標変換<sphere>
+			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
+			Matrix4x4 projectionMatrixSphere = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 worldViewProjectionSphere= Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrixSphere));
+			wvpDataSphere->WVP = worldViewProjectionSphere;
+			wvpDataSphere->World = worldMatrixSphere;
+			//座標変換<sprite>
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeigth), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 			transformationMatrixDataSprite->World = worldMatrixSprite;
-
+			//座標変換<UV>
 			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
+			
 
 
 			ImGui::Begin("Settings");
@@ -1191,11 +1269,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (ImGui::BeginTabItem("OBJ"))
 				{
 					ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
-					ImGui::Checkbox(  "useMonsterBall", &useMonsterBall);
 					ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
 					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
 					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
 					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+					if(ImGui::Button("*Lighting")) {
+						if (materialDate->enableLighting) {
+							materialDate->enableLighting = 0;
+						}else if (!materialDate->enableLighting) {
+							materialDate->enableLighting = 1;
+						}
+					}if (ImGui::Button("*HalfLambert")) {
+						if (materialDate->enableLighting) {
+							materialDate->enableLighting = 2;
+						}
+					}
 					ImGui::EndTabItem();
 				}
 				//UVの値変更
@@ -1209,7 +1297,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
 					ImGui::EndTabItem();
 				}
-				
+				//Sphereの値変更
+				if (ImGui::BeginTabItem("Sphere"))
+				{
+					ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
+					ImGui::DragFloat3("*scale", &transformSphere.scale.x,0.01f);//InputFloatだと直入力のみ有効
+					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x,0.01f);//DragFloatにすればカーソルでも値を変更できる
+					ImGui::DragFloat3("*translate", &transformSphere.translate.x,0.01f);
+					ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
+					if (ImGui::Button("*Lighting")) {
+						if (materialDataSphere->enableLighting) {
+							materialDataSphere->enableLighting = 0;
+						}
+						else if (!materialDataSphere->enableLighting) {
+							materialDataSphere->enableLighting = 1;
+						}
+					}
+					if (ImGui::Button("*HalfLambert")) {
+						if (materialDataSphere->enableLighting) {
+							materialDataSphere->enableLighting = 2;
+						}
+						
+					}
+					ImGui::EndTabItem();
+				}
 				ImGui::EndTabItem();
 			}
 			
@@ -1217,7 +1328,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::End();
 			ImGui::Render();
 
-
+			
 
 			// ここから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
@@ -1257,35 +1368,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// RootSignatureを設定。PSOに設定しているけど別途設定が必要
 			commandList->SetGraphicsRootSignature(rootSignature.Get());
 			commandList->SetPipelineState(graphicsPipelineState.Get());  // PSOを設定
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
+			
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			// マテリアルCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			// wvp用のCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-
-			// SRVのDescriptorTableの先頭を設定。2はrootPrameter[2]である。
+			// スフィア用の設定
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);  // VBVを設定
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+
+			
+			// モデル用の設定 
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
+			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-			// 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
-			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-
+			
+			
+			// スプライト用の設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-
-			commandList->IASetIndexBuffer(&indexBufferViewSprite);//IBVを設定
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  // VBVを設定
-			// マテリアルCBufferの場所を設定
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-			// TransformationMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			// 描画！（DrawCall/ドローコール）
 			commandList->DrawInstanced(6, 1, 0, 0);
 			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-
-
 
 			// 実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
@@ -1330,18 +1441,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 #pragma region  解放処理
-	
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-	
-	
+
 	CloseHandle(fenceEvent);
-	CloseWindow(hwnd);
-	CoUninitialize();
+
+
+
 #pragma endregion
+
 	
-	
-	
+	////出力ウィンドウへの文字出力　実行すると出る下の文字
+	//OutputDebugStringA("Hello,DirectX!\n");
+
 	return 0;
 }
