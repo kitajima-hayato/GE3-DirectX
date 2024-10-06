@@ -15,13 +15,18 @@ public:
 	//更新
 	void Update();
 	//特定のキーが押された瞬間を判定
-	bool IsTrigger(uint8_t key);
+	
 	//特定のキーが話された瞬間を判定
-	bool IsRerese(uint8_t key);
-
+	bool RereseKey(BYTE keyNumber);
+	
+	//キーが押されているか確認
+	bool PushKey(BYTE keyNumber);
+	//キーのトリガー
+	bool TriggerKey(BYTE keyNumber);
 	template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 private:
-
 	ComPtr<IDirectInputDevice8> keyboard;
+	BYTE key[256] = {};
+	BYTE keyPre[256] = {};
 };
 

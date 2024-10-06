@@ -26,14 +26,31 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 
 void Input::Update()
 {
+	HRESULT result;
+	//前回のキー入力を保存
+	memcpy(keyPre, key, sizeof(key));
+
 	////全キーの入力状態を取得する
-	keyboard->Acquire();
-	BYTE key[256] = {};
-	keyboard->GetDeviceState(sizeof(key), key);
-	////数字キーの０が押されていたら
-	//if (key[DIK_0]) {
-	//	OutputDebugStringA("Hit 0\n");//出力ウィンドウにHit 0を出力
-	//}
+	result = keyboard->Acquire();
+	result = keyboard->GetDeviceState(sizeof(key), key);
+
+}
+bool Input::RereseKey(BYTE keyNumber)
+{
+	// 前フレームで押されていて、今フレームで押されていない場合
+	return (keyPre[keyNumber] != 0) && (key[keyNumber] == 0);
+	return false;
+}
+bool Input::PushKey(BYTE keyNumber)
+{
+	//指定キーを押していればtrueを返す
+	 // 今フレームでキーが押されている場合
+	return key[keyNumber] != 0;
+}
+bool Input::TriggerKey(BYTE keyNumber)
+{
+	// 前フレームで押されておらず、今フレームで押されている場合
+	return (keyPre[keyNumber] == 0) && (key[keyNumber] != 0);
 }
 ////特定のキーが押された瞬間を実装する
 //bool Input::IsTrigger(uint8_t key)

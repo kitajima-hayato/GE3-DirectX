@@ -1208,6 +1208,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ゲームの処理
 			input->Update();
 			
+			if (input->TriggerKey(DIK_1)) {
+				OutputDebugStringA("Hit_1\n");
+			}
+
 			//三角形の回転
 			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
