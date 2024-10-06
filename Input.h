@@ -26,6 +26,7 @@ public:
 	template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 private:
 	ComPtr<IDirectInputDevice8> keyboard;
+	ComPtr<IDirectInput8>directInput = nullptr;
 	BYTE key[256] = {};
 	BYTE keyPre[256] = {};
 };

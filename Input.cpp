@@ -5,7 +5,6 @@
 
 void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
-	ComPtr<IDirectInput8>directInput = nullptr;
 	//DirectInputの初期化
 	HRESULT result = DirectInput8Create(
 		hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
@@ -29,7 +28,9 @@ void Input::Update()
 	HRESULT result;
 	//前回のキー入力を保存
 	memcpy(keyPre, key, sizeof(key));
-
+	if (TriggerKey(DIK_1)) {
+		OutputDebugStringA("Hit_1\n");
+	}
 	////全キーの入力状態を取得する
 	result = keyboard->Acquire();
 	result = keyboard->GetDeviceState(sizeof(key), key);
@@ -52,14 +53,3 @@ bool Input::TriggerKey(BYTE keyNumber)
 	// 前フレームで押されておらず、今フレームで押されている場合
 	return (keyPre[keyNumber] == 0) && (key[keyNumber] != 0);
 }
-////特定のキーが押された瞬間を実装する
-//bool Input::IsTrigger(uint8_t key)
-//{
-//	//現在押されていて、前フレームでは押されていなかった場合
-//	return (GetKeyboardState(key)&)
-//}
-////特定のキーが話された瞬間を判定する
-//bool Input::IsRerese(uint8_t key)
-//{
-//	return false;
-//}
