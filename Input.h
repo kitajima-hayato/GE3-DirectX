@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <Windows.h>
 #include <wrl.h>
+#include "WinAPI.h"
 
 //LPDIRECTINPUT8 g_pDirectInput = nullptr;			//DirectInputオブジェクト
 //LPDIRECTINPUTDEVICE8 g_pKeyboarDevice = nullptr;	//キーボードデバイス
@@ -11,7 +12,7 @@ class Input
 {
 public:
 	//初期化 
-	void Initialize(HINSTANCE hInstance, HWND hwnd);
+	void Initialize(WinAPI*winAPI);
 	//更新
 	void Update();
 	//特定のキーが押された瞬間を判定
@@ -32,5 +33,8 @@ private:
 	ComPtr<IDirectInput8>directInput = nullptr;
 	BYTE key[256] = {};
 	BYTE keyPre[256] = {};
+
+	//WindowsAPI
+	WinAPI* winAPI = nullptr;
 };
 
