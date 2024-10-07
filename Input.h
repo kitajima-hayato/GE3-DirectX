@@ -16,6 +16,9 @@ public:
 	void Update();
 	//特定のキーが押された瞬間を判定
 	
+	
+
+
 	//特定のキーが話された瞬間を判定
 	bool RereseKey(BYTE keyNumber);
 	
