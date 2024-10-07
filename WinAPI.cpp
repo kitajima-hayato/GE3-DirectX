@@ -54,7 +54,7 @@ void WinAPI::Initialize()
 		L"CG2",                  //タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,     //よく見るウィンドウスタイル
 		CW_USEDEFAULT,           //表示X座標
-		CW_USEDEFAULT,           //表示Y座標
+		CW_USEDEFAULT,           //表示Y座標 
 		wrc.right - wrc.left,    //ウィンドウ横幅
 		wrc.bottom - wrc.top,    //ウィンドウ縦幅
 		nullptr,                 //親ウィンドウハンドル
