@@ -1382,7 +1382,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winAPI->Finalize();
 
 #pragma endregion
-
+	 
 #ifdef _DEBUG
 
 
