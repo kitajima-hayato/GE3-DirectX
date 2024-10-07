@@ -28,7 +28,6 @@
 using namespace std;
 
 
-
 struct D3DResourceLeakChecker {
 	~D3DResourceLeakChecker()
 	{
@@ -1382,11 +1381,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winAPI->Finalize();
 
 #pragma endregion
-	 
-#ifdef _DEBUG
-
-
-#endif
 
 
 	////出力ウィンドウへの文字出力　実行すると出る下の文字
