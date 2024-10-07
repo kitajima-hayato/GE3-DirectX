@@ -1136,23 +1136,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	MSG msg{};
+	
 	//ウィンドウの×ボタンが押されるまでループ
-	while (msg.message != WM_QUIT) {
-
-		//Windowにメッセージが来てたら最優先で処理させる
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+	while (true) {		// ゲームループ
+		//Windowのメッセージ処理
+		if (winAPI->ProcessMessage()) {
+			//ゲームループを抜ける
+			break;
 		}
-		else {
 			//ImGui始まるよ
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			//ゲームの処理
 			input->Update();
-			winAPI->Update();
+			
 
 			if (input->TriggerKey(DIK_1)) {
 				OutputDebugStringA("Hit_1\n");
@@ -1368,7 +1366,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			assert(SUCCEEDED(hr));
 
 
-		}
+		
 	}
 #pragma region  解放処理
 
