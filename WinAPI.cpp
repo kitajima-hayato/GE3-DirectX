@@ -21,12 +21,18 @@ LRESULT WinAPI::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam); 
 }
 
+void WinAPI::Finalize()
+{
+	CloseWindow(hwnd);
+	CoUninitialize();
+}
+
 void WinAPI::Initialize()
 {
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 #pragma region Windowの生成
 
-	WNDCLASS wc{};
+	
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;//上の関数を渡している
 	//ウィンドウクラス名
@@ -35,8 +41,6 @@ void WinAPI::Initialize()
 	wc.hInstance = GetModuleHandle(nullptr);
 	//カーソル
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-
-
 
 
 	//ウィンドウクラスを登録
@@ -49,7 +53,7 @@ void WinAPI::Initialize()
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	//ウィンドウの生成
-	HWND hwnd = CreateWindow(
+	hwnd = CreateWindow(
 		wc.lpszClassName,        //利用するクラスメイン
 		L"CG2",                  //タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,     //よく見るウィンドウスタイル
