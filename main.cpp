@@ -25,7 +25,22 @@
 #pragma comment(lib,"dxgi.lib")
 using namespace std;
 
-
+enum BlendMode {
+	//!< ブレンド無し
+	kBlendModeNone,
+	//!< 通常αブレンド デフォルト src * srcA + Dest * ( 1 - srcA )
+	kBelendModeNormal,
+	//!< 加算 src * srcA + Dest * 1;
+	kBlendModeAdd,
+	//!< 減算 Dest * 1 - src * srcA 
+	kBlendModeSubtract,
+	//!< 乗算 src * 0 + Dest * src
+	kBlendModeMultiply,
+	//!< スクリーン src * ( 1 - Dest )+ Dest * 1
+	kBlendModeScreen,
+	//!< 利用してはいけない
+	kCountOfBlendMode,
+};
 
 struct D3DResourceLeakChecker {
 	~D3DResourceLeakChecker()
@@ -43,7 +58,7 @@ struct D3DResourceLeakChecker {
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
 
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible){
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {
 	//ディスクリプタヒープの生成
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
 	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
@@ -311,9 +326,9 @@ D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
-    D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    handleGPU.ptr += (descriptorSize * index);
-    return handleGPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	handleGPU.ptr += (descriptorSize * index);
+	return handleGPU;
 }
 
 #pragma endregion
@@ -489,7 +504,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Factoryの生成
 	//DXGIファクトリーの生成
-	
+
 	//HRESULTはWindows系のエラーコードであり
 	//関数が成功したか動かをSUCCEEDEDマクロ判定できる
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));//IID_PPV_ARGSは引数を一つにしてくれるおまじない
@@ -521,7 +536,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region Deviceの生成
-	
+
 	//昨日レベルとログ出力用の文字列
 	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
@@ -615,8 +630,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	//DSV用のヒープでディスクリプタの数は１。DSVはShader内で触るものではないので、ShaderVisibleはfalse
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-	
-	
+
+
 
 #pragma endregion
 
@@ -755,15 +770,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-
+	BlendMode blendMode = kBelendModeNormal;
 	//
 	D3D12_BLEND_DESC blendDesc{};
 	//
-	blendDesc.RenderTarget[0].RenderTargetWriteMask =D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	if (blendMode == BlendMode::kBelendModeNormal) {
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	}
+	else if (blendMode == BlendMode::kBlendModeAdd) {
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	}
+	else if (blendMode == BlendMode::kBlendModeSubtract) {
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	}
+	else if (blendMode == BlendMode::kBlendModeMultiply) {
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+	}
+	else if (blendMode == BlendMode::kBlendModeScreen) {
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	}
+
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -855,7 +893,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightData->intensity = 1.0f;
 
-	
+
 	//モデル読み込み
 	ModelData modelData = LoadObjFile("resources", "Bunny.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -869,10 +907,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());//頂点データをリソースにコピー
 
-	
+
 
 #pragma region スフィア用の新規作成
-	
+
 	// スフィア用の新規作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 
@@ -986,83 +1024,83 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region スフィアの表示
-		//Sphereの頂点情報//////////////////////
-		const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
-		const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
-	
-		for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-			float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-			//経度の方向に分割しながら線を描く
-			for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-	
-				float u = float(lonIndex) / float(kSubdivision);
-				float v = 1.0f - float(latIndex) / float(kSubdivision);
-	
-	
-				uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
-				float lon = lonIndex * kLonEvery;//φ
-	
-				//頂点にデータを入力する。
-				//A
-				vertexDataSphere[Index].position.x = cos(lat) * cos(lon);
-				vertexDataSphere[Index].position.y = sin(lat);
-				vertexDataSphere[Index].position.z = cos(lat) * sin(lon);
-				vertexDataSphere[Index].position.w = 1.0f;
-				vertexDataSphere[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-	
-				vertexDataSphere[Index].normal.x = vertexDataSphere[Index].position.x;
-				vertexDataSphere[Index].normal.y = vertexDataSphere[Index].position.y;
-				vertexDataSphere[Index].normal.z = vertexDataSphere[Index].position.z;
-	
-				//B
-				vertexDataSphere[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-				vertexDataSphere[Index + 1].position.y = sin(lat + kLatEvery);
-				vertexDataSphere[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-				vertexDataSphere[Index + 1].position.w = 1.0f;
-				vertexDataSphere[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
-	
-				vertexDataSphere[Index + 1].normal.x = vertexDataSphere[Index + 1].position.x;
-				vertexDataSphere[Index + 1].normal.y = vertexDataSphere[Index + 1].position.y;
-				vertexDataSphere[Index + 1].normal.z = vertexDataSphere[Index + 1].position.z;
-	
-				//C
-				vertexDataSphere[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-				vertexDataSphere[Index + 2].position.y = sin(lat);
-				vertexDataSphere[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-				vertexDataSphere[Index + 2].position.w = 1.0f;
-				vertexDataSphere[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
-	
-				vertexDataSphere[Index + 2].normal.x = vertexDataSphere[Index + 2].position.x;
-				vertexDataSphere[Index + 2].normal.y = vertexDataSphere[Index + 2].position.y;
-				vertexDataSphere[Index + 2].normal.z = vertexDataSphere[Index + 2].position.z;
-	
-				//C-2
-				vertexDataSphere[Index + 3] = vertexDataSphere[Index + 2];
-	
-				vertexDataSphere[Index + 3].normal.x = vertexDataSphere[Index + 3].position.x;
-				vertexDataSphere[Index + 3].normal.y = vertexDataSphere[Index + 3].position.y;
-				vertexDataSphere[Index + 3].normal.z = vertexDataSphere[Index + 3].position.z;
-	
-				//B-2
-				vertexDataSphere[Index + 4] = vertexDataSphere[Index + 1];
-	
-				vertexDataSphere[Index + 4].normal.x = vertexDataSphere[Index + 4].position.x;
-				vertexDataSphere[Index + 4].normal.y = vertexDataSphere[Index + 4].position.y;
-				vertexDataSphere[Index + 4].normal.z = vertexDataSphere[Index + 4].position.z;
-	
-	
-				//D
-				vertexDataSphere[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-				vertexDataSphere[Index + 5].position.y = sin(lat + kLatEvery);
-				vertexDataSphere[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-				vertexDataSphere[Index + 5].position.w = 1.0f;
-				vertexDataSphere[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
-	
-				vertexDataSphere[Index + 5].normal.x = vertexDataSphere[Index + 5].position.x;
-				vertexDataSphere[Index + 5].normal.y = vertexDataSphere[Index + 5].position.y;
-				vertexDataSphere[Index + 5].normal.z = vertexDataSphere[Index + 5].position.z;
-			}
+	//Sphereの頂点情報//////////////////////
+	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
+	const float kLonEvery = (std::numbers::pi_v<float>*2.0f) / float(kSubdivision);	//経度分割１つ分の角度	//緯度の方向に分割　-π/2~ π/2
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
+		//経度の方向に分割しながら線を描く
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+
+			float u = float(lonIndex) / float(kSubdivision);
+			float v = 1.0f - float(latIndex) / float(kSubdivision);
+
+
+			uint32_t Index = (latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;//φ
+
+			//頂点にデータを入力する。
+			//A
+			vertexDataSphere[Index].position.x = cos(lat) * cos(lon);
+			vertexDataSphere[Index].position.y = sin(lat);
+			vertexDataSphere[Index].position.z = cos(lat) * sin(lon);
+			vertexDataSphere[Index].position.w = 1.0f;
+			vertexDataSphere[Index].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+
+			vertexDataSphere[Index].normal.x = vertexDataSphere[Index].position.x;
+			vertexDataSphere[Index].normal.y = vertexDataSphere[Index].position.y;
+			vertexDataSphere[Index].normal.z = vertexDataSphere[Index].position.z;
+
+			//B
+			vertexDataSphere[Index + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+			vertexDataSphere[Index + 1].position.y = sin(lat + kLatEvery);
+			vertexDataSphere[Index + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexDataSphere[Index + 1].position.w = 1.0f;
+			vertexDataSphere[Index + 1].texcoord = { float(lonIndex) / float(kSubdivision) , 1.0f - float(latIndex + 1) / float(kSubdivision) };
+
+			vertexDataSphere[Index + 1].normal.x = vertexDataSphere[Index + 1].position.x;
+			vertexDataSphere[Index + 1].normal.y = vertexDataSphere[Index + 1].position.y;
+			vertexDataSphere[Index + 1].normal.z = vertexDataSphere[Index + 1].position.z;
+
+			//C
+			vertexDataSphere[Index + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexDataSphere[Index + 2].position.y = sin(lat);
+			vertexDataSphere[Index + 2].position.z = cos(lat) * sin(lon + kLonEvery);
+			vertexDataSphere[Index + 2].position.w = 1.0f;
+			vertexDataSphere[Index + 2].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float(latIndex) / float(kSubdivision) };
+
+			vertexDataSphere[Index + 2].normal.x = vertexDataSphere[Index + 2].position.x;
+			vertexDataSphere[Index + 2].normal.y = vertexDataSphere[Index + 2].position.y;
+			vertexDataSphere[Index + 2].normal.z = vertexDataSphere[Index + 2].position.z;
+
+			//C-2
+			vertexDataSphere[Index + 3] = vertexDataSphere[Index + 2];
+
+			vertexDataSphere[Index + 3].normal.x = vertexDataSphere[Index + 3].position.x;
+			vertexDataSphere[Index + 3].normal.y = vertexDataSphere[Index + 3].position.y;
+			vertexDataSphere[Index + 3].normal.z = vertexDataSphere[Index + 3].position.z;
+
+			//B-2
+			vertexDataSphere[Index + 4] = vertexDataSphere[Index + 1];
+
+			vertexDataSphere[Index + 4].normal.x = vertexDataSphere[Index + 4].position.x;
+			vertexDataSphere[Index + 4].normal.y = vertexDataSphere[Index + 4].position.y;
+			vertexDataSphere[Index + 4].normal.z = vertexDataSphere[Index + 4].position.z;
+
+
+			//D
+			vertexDataSphere[Index + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+			vertexDataSphere[Index + 5].position.y = sin(lat + kLatEvery);
+			vertexDataSphere[Index + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+			vertexDataSphere[Index + 5].position.w = 1.0f;
+			vertexDataSphere[Index + 5].texcoord = { float(lonIndex + 1) / float(kSubdivision) , 1.0f - float((latIndex + 1) / float(kSubdivision)) };
+
+			vertexDataSphere[Index + 5].normal.x = vertexDataSphere[Index + 5].position.x;
+			vertexDataSphere[Index + 5].normal.y = vertexDataSphere[Index + 5].position.y;
+			vertexDataSphere[Index + 5].normal.z = vertexDataSphere[Index + 5].position.z;
 		}
+	}
 #pragma endregion
 
 
@@ -1218,7 +1256,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//座標変換<sphere>
 			Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
 			Matrix4x4 projectionMatrixSphere = MakePerspectiveFovMatrix(0.45f, float(kClienWidth) / float(kClientHeight), 0.1f, 100.0f);
-			Matrix4x4 worldViewProjectionSphere= Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrixSphere));
+			Matrix4x4 worldViewProjectionSphere = Multiply(worldMatrixSphere, Multiply(viewMatrix, projectionMatrixSphere));
 			wvpDataSphere->WVP = worldViewProjectionSphere;
 			wvpDataSphere->World = worldMatrixSphere;
 			//座標変換<sprite>
@@ -1233,7 +1271,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
-			
+
 
 
 			ImGui::Begin("Settings");
@@ -1247,10 +1285,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
 					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
 					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-					if(ImGui::Button("*Lighting")) {
+					if (ImGui::Button("*Lighting")) {
 						if (materialDate->enableLighting) {
 							materialDate->enableLighting = 0;
-						}else if (!materialDate->enableLighting) {
+						}
+						else if (!materialDate->enableLighting) {
 							materialDate->enableLighting = 1;
 						}
 					}if (ImGui::Button("*HalfLambert")) {
@@ -1265,7 +1304,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
 					ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionTranslate",&transformSprite.translate.x, 0.5f);
+					ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
 					ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 					ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 					ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
@@ -1275,11 +1314,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (ImGui::BeginTabItem("Sphere"))
 				{
 					ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
-					ImGui::DragFloat3("*scale", &transformSphere.scale.x,0.01f);//InputFloatだと直入力のみ有効
-					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x,0.01f);//DragFloatにすればカーソルでも値を変更できる
-					ImGui::DragFloat3("*translate", &transformSphere.translate.x,0.01f);
+					ImGui::DragFloat3("*scale", &transformSphere.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+					ImGui::DragFloat3("*translate", &transformSphere.translate.x, 0.01f);
 					ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
-					ImGui::DragFloat("*α",&directionalLightDataSphere->color.w , 0.01f, -1.0f, 1.0f);
+					ImGui::DragFloat("*α", &directionalLightDataSphere->color.w, 0.01f, -1.0f, 1.0f);
 					if (ImGui::Button("*Lighting")) {
 						if (materialDataSphere->enableLighting) {
 							materialDataSphere->enableLighting = 0;
@@ -1292,13 +1331,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						if (materialDataSphere->enableLighting) {
 							materialDataSphere->enableLighting = 2;
 						}
-						
+
 					}
 					ImGui::EndTabItem();
 				}
 				ImGui::EndTabItem();
 			}
-			
+
 
 			ImGui::End();
 			ImGui::Render();
@@ -1343,7 +1382,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// RootSignatureを設定。PSOに設定しているけど別途設定が必要
 			commandList->SetGraphicsRootSignature(rootSignature.Get());
 			commandList->SetPipelineState(graphicsPipelineState.Get());  // PSOを設定
-			
+
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1355,15 +1394,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
 			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 
-			
+
 			// モデル用の設定 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-			
-			
+
+
 			// スプライト用の設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
@@ -1416,23 +1455,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 #pragma region  解放処理
-	
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-	
-	
+
+
 	CloseHandle(fenceEvent);
 	CloseWindow(hwnd);
 	CoUninitialize();
 #pragma endregion
 
 #ifdef _DEBUG
-	
+
 
 #endif
-	
-	
+
+
 	////出力ウィンドウへの文字出力　実行すると出る下の文字
 	//OutputDebugStringA("Hello,DirectX!\n");
 
