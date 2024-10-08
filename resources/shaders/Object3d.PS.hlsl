@@ -35,7 +35,7 @@ PixelShaderOutput main(VertexShaderOutput input)
             //通常
             float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
             output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
-        }
+        } 
         if (gMaterial.enableLighting == 2)
         {
             //HalfLambert
