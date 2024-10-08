@@ -657,7 +657,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParamaters[3].Descriptor.ShaderRegister = 1;//レジスタ番号１を使う
 	descriptionRootSignature.pParameters = rootParamaters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParamaters);//
-#pragma endregion
+#pragma endregion 
 
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
