@@ -759,8 +759,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	D3D12_BLEND_DESC blendDesc{};
 	//
-	blendDesc.RenderTarget[0].RenderTargetWriteMask =
-		D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask =D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
 
 	//
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -1272,6 +1279,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x,0.01f);//DragFloatにすればカーソルでも値を変更できる
 					ImGui::DragFloat3("*translate", &transformSphere.translate.x,0.01f);
 					ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
+					ImGui::DragFloat("*α",&directionalLightDataSphere->color.w , 0.01f, -1.0f, 1.0f);
 					if (ImGui::Button("*Lighting")) {
 						if (materialDataSphere->enableLighting) {
 							materialDataSphere->enableLighting = 0;
