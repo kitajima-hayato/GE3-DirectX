@@ -22,6 +22,9 @@
 #include "Input.h"
 #include "WinAPI.h"
 #include "DirectXCommon.h"
+#include"Logger.h"
+
+using namespace Logger;
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
@@ -89,9 +92,7 @@ std::string ConvertString(const std::wstring& str) {
 }
 
 
-void Log(const std::string& message) {
-	OutputDebugStringA(message.c_str());
-}
+
 
 Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 	const std::wstring filePath,
@@ -415,8 +416,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
-	Microsoft::WRL::ComPtr<ID3D12Device> device;
+	
 	
 
 	//ポインタ
