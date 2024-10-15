@@ -17,7 +17,31 @@ void DirectXCommon::Initialize(WinAPI* winAPI)
 	assert(winAPI);
 	//借りてきたWinAPIのインスタンスを記録
 	winAPI = winAPI;
-
+	//デバイスの生成
+	InitDevice();
+	//コマンド関連の初期化
+	InitCommand();
+	//スワップチェインの生成
+	CreateSwapChain();
+	//深度バッファの生成
+	CreateDepthBuffer();
+	//各種ディスクリプターヒープの生成
+	CreateDescriptorHeaps();
+	//レンダーターゲットビューの初期化
+	InitRenderTargetView();
+	//深度ステンシルビューの初期化
+	InitDepthStencilView();
+	//フェンスの初期化
+	InitFence();
+	//ビューポート矩形の初期化
+	InitViewportRect();
+	//シザリング矩形の初期化
+	InitScissorRect();
+	//DXCコンパイラの生成
+	CreateDXCCompiler();
+	//ImGuiの初期化
+	InitImGui();
+	
 }
 
 void DirectXCommon::InitCommand()
@@ -228,8 +252,7 @@ void DirectXCommon::InitRenderTargetView()
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
 	assert(SUCCEEDED(hr));
 
-	// RTVの設定
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 

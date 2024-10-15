@@ -11,6 +11,8 @@ class DirectXCommon
 public:
 	//初期化
 	void Initialize(WinAPI* winAPI);
+
+private:	// 内部処理専用関数
 	/// <summary>
 	/// コマンド関連の初期化
 	/// </summary>
@@ -42,7 +44,6 @@ public:
 	/// レンダーターゲットビューの初期化
 	/// </summary>
 	void InitRenderTargetView();
-
 	/// <summary>
 	/// SRVの指定番号のCPUディスクリプタハンドルを取得する
 	/// </summary>
@@ -82,7 +83,6 @@ public:
 /// ImGuiの初期化
 /// </summary>
 	void InitImGui();
-private:	// 内部処理専用関数
 
 	/// <summary>
 	/// 指定番号のCPUディスクリプタハンドルを取得する
@@ -117,6 +117,8 @@ private:
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	// リソースの生成
 	Microsoft::WRL::ComPtr <ID3D12Resource> resource = nullptr;
+	// RTVの設定
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	// 各ディスクリプターヒープのメンバ変数
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap;
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap;
