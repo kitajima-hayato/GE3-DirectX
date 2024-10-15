@@ -32,7 +32,6 @@ using namespace Logger;
 using namespace std;
 
 
-
 struct D3DResourceLeakChecker {
 	~D3DResourceLeakChecker()
 	{
@@ -445,7 +444,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParamaters[3].Descriptor.ShaderRegister = 1;//レジスタ番号１を使う
 	descriptionRootSignature.pParameters = rootParamaters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParamaters);//
-#pragma endregion
+#pragma endregion 
 
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -1141,10 +1140,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-#ifdef _DEBUG
-
-
-#endif
 
 
 	////出力ウィンドウへの文字出力　実行すると出る下の文字
