@@ -2,6 +2,8 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
+#include <array>
+#include <dxcapi.h>
 #include "WinAPI.h"
 // DirectX基盤
 class DirectXCommon
@@ -9,14 +11,21 @@ class DirectXCommon
 public:
 	//初期化
 	void Initialize(WinAPI* winAPI);
-	//コマンド関連の初期化
+	/// <summary>
+	/// コマンド関連の初期化
+	/// </summary>
 	void InitCommand();
-	//デバイスの初期化
+	/// <summary>
+	/// デバイスの初期化
+	/// </summary>
 	void InitDevice();
-
-	// SwapChainの生成
+	/// <summary>
+	/// SwapChainの生成
+	/// </summary>
 	void CreateSwapChain();
-	// 深度バッファの生成
+	/// <summary>
+	/// 深度バッファの生成
+	/// </summary>
 	void CreateDepthBuffer();
 	/// <summary>
 	/// ディスクリプターヒープ作成関数
@@ -33,6 +42,58 @@ public:
 	/// レンダーターゲットビューの初期化
 	/// </summary>
 	void InitRenderTargetView();
+
+	/// <summary>
+	/// SRVの指定番号のCPUディスクリプタハンドルを取得する
+	/// </summary>
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
+
+	/// <summary>
+	/// SRVの指定番号のGPUディスクリプタハンドルを取得する
+	/// </summary>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+
+	/// <summary>
+	/// 深度ステンシルビューの初期化
+	/// </summary>
+	void InitDepthStencilView();
+
+	/// <summary>
+	/// フェンスの生成
+	/// </summary>
+	void InitFence();
+
+	/// <summary>
+	/// ビューポート矩形の初期化
+	/// </summary>
+	void InitViewportRect();
+
+	/// <summary>
+	/// シザリング矩形の初期化
+	/// </summary>
+	void InitScissorRect();
+
+	/// <summary>
+	/// DXCコンパイラの生成
+	/// </summary>
+	void CreateDXCCompiler();
+
+/// <summary>
+/// ImGuiの初期化
+/// </summary>
+	void InitImGui();
+private:	// 内部処理専用関数
+
+	/// <summary>
+	/// 指定番号のCPUディスクリプタハンドルを取得する
+	/// </summary>
+	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	/// <summary>
+	/// 指定番号のGPUディスクリプタハンドルを取得する
+	/// </summary>
+	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+
+
 private:
 	// WindowsAPI
 	WinAPI* winAPI = nullptr;
@@ -48,14 +109,27 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
 	// コマンドキュー
 	Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue;
+	// スワップチェインの生成
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	// スワップチェイン
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
 	// スワップチェインリソース
-	Microsoft::WRL::ComPtr <ID3D12Resource> swapChainResources[2];
+	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	// リソースの生成
 	Microsoft::WRL::ComPtr <ID3D12Resource> resource = nullptr;
 	// 各ディスクリプターヒープのメンバ変数
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap;
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap;
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap;
+	// 各種ディスクリプタサイズ
+	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	// 生成の成果物、フェンス
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+	//ビューポート矩形の設定保存用メンバ変数
+	D3D12_VIEWPORT viewport{};
+	// dxcCompilerを初期化
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils = nullptr;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
+
 };
