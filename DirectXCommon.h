@@ -79,9 +79,9 @@ private:	// 内部処理専用関数
 	/// </summary>
 	void CreateDXCCompiler();
 
-/// <summary>
-/// ImGuiの初期化
-/// </summary>
+	/// <summary>
+	/// ImGuiの初期化
+	/// </summary>
 	void InitImGui();
 
 	/// <summary>
@@ -116,7 +116,7 @@ private:
 	// スワップチェインリソース
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	// リソースの生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> resource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> resource;
 	// RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	// 各ディスクリプターヒープのメンバ変数
