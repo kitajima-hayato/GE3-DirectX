@@ -10,13 +10,16 @@ using namespace Logger;
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"dxguid.lib")
+
 using namespace Microsoft::WRL;
 void DirectXCommon::Initialize(WinAPI* winAPI)
 {
 	// NULL検出
 	assert(winAPI);
 	//借りてきたWinAPIのインスタンスを記録
-	winAPI = winAPI;
+	this->winAPI = winAPI;
 	//デバイスの生成
 	InitDevice();
 	//コマンド関連の初期化
@@ -79,12 +82,12 @@ void DirectXCommon::InitDevice()
 		debugController->SetEnableGPUBasedValidation(TRUE);
 	}
 #pragma endregion
-#pragma region Factoryの生成
+#pragma region DXGIFactoryの生成
 	//DXGIファクトリーの生成
 
 	//HRESULTはWindows系のエラーコードであり
 	//関数が成功したか動かをSUCCEEDEDマクロ判定できる
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));//IID_PPV_ARGSは引数を一つにしてくれるおまじない
+	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));//IID_PPV_ARGSは引数を一つにしてくれるおまじない
 	//初期化の根本的な部分でエラーが出た場合はプログラムが間違っているか、
 	//どうにもできない場合が多いのでassertにしておく
 	assert(SUCCEEDED(hr));
@@ -97,7 +100,7 @@ void DirectXCommon::InitDevice()
 		DXGI_ERROR_NOT_FOUND; ++i) {
 		//アダプターの情報を取得する
 		DXGI_ADAPTER_DESC3 adapterDesc{};
-		HRESULT hr = useAdapter->GetDesc3(&adapterDesc);
+		hr = useAdapter->GetDesc3(&adapterDesc);
 		assert(SUCCEEDED(hr));//取得できないのは一大事
 		//ソフトウェアアダプタで無ければ採用
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
@@ -120,7 +123,9 @@ void DirectXCommon::InitDevice()
 	//高い順に生成できるか試していく
 	for (size_t i = 0; i < _countof(featureLevels); ++i) {
 		//採用したアダプターでデバイスを生成
-		HRESULT hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(device.GetAddressOf()));
+		hr = D3D12CreateDevice(useAdapter.Get(),
+			featureLevels[i], 
+			IID_PPV_ARGS(device.GetAddressOf()));
 		//指定した機能レベルでデバイスが生成されたかを確認
 		if (SUCCEEDED(hr)) {
 			//生成できたのでログ出力を行ってループを抜ける
@@ -131,6 +136,10 @@ void DirectXCommon::InitDevice()
 	//デバイスの生成が上手くいかなかったので生成できない
 	assert(device != nullptr);
 	Log("Complete create D3D12Device!!!\n");
+
+
+#pragma endregion
+#pragma region エラー時にブレイク
 #ifdef _DEBUG // エラー時にブレークを発生させる設定
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue;
 	if (SUCCEEDED(device.As(&infoQueue))) {
@@ -154,9 +163,11 @@ void DirectXCommon::InitDevice()
 		//抑制するレベル
 		infoQueue->PushStorageFilter(&filter);
 	}
-#endif // _DEBUG
-
+#endif  _DEBUG
 #pragma endregion
+
+
+
 }
 
 void DirectXCommon::CreateSwapChain()
