@@ -5,10 +5,13 @@
 #include <array>
 #include <dxcapi.h>
 #include "WinAPI.h"
+#include"externals/DirectXTex/DirectXTex.h"
+#include"externals/DirectXTex/d3dx12.h"
 // DirectX基盤
 class DirectXCommon
 {
 public:
+	DirectXCommon();
 	//初期化
 	void Initialize(WinAPI* winAPI);
 
@@ -96,7 +99,7 @@ private:	// 内部処理専用関数
 
 private:
 	// WindowsAPI
-	WinAPI* winAPI = nullptr;
+	WinAPI* winAPI_ = nullptr;
 
 private:
 	// DirectX12デバイス
@@ -124,8 +127,8 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap;
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap;
 	// 各種ディスクリプタサイズ
-	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	uint32_t descriptorSizeSRV;
+	uint32_t descriptorSizeRTV;
 	// 生成の成果物、フェンス
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	//ビューポート矩形の設定保存用メンバ変数
@@ -133,5 +136,6 @@ private:
 	// dxcCompilerを初期化
 	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils = nullptr;
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
-
+	// インクルードハンドラ
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler = nullptr;
 };

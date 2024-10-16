@@ -14,12 +14,15 @@ using namespace Logger;
 #pragma comment(lib,"dxguid.lib")
 
 using namespace Microsoft::WRL;
+DirectXCommon::DirectXCommon()
+{
+}
 void DirectXCommon::Initialize(WinAPI* winAPI)
 {
 	// NULL検出
 	assert(winAPI);
 	//借りてきたWinAPIのインスタンスを記録
-	this->winAPI = winAPI;
+	this->winAPI_ = winAPI;
 	//デバイスの生成
 	InitDevice();
 	//コマンド関連の初期化
@@ -69,9 +72,11 @@ void DirectXCommon::InitCommand()
 #pragma endregion
 }
 
+
 void DirectXCommon::InitDevice()
 {
 	HRESULT hr;
+
 #pragma region デバッグレイヤーをオン
 	//移植前はここにifdefDEBUGがあった
 	Microsoft::WRL::ComPtr < ID3D12Debug1> debugController = nullptr;
@@ -124,8 +129,8 @@ void DirectXCommon::InitDevice()
 	for (size_t i = 0; i < _countof(featureLevels); ++i) {
 		//採用したアダプターでデバイスを生成
 		hr = D3D12CreateDevice(useAdapter.Get(),
-			featureLevels[i], 
-			IID_PPV_ARGS(device.GetAddressOf()));
+			featureLevels[i],
+			IID_PPV_ARGS(&device));
 		//指定した機能レベルでデバイスが生成されたかを確認
 		if (SUCCEEDED(hr)) {
 			//生成できたのでログ出力を行ってループを抜ける
@@ -181,7 +186,7 @@ void DirectXCommon::CreateSwapChain()
 	swapChainDesc.BufferCount = 2;//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;//モニタに写したら中身を破壊
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
-	HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winAPI->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winAPI_->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	//スワップチェーンの生成が上手くいかなかったので起動できない
 	assert(SUCCEEDED(hr));
 #pragma endregion
@@ -245,11 +250,14 @@ DirectXCommon::CreateDescriptorHeap(
 
 void DirectXCommon::CreateDescriptorHeaps()
 {
+	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
 #pragma region DescriptorHEAPの生成
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	// DSV用のヒープでディスクリプタの数は１。DSVはShader内で触るものではないので、ShaderVisibleはfalse
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 #pragma endregion
 
 }
@@ -371,7 +379,6 @@ void DirectXCommon::CreateDXCCompiler()
 
 	// デフォルトインクルードハンドラの生成
 	// 現時点でincludeはしないが、includeに対応するための設定を行っておく
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler = nullptr;
 	hr = dxcUtils->CreateDefaultIncludeHandler(includeHandler.GetAddressOf());
 	assert(SUCCEEDED(hr));
 
@@ -383,7 +390,7 @@ void DirectXCommon::InitImGui()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(winAPI->GetHwnd());
+	ImGui_ImplWin32_Init(winAPI_->GetHwnd());
 	ImGui_ImplDX12_Init(device.Get(), swapChainDesc.BufferCount, rtvDesc.Format, srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
