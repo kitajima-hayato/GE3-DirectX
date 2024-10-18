@@ -11,9 +11,23 @@
 class DirectXCommon
 {
 public:
+	/// <summary>
+	// コンストラクタ
+	/// <summary>
 	DirectXCommon();
+	/// <summary>
 	//初期化
+	/// <summary>
 	void Initialize(WinAPI* winAPI);
+	/// <summary>
+	/// 描画前処理
+	/// </summary>
+	void PreDraw();
+
+	/// <summary>
+	/// 描画後処理
+	/// </summary>
+	void PostDraw();
 
 private:	// 内部処理専用関数
 	/// <summary>
@@ -31,7 +45,7 @@ private:	// 内部処理専用関数
 	/// <summary>
 	/// 深度バッファの生成
 	/// </summary>
-	void CreateDepthBuffer();
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthBuffer(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
 	/// <summary>
 	/// ディスクリプターヒープ作成関数
 	/// </summary>
@@ -96,7 +110,7 @@ private:	// 内部処理専用関数
 	/// </summary>
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-
+	
 private:
 	// WindowsAPI
 	WinAPI* winAPI_ = nullptr;
@@ -138,4 +152,18 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
 	// インクルードハンドラ
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler = nullptr;
+	// TransitionBarrier の設定
+	D3D12_RESOURCE_BARRIER barrier{};
+	// RTVを2つ作るのでディスクリプタを2つ用意
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+	// FenceのSignalを待つためのイベントを作成する
+	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	// シザリング矩形の設定
+	D3D12_RECT scissorRect{};
+	// 初期値0でFenceを作成
+	uint64_t fenceValue = 0;
+	// ここから書き込むバックバッファのインデックスを取得
+	UINT backBufferIndex;
+	//
+	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource;
 };
