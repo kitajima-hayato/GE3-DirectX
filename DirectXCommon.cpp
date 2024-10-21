@@ -1,6 +1,7 @@
 #include "DirectXCommon.h"
 #include <cassert>
 #include <format>
+#include <string>
 #include "Logger.h"
 #include "StringUtility.h"
 #include "externals/imgui/imgui.h"
@@ -41,10 +42,10 @@ void DirectXCommon::Initialize(WinAPI* winAPI)
 	InitViewportRect();
 	//シザリング矩形の初期化
 	InitScissorRect();
-	
+
 	//DXCコンパイラの生成
 	CreateDXCCompiler();
-	
+
 
 }
 
@@ -214,7 +215,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthBuffer(Microsof
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;			// フォーマット。Resourceと合わせる
 
 	// Resourceの生成
-	
+
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties, // Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定。特になし。
@@ -296,6 +297,8 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(const Microsof
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
+
+
 
 void DirectXCommon::PreDraw()
 {
@@ -406,7 +409,7 @@ void DirectXCommon::PostDraw()
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
-	
+
 
 }
 
@@ -448,7 +451,7 @@ void DirectXCommon::InitFence()
 void DirectXCommon::InitViewportRect()
 {
 	// ビューポート矩形の設定
-	viewport.Width =  WinAPI::kClientWidth;
+	viewport.Width = WinAPI::kClientWidth;
 	viewport.Height = WinAPI::kClientHeight;
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
@@ -493,4 +496,118 @@ void DirectXCommon::InitImGui()
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
+}
+
+
+Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
+	const std::wstring& filePath, const wchar_t* profile)
+{
+	// これからシェーダーをコンパイルする旨をログに出す
+	Log(ConvertString(std::format(L"Begin CompileShader, profile:{}\n", filePath, profile)));
+
+	// hlslファイルを読み込む
+	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
+	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	// 読めなかったら止める
+	assert(SUCCEEDED(hr));
+
+	// 読み込んだファイルの内容を設定する
+	DxcBuffer shaderSourceBuffer;
+	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+	shaderSourceBuffer.Encoding = DXC_CP_UTF8; // UTFの文字コードであることを通知
+
+	LPCWSTR arguments[] = {
+		filePath.c_str(), // コンパイル対象のhlslファイル名
+		L"-E", L"main", // エントリーポイントの指定。基本的にmain以外にはしない
+		L"-T", profile, // Shader Profileの設定
+		L"-Zi", L"-Qembed_debug", // デバッグ用の情報を埋め込む
+		L"-Od", // 最適化を外しておく
+		L"-Zpr", // メモリレイアウトは行優先
+	};
+
+	// 実際にShaderをコンパイルする
+	Microsoft::WRL::ComPtr<IDxcResult> shaderResult = nullptr;
+	hr = dxcCompiler->Compile(
+		&shaderSourceBuffer, // 読み込んだファイル
+		arguments, // コンパイルオプション
+		_countof(arguments), // コンパイルオプションの数
+		includeHandler.Get(), // includeが含まれた諸々
+		IID_PPV_ARGS(&shaderResult) // コンパイル結果
+	);
+	// コンパイルエラーではなくdxcが起動できないなど致命的な状況
+	assert(SUCCEEDED(hr));
+
+	Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError = nullptr;
+	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
+		Log(shaderError->GetStringPointer());
+		assert(false);
+	}
+
+	Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = nullptr;
+	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+	assert(SUCCEEDED(hr));
+
+	return shaderBlob;
+}
+
+
+
+std::wstring ConvertString(const std::string& str) {//ワイドストリング
+	if (str.empty()) {
+		return std::wstring();
+	}
+
+	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+	if (sizeNeeded == 0) {
+		return std::wstring();
+	}
+	std::wstring result(sizeNeeded, 0);
+	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+	return result;
+}
+
+std::string ConvertString(const std::wstring& str) {
+	if (str.empty()) {
+		return std::string();
+	}
+
+	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+	if (sizeNeeded == 0) {
+		return std::string();
+	}
+	std::string result(sizeNeeded, 0);
+	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+	return result;
+}
+
+std::wstring DirectXCommon::ConvertString(const std::string& str)
+{
+	if (str.empty()) {
+		return std::wstring();
+	}
+
+	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+	if (sizeNeeded == 0) {
+		return std::wstring();
+	}
+	std::wstring result(sizeNeeded, 0);
+	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+	return result;
+}
+
+std::string DirectXCommon::ConvertString(const std::wstring& str)
+{
+	if (str.empty()) {
+		return std::string();
+	}
+
+	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+	if (sizeNeeded == 0) {
+		return std::string();
+	}
+	std::string result(sizeNeeded, 0);
+	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+	return result;
 }
