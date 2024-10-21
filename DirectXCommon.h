@@ -29,6 +29,12 @@ public:
 	/// </summary>
 	void PostDraw();
 
+	/// <summary>
+	/// getter
+	/// </summary>
+	ID3D12Device* GetDevice() const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
+
 private:	// 内部処理専用関数
 	/// <summary>
 	/// コマンド関連の初期化
@@ -110,7 +116,19 @@ private:	// 内部処理専用関数
 	/// </summary>
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
-	
+	/// <summary>
+	/// シェーダーのコンパイル
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile);
+
+	/// <summary>
+	/// シェーダーコンパイル関数
+	/// </summary>
+	std::wstring ConvertString(const std::string& str);
+	std::string ConvertString(const std::wstring& str);
+
 private:
 	// WindowsAPI
 	WinAPI* winAPI_ = nullptr;
@@ -133,6 +151,7 @@ private:
 	// スワップチェインリソース
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	// リソースの生成
+
 	Microsoft::WRL::ComPtr <ID3D12Resource> resource;
 	// RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -143,6 +162,7 @@ private:
 	// 各種ディスクリプタサイズ
 	uint32_t descriptorSizeSRV;
 	uint32_t descriptorSizeRTV;
+
 	// 生成の成果物、フェンス
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	//ビューポート矩形の設定保存用メンバ変数
@@ -155,7 +175,7 @@ private:
 	// TransitionBarrier の設定
 	D3D12_RESOURCE_BARRIER barrier{};
 	// RTVを2つ作るのでディスクリプタを2つ用意
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+	std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> rtvHandles;
 	// FenceのSignalを待つためのイベントを作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	// シザリング矩形の設定
@@ -163,7 +183,7 @@ private:
 	// 初期値0でFenceを作成
 	uint64_t fenceValue = 0;
 	// ここから書き込むバックバッファのインデックスを取得
-	UINT backBufferIndex;
+	UINT backBufferIndex = 2;
 	//
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource;
 };

@@ -49,93 +49,11 @@ struct D3DResourceLeakChecker {
 
 
 
-std::wstring ConvertString(const std::string& str) {//ワイドストリング
-	if (str.empty()) {
-		return std::wstring();
-	}
-
-	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
-	if (sizeNeeded == 0) {
-		return std::wstring();
-	}
-	std::wstring result(sizeNeeded, 0);
-	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
-	return result;
-}
-
-std::string ConvertString(const std::wstring& str) {
-	if (str.empty()) {
-		return std::string();
-	}
-
-	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
-	if (sizeNeeded == 0) {
-		return std::string();
-	}
-	std::string result(sizeNeeded, 0);
-	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
-	return result;
-}
 
 
 
 
-Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
-	const std::wstring filePath,
-	const wchar_t* profile,
-	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils,
-	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler,
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler
-) {
-	// これからシェーダーをコンパイルする旨をログに出す
-	Log(ConvertString(std::format(L"Begin CompileShader, profile:{}\n", filePath, profile)));
 
-	// hlslファイルを読み込む
-	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
-	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-	// 読めなかったら止める
-	assert(SUCCEEDED(hr));
-
-	// 読み込んだファイルの内容を設定する
-	DxcBuffer shaderSourceBuffer;
-	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-	shaderSourceBuffer.Encoding = DXC_CP_UTF8; // UTFの文字コードであることを通知
-
-	LPCWSTR arguments[] = {
-		filePath.c_str(), // コンパイル対象のhlslファイル名
-		L"-E", L"main", // エントリーポイントの指定。基本的にmain以外にはしない
-		L"-T", profile, // Shader Profileの設定
-		L"-Zi", L"-Qembed_debug", // デバッグ用の情報を埋め込む
-		L"-Od", // 最適化を外しておく
-		L"-Zpr", // メモリレイアウトは行優先
-	};
-
-	// 実際にShaderをコンパイルする
-	Microsoft::WRL::ComPtr<IDxcResult> shaderResult = nullptr;
-	hr = dxcCompiler->Compile(
-		&shaderSourceBuffer, // 読み込んだファイル
-		arguments, // コンパイルオプション
-		_countof(arguments), // コンパイルオプションの数
-		includeHandler.Get(), // includeが含まれた諸々
-		IID_PPV_ARGS(&shaderResult) // コンパイル結果
-	);
-	// コンパイルエラーではなくdxcが起動できないなど致命的な状況
-	assert(SUCCEEDED(hr));
-
-	Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError = nullptr;
-	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
-	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
-		Log(shaderError->GetStringPointer());
-		assert(false);
-	}
-
-	Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = nullptr;
-	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-	assert(SUCCEEDED(hr));
-
-	return shaderBlob;
-}
 Microsoft::WRL::ComPtr<ID3D12Resource>
 CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes) {
 	//頂点リソース用のヒープ設定
@@ -1044,9 +962,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 #pragma region  解放処理
 
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+	//ImGui_ImplDX12_Shutdown();
+	//ImGui_ImplWin32_Shutdown();
+	//ImGui::DestroyContext();
 
 	//CloseHandle(fenceEvent);
 

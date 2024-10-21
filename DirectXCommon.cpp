@@ -1,6 +1,7 @@
 #include "DirectXCommon.h"
 #include <cassert>
 #include <format>
+#include <string>
 #include "Logger.h"
 #include "StringUtility.h"
 #include "externals/imgui/imgui.h"
@@ -41,14 +42,10 @@ void DirectXCommon::Initialize(WinAPI* winAPI)
 	InitViewportRect();
 	//シザリング矩形の初期化
 	InitScissorRect();
-	
 
 	//DXCコンパイラの生成
 	CreateDXCCompiler();
-	
-	//深度バッファの生成
-	//CreateDepthBuffer();
-	
+
 
 }
 
@@ -199,26 +196,26 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthBuffer(Microsof
 {
 	// 生成するResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = width;                                        // Textureのは幅
-	resourceDesc.Height = height;                                    // Textureの高さ
-	resourceDesc.MipLevels = 1;                                        // mipmapの数
-	resourceDesc.DepthOrArraySize = 1;                                //奥行き or 配列Textureの配列数
-	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;            // Depthstencilとして利用可能なフォーマット
-	resourceDesc.SampleDesc.Count = 1;                                //サンプリングカウント。1固定。
+	resourceDesc.Width = width;										// Textureのは幅
+	resourceDesc.Height = height;									// Textureの高さ
+	resourceDesc.MipLevels = 1;										// mipmapの数
+	resourceDesc.DepthOrArraySize = 1;								//奥行き or 配列Textureの配列数
+	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;			// Depthstencilとして利用可能なフォーマット
+	resourceDesc.SampleDesc.Count = 1;								//サンプリングカウント。1固定。
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	//2次元
-	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;    // DepthStencilとして使う通知
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;	// DepthStencilとして使う通知
 	//.利用するHeapの設定
 	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;                    // VRAM上に作る
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;					// VRAM上に作る
 
 	// 深度値のクリア設定
 	D3D12_CLEAR_VALUE depthClearValue{};
-	depthClearValue.DepthStencil.Depth = 1.0f;                        // 1.0f (最大値)　でクリア
-	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;            // フォーマット。Resourceと合わせる
+	depthClearValue.DepthStencil.Depth = 1.0f;						// 1.0f (最大値)　でクリア
+	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;			// フォーマット。Resourceと合わせる
 
 	// Resourceの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties, // Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定。特になし。
@@ -280,17 +277,11 @@ void DirectXCommon::InitRenderTargetView()
 
 	// エラーが出たら　rtvHandles=rtvStartHandleをfor分の外へ　rtvHandles[0] = rtvStartHandle;
 
-	// 裏表の２つ分
 	for (uint32_t i = 0; i < 2; ++i) {
-		// RTVハンドルを取得
 		rtvHandles[i] = rtvStartHandle;
-		// ２つ目のハンドルはインクリメントサイズ分だけずらす
-		if (i > 0) {
-			rtvHandles[i].ptr = rtvHandles[i - 1].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		}
-		// スワップチェインのリソースに対してRTVを作成
-		device->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandles[i]);
 
+		device->CreateRenderTargetView(swapChainResources[i].Get(), &rtvDesc, rtvHandles[i]);
+		rtvStartHandle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	}
 }
 
@@ -306,6 +297,8 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(const Microsof
 	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
+
+
 
 void DirectXCommon::PreDraw()
 {
@@ -337,16 +330,18 @@ void DirectXCommon::PreDraw()
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 #pragma endregion
 
+#pragma region 画面全体の深度をクリア
+	// 指定した深度で画面全体をクリアする
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+#pragma endregion
+
 #pragma region 画面全体の色をクリア
 	// 指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };  // 青っぽい色。RGBAの順
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 #pragma endregion
 
-#pragma region 画面全体の深度をクリア
-	// 指定した深度で画面全体をクリアする
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-#pragma endregion
+
 
 #pragma region SRV用のディスクリプターヒープを指定
 	// 描画用のDescriptorHeapの設定
@@ -414,7 +409,7 @@ void DirectXCommon::PostDraw()
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
-	
+
 
 }
 
@@ -431,12 +426,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t in
 void DirectXCommon::InitDepthStencilView()
 {
 
-	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource;
-	depthStencilResource = CreateDepthBuffer(device, WinAPI::kClientWidth, WinAPI::kClientHeight);
-	//DSVの設定									 
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Format.基本的にはResourceに合わせる
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;//2dTexture
+
+	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource;
+	depthStencilResource = CreateDepthBuffer(device, WinAPI::kClientWidth, WinAPI::kClientHeight);
+	//DSVの設定									 
+
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
@@ -454,7 +451,7 @@ void DirectXCommon::InitFence()
 void DirectXCommon::InitViewportRect()
 {
 	// ビューポート矩形の設定
-	viewport.Width =  WinAPI::kClientWidth;
+	viewport.Width = WinAPI::kClientWidth;
 	viewport.Height = WinAPI::kClientHeight;
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
@@ -499,4 +496,118 @@ void DirectXCommon::InitImGui()
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
+}
+
+
+Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
+	const std::wstring& filePath, const wchar_t* profile)
+{
+	// これからシェーダーをコンパイルする旨をログに出す
+	Log(ConvertString(std::format(L"Begin CompileShader, profile:{}\n", filePath, profile)));
+
+	// hlslファイルを読み込む
+	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource = nullptr;
+	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	// 読めなかったら止める
+	assert(SUCCEEDED(hr));
+
+	// 読み込んだファイルの内容を設定する
+	DxcBuffer shaderSourceBuffer;
+	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+	shaderSourceBuffer.Encoding = DXC_CP_UTF8; // UTFの文字コードであることを通知
+
+	LPCWSTR arguments[] = {
+		filePath.c_str(), // コンパイル対象のhlslファイル名
+		L"-E", L"main", // エントリーポイントの指定。基本的にmain以外にはしない
+		L"-T", profile, // Shader Profileの設定
+		L"-Zi", L"-Qembed_debug", // デバッグ用の情報を埋め込む
+		L"-Od", // 最適化を外しておく
+		L"-Zpr", // メモリレイアウトは行優先
+	};
+
+	// 実際にShaderをコンパイルする
+	Microsoft::WRL::ComPtr<IDxcResult> shaderResult = nullptr;
+	hr = dxcCompiler->Compile(
+		&shaderSourceBuffer, // 読み込んだファイル
+		arguments, // コンパイルオプション
+		_countof(arguments), // コンパイルオプションの数
+		includeHandler.Get(), // includeが含まれた諸々
+		IID_PPV_ARGS(&shaderResult) // コンパイル結果
+	);
+	// コンパイルエラーではなくdxcが起動できないなど致命的な状況
+	assert(SUCCEEDED(hr));
+
+	Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError = nullptr;
+	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
+		Log(shaderError->GetStringPointer());
+		assert(false);
+	}
+
+	Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = nullptr;
+	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+	assert(SUCCEEDED(hr));
+
+	return shaderBlob;
+}
+
+
+
+std::wstring ConvertString(const std::string& str) {//ワイドストリング
+	if (str.empty()) {
+		return std::wstring();
+	}
+
+	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+	if (sizeNeeded == 0) {
+		return std::wstring();
+	}
+	std::wstring result(sizeNeeded, 0);
+	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+	return result;
+}
+
+std::string ConvertString(const std::wstring& str) {
+	if (str.empty()) {
+		return std::string();
+	}
+
+	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+	if (sizeNeeded == 0) {
+		return std::string();
+	}
+	std::string result(sizeNeeded, 0);
+	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+	return result;
+}
+
+std::wstring DirectXCommon::ConvertString(const std::string& str)
+{
+	if (str.empty()) {
+		return std::wstring();
+	}
+
+	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
+	if (sizeNeeded == 0) {
+		return std::wstring();
+	}
+	std::wstring result(sizeNeeded, 0);
+	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
+	return result;
+}
+
+std::string DirectXCommon::ConvertString(const std::wstring& str)
+{
+	if (str.empty()) {
+		return std::string();
+	}
+
+	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
+	if (sizeNeeded == 0) {
+		return std::string();
+	}
+	std::string result(sizeNeeded, 0);
+	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
+	return result;
 }
