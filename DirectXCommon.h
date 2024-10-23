@@ -4,6 +4,7 @@
 #include <wrl.h>
 #include <array>
 #include <dxcapi.h>
+#include <chrono>
 #include "WinAPI.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
@@ -153,11 +154,19 @@ private:	// 内部処理専用関数
 	/// </summary>
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
+	/// <summary>
+	/// FPS固定初期化
+	/// </summary>
+	void InitializeFixFPS();
+	/// <summary>
+	/// FPS固定更新
+	/// </summary>
+	void UpdateFixFPS();
 private:
 	// WindowsAPI
 	WinAPI* winAPI_ = nullptr;
 
-private:
+private:		// メンバ変数
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	// DXGIファクトリ
@@ -175,7 +184,6 @@ private:
 	// スワップチェインリソース
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	// リソースの生成
-
 	Microsoft::WRL::ComPtr <ID3D12Resource> resource;
 	// RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -208,6 +216,8 @@ private:
 	uint64_t fenceValue = 0;
 	// ここから書き込むバックバッファのインデックスを取得
 	UINT backBufferIndex = 2;
-	//
+	// 深度リソース
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource;
+	// 記録時間(FPS固定用)
+	std::chrono::steady_clock::time_point reference_;
 };
