@@ -24,6 +24,8 @@
 #include "DirectXCommon.h"
 #include "Logger.h"
 #include "D3DResourceLeakChecker.h"
+#include "Sprite.h"
+#include "SpriteCommon.h"
 
 using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
@@ -137,7 +139,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
 
 
-
+#pragma region 基盤システムの初期化
 	//ポインタ
 	WinAPI* winAPI = nullptr;
 	//WindowsAPIの初期化
@@ -155,8 +157,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winAPI);
 
+	// スプライト共通部の初期化
+	SpriteCommon* spriteCommon = nullptr;
+	spriteCommon->Initialize();
+#pragma endregion 
 
-
+#pragma region 最初のシーンの初期化
+	Sprite* sprite = new Sprite();
+	sprite->Initialize();
+#pragma endregion
 
 #pragma region DescriptorRange
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
@@ -844,8 +853,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//OutputDebugStringA("Hello,DirectX!\n");
 
 	//解放
+	delete sprite;
+	delete spriteCommon;
+	delete dxCommon;
 	delete input;
 	delete winAPI;
-	delete dxCommon;
 	return 0;
 }
