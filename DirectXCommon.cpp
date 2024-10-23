@@ -25,7 +25,7 @@ void DirectXCommon::Initialize(WinAPI* winAPI)
 	assert(winAPI);
 	// FPS固定初期化
 	InitializeFixFPS();
-	
+
 	//借りてきたWinAPIのインスタンスを記録
 	this->winAPI_ = winAPI;
 	//デバイスの生成
@@ -403,7 +403,7 @@ void DirectXCommon::PostDraw()
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 #pragma endregion
-	
+
 	// FPS固定
 	UpdateFixFPS();
 
