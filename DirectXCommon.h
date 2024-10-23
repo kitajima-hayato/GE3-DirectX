@@ -126,8 +126,32 @@ private:	// 内部処理専用関数
 	/// <summary>
 	/// シェーダーコンパイル関数
 	/// </summary>
-	std::wstring ConvertString(const std::string& str);
-	std::string ConvertString(const std::wstring& str);
+	static std::wstring ConvertString(const std::string& str);
+	static std::string ConvertString(const std::wstring& str);
+
+	/// <summary>
+	/// バッファリソースの生成
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(size_t sizeInBytes);
+
+	/// <summary>
+	/// テクスチャリソースの生成
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTextureResource(const DirectX::TexMetadata& metadata);
+
+	/// <summary>
+	/// テクスチャデータの転送
+	/// [[nodiscard]]とは、戻り値が無視されると警告を出す
+	/// </summary>
+	[[nodiscard]]
+	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData
+	(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+
+	/// <summary>
+	/// テクスチャファイルパスの読み込み
+	/// <param name ="filePath"テクスチャファイルのパス>
+	/// </summary>
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 private:
 	// WindowsAPI
