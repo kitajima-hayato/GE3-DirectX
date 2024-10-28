@@ -36,6 +36,27 @@ public:
 	ID3D12Device* GetDevice() const { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 
+	/// <summary>
+	/// シェーダーのコンパイル
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile);
+	/// <summary>
+	/// DxcUtils取得関数
+	/// </summary>
+	Microsoft::WRL::ComPtr <IDxcUtils> GetDxcUtils()const { return dxcUtils; }
+
+	/// <summary>
+	/// DxcCompiler取得関数
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcCompiler3> GetDxcCompiler()const { return dxcCompiler; }
+
+	/// <summary>
+	/// インクルードハンドラ取得関数
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> GetIncludeHandler()const { return includeHandler; }
+
 private:	// 内部処理専用関数
 	/// <summary>
 	/// コマンド関連の初期化
@@ -118,13 +139,6 @@ private:	// 内部処理専用関数
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 	/// <summary>
-	/// シェーダーのコンパイル
-	/// </summary>
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
-		const std::wstring& filePath,
-		const wchar_t* profile);
-
-	/// <summary>
 	/// シェーダーコンパイル関数
 	/// </summary>
 	static std::wstring ConvertString(const std::string& str);
@@ -162,6 +176,8 @@ private:	// 内部処理専用関数
 	/// FPS固定更新
 	/// </summary>
 	void UpdateFixFPS();
+
+
 private:
 	// WindowsAPI
 	WinAPI* winAPI_ = nullptr;
