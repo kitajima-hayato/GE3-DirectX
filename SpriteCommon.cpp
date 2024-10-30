@@ -1,5 +1,6 @@
 #include "SpriteCommon.h"
 #include "Logger.h"
+#include "Math.h"
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
@@ -108,6 +109,14 @@ void SpriteCommon::DrawSettingCommon()
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource> 
+SpriteCommon::CreateSpriteVertexResource()
+{
+	Microsoft::WRL::ComPtr<ID3D12Resource>spriteResource = nullptr;
+	spriteResource=dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
+	return spriteResource;
 }
 
 

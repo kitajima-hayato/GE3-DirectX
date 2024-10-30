@@ -31,17 +31,23 @@ public:
 	void PostDraw();
 
 	/// <summary>
-	/// getter
-	/// </summary>
-	ID3D12Device* GetDevice() const { return device.Get(); }
-	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
-
-	/// <summary>
 	/// シェーダーのコンパイル
 	/// </summary>
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 		const std::wstring& filePath,
 		const wchar_t* profile);
+
+	/// <summary>
+	/// バッファリソースの生成
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource>
+		CreateBufferResource(size_t sizeInBytes);
+public:		// Getter,Setter
+	/// <summary>
+	/// getter
+	/// </summary>
+	ID3D12Device* GetDevice() const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 	/// <summary>
 	/// DxcUtils取得関数
 	/// </summary>
@@ -144,10 +150,7 @@ private:	// 内部処理専用関数
 	static std::wstring ConvertString(const std::string& str);
 	static std::string ConvertString(const std::wstring& str);
 
-	/// <summary>
-	/// バッファリソースの生成
-	/// </summary>
-	Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(size_t sizeInBytes);
+	
 
 	/// <summary>
 	/// テクスチャリソースの生成

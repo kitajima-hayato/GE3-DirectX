@@ -164,7 +164,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 最初のシーンの初期化
 	Sprite* sprite = new Sprite();
-	sprite->Initialize();
+	sprite->Initialize(spriteCommon);
 #pragma endregion
 
 
@@ -449,28 +449,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//
 	//	//Sprite用の頂点リソースをつくる
-	//	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 	//
 	//	//頂点バッファービューを作成する
-	//	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+	//
 	//	//リソースの先頭のアドレスから使う
 	//	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-	//	//使用するリソースのサイズは頂点６個部宇野サイズ
+	//	//使用するリソースのサイズは頂点６個分のサイズ
 	//	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
 	//	//頂点当たりのサイズ
 	//	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 	//
-	//	VertexData* vertexDataSprite = nullptr;
+	//	
 	//	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 	//
 	//
 	//	/////////////////////////////////////////////////////////////
 	//	//Indexのあれやこれや
-	//	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
-	//	uint32_t* indexSpriteData = nullptr;
+	//	
 	//	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(indexSpriteData));
 	//
-	//	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	//	
 	//	//リソースの先頭のアドレスから使う
 	//	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
 	//	//使用するリソースのサイズはインデックス６つ分のサイズ
