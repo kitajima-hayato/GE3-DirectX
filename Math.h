@@ -19,12 +19,14 @@ struct Vector4 {
 	float w;
 };
 #pragma endregion
+#pragma region 行列
 struct Matrix3x3 {
 	float m[3][3];
 };
 struct Matrix4x4 {
 	float m[4][4];
 };
+#pragma endregion
 
 struct VertexData {
 	Vector4 position;

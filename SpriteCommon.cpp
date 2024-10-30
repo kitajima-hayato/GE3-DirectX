@@ -110,6 +110,11 @@ void SpriteCommon::DrawSettingCommon()
 
 }
 
+void SpriteCommon::CreateSpriteVertexResource()
+{
+	
+}
+
 
 void SpriteCommon::CreateGraficsPipeLine()
 {

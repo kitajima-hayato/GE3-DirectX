@@ -16,6 +16,8 @@ public:		// メンバ関数
 public:		//	Getter,Setter
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
 
+public:	// Spriteクラスに向けたラッパー関数(wrapper function)
+	void CreateSpriteVertexResource();
 private:	// メンバ関数
 	/// <summary>
 	/// ルートシグネチャの作成

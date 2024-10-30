@@ -147,7 +147,8 @@ private:	// 内部処理専用関数
 	/// <summary>
 	/// バッファリソースの生成
 	/// </summary>
-	Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(size_t sizeInBytes);
+	Microsoft::WRL::ComPtr<ID3D12Resource>
+		CreateBufferResource(size_t sizeInBytes);
 
 	/// <summary>
 	/// テクスチャリソースの生成
