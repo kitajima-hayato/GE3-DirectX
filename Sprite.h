@@ -14,8 +14,8 @@ public:	// メンバ関数
 private:	// メンバ関数
 	void CreateVertexData();
 private:	// メンバ変数
-	//
-	
+	// CreateBufferResourceを呼びたい
+	DirectXCommon* dxCommon = nullptr;
 	// スプライトの設定用クラス
 	SpriteCommon* spriteCommon = nullptr;
 	// バッファリソース

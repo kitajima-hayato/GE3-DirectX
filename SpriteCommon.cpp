@@ -1,5 +1,6 @@
 #include "SpriteCommon.h"
 #include "Logger.h"
+#include "Math.h"
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
@@ -110,9 +111,12 @@ void SpriteCommon::DrawSettingCommon()
 
 }
 
-void SpriteCommon::CreateSpriteVertexResource()
+Microsoft::WRL::ComPtr<ID3D12Resource> 
+SpriteCommon::CreateSpriteVertexResource()
 {
-	
+	Microsoft::WRL::ComPtr<ID3D12Resource>spriteResource = nullptr;
+	spriteResource=dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
+	return spriteResource;
 }
 
 

@@ -9,7 +9,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon)
 void Sprite::CreateVertexData()
 {
 	// VertexResourceを作る
-	vertexResource = DirectXCommon::CreateBufferResource(device, sizeof(VertexData) * 6);
+	vertexResource = spriteCommon->CreateSpriteVertexResource();
 
 	// IndexResourceを作る
 	// VertexBufferViewを作成する(値を設定するだけ)
