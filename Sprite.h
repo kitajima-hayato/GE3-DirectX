@@ -3,9 +3,6 @@
 #include <d3d12.h>
 #include <wrl.h>
 class SpriteCommon;
-
-
-
 class Sprite
 {
 public:	// メンバ関数
