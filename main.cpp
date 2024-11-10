@@ -653,6 +653,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//offsetを自動計算
 #pragma endregion
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeForInstancing[1] = {};
+	descriptorRangeForInstancing[0].BaseShaderRegister = 0; 
+	// 0から始まる
+	descriptorRangeForInstancing[0].NumDescriptors = 1;
+	// 数は1つ 
+	descriptorRangeForInstancing[0].RangeType =D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う 
+	descriptorRangeForInstancing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; 
+	
+
+
 	// RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -707,10 +717,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParamaters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParamaters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
 
-	rootParamaters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//
-	rootParamaters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//
-	rootParamaters[1].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身の配列指定
-	rootParamaters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する敵
+	rootParamaters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う 
+	rootParamaters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う 
+	rootParamaters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing; // Tableの中身の配列を指定 
+	rootParamaters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing); // Tableで利用する数
 
 	rootParamaters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//DescriptorTableを使う
 	rootParamaters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
@@ -825,11 +835,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
-	vertexShaderBlob = CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	vertexShaderBlob = CompileShader(L"resources/shaders/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
-	pixelShaderBlob = CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	pixelShaderBlob = CompileShader(L"resources/shaders/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
 
@@ -1333,73 +1343,73 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 
-			ImGui::Begin("Settings");
-			if (ImGui::BeginTabBar("OBJ"))
-			{
-				// Objの値変更
-				if (ImGui::BeginTabItem("OBJ"))
-				{
-					ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
-					ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
-					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-					if (ImGui::Button("*Lighting")) {
-						if (materialDate->enableLighting) {
-							materialDate->enableLighting = 0;
-						}
-						else if (!materialDate->enableLighting) {
-							materialDate->enableLighting = 1;
-						}
-					}if (ImGui::Button("*HalfLambert")) {
-						if (materialDate->enableLighting) {
-							materialDate->enableLighting = 2;
-						}
-					}
-					ImGui::EndTabItem();
-				}
-				//UVの値変更
-				if (ImGui::BeginTabItem("UV"))
-				{
-					ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
-					ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-					ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-					ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
-					ImGui::EndTabItem();
-				}
-				//Sphereの値変更
-				if (ImGui::BeginTabItem("Sphere"))
-				{
-					ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
-					ImGui::DragFloat3("*scale", &transformSphere.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-					ImGui::DragFloat3("*translate", &transformSphere.translate.x, 0.01f);
-					ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
-					ImGui::DragFloat("*α", &directionalLightDataSphere->color.w, 0.01f, -1.0f, 1.0f);
-					if (ImGui::Button("*Lighting")) {
-						if (materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = 0;
-						}
-						else if (!materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = 1;
-						}
-					}
-					if (ImGui::Button("*HalfLambert")) {
-						if (materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = 2;
-						}
+			//ImGui::Begin("Settings");
+			//if (ImGui::BeginTabBar("OBJ"))
+			//{
+			//	// Objの値変更
+			//	if (ImGui::BeginTabItem("OBJ"))
+			//	{
+			//		ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
+			//		ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+			//		ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+			//		ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
+			//		ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+			//		if (ImGui::Button("*Lighting")) {
+			//			if (materialDate->enableLighting) {
+			//				materialDate->enableLighting = 0;
+			//			}
+			//			else if (!materialDate->enableLighting) {
+			//				materialDate->enableLighting = 1;
+			//			}
+			//		}if (ImGui::Button("*HalfLambert")) {
+			//			if (materialDate->enableLighting) {
+			//				materialDate->enableLighting = 2;
+			//			}
+			//		}
+			//		ImGui::EndTabItem();
+			//	}
+			//	//UVの値変更
+			//	if (ImGui::BeginTabItem("UV"))
+			//	{
+			//		ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
+			//		ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
+			//		ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
+			//		ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			//		ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			//		ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
+			//		ImGui::EndTabItem();
+			//	}
+			//	//Sphereの値変更
+			//	if (ImGui::BeginTabItem("Sphere"))
+			//	{
+			//		ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
+			//		ImGui::DragFloat3("*scale", &transformSphere.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+			//		ImGui::DragFloat3("*rotate", &transformSphere.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+			//		ImGui::DragFloat3("*translate", &transformSphere.translate.x, 0.01f);
+			//		ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
+			//		ImGui::DragFloat("*α", &directionalLightDataSphere->color.w, 0.01f, -1.0f, 1.0f);
+			//		if (ImGui::Button("*Lighting")) {
+			//			if (materialDataSphere->enableLighting) {
+			//				materialDataSphere->enableLighting = 0;
+			//			}
+			//			else if (!materialDataSphere->enableLighting) {
+			//				materialDataSphere->enableLighting = 1;
+			//			}
+			//		}
+			//		if (ImGui::Button("*HalfLambert")) {
+			//			if (materialDataSphere->enableLighting) {
+			//				materialDataSphere->enableLighting = 2;
+			//			}
 
-					}
-					ImGui::EndTabItem();
-				}
-				ImGui::EndTabItem();
-			}
+			//		}
+			//		ImGui::EndTabItem();
+			//	}
+			//	ImGui::EndTabItem();
+			//}
 
 
-			ImGui::End();
-			ImGui::Render();
+			//ImGui::End();
+			//ImGui::Render();
 
 
 
@@ -1456,15 +1466,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// モデル用の設定 (インスタンシング)
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(1, instancingResource->GetGPUVirtualAddress());
 			// シェーダーでインスタンスごとの変換行列にアクセスできるようにSRVを設定
 			commandList->SetGraphicsRootDescriptorTable(2, instancingSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 
 			//// 10個のインスタンスを描画
-			//commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
 
 			//// スプライト用の設定
 			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); // スプライト用のテクスチャSRVを設定

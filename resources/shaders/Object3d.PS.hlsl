@@ -30,13 +30,13 @@ PixelShaderOutput main(VertexShaderOutput input)
     output.color * textureColor;
  
     
+    
     if (output.color.a == 0.0)
     {
         discard;
     }
             
     return output;
-    
     
     //if (gMaterial.enableLighting != 0)
     //{
