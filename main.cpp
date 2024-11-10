@@ -653,6 +653,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//offsetを自動計算
 #pragma endregion
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeForInstancing[1] = {};
+	descriptorRangeForInstancing[0].BaseShaderRegister = 0; 
+	// 0から始まる
+	descriptorRangeForInstancing[0].NumDescriptors = 1;
+	// 数は1つ 
+	descriptorRangeForInstancing[0].RangeType =D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う 
+	descriptorRangeForInstancing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; 
+	
+
+
 	// RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -706,9 +716,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParamaters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 	rootParamaters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParamaters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
-	rootParamaters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//
-	rootParamaters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//
-	rootParamaters[1].Descriptor.ShaderRegister = 0;//
+
+	rootParamaters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う 
+	rootParamaters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う 
+	rootParamaters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing; // Tableの中身の配列を指定 
+	rootParamaters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing); // Tableで利用する数
+
 	rootParamaters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//DescriptorTableを使う
 	rootParamaters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParamaters[2].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身の配列を指定
@@ -863,7 +876,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
-	
+
 	assert(SUCCEEDED(hr));
 
 	const uint32_t kSubdivision = 64;		//分割数 16or32
@@ -901,7 +914,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "fence.obj");
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -995,6 +1008,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform cameraTransform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -5.0f } };
 
 
+	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
 
 
 	//Textureを読んで転送する
@@ -1030,6 +1047,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVの生成  シェーダーリソースビュー
 	device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
+#pragma region CG301_00Particleで新規作成した
+	////////////////////////////////////////////////////////////////
+	////////Instancing用にTransformationMatrixを１０個格納できるResourceの作成
+	const uint32_t kNumInstance = 10;	//インスタンス数
+	// Instancing用のTransformationMatrixリソースを作る
+	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource =
+		CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+	// 書き込むためのアドレスを取得
+	TransformationMatrix* instancingData = nullptr;
+	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
+	// 単位行列を書き込んでおく
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+		instancingData[index].WVP = MakeIdentity4x4();
+		instancingData[index].World = MakeIdentity4x4();
+	}
+
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
+	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	instancingSrvDesc.Buffer.FirstElement = 0;
+	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	instancingSrvDesc.Buffer.NumElements = kNumInstance;
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
+
+	Transform transforms[kNumInstance];
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+		transforms[index].scale = { 1.0f,1.0f,1.0f };
+		transforms[index].rotate = { 0.0f,0.0f,0.0f };
+		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+	}
+
+
+#pragma endregion
 
 
 
@@ -1207,10 +1262,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-
 
 	//2枚目のTextureを読んで転送する
 	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
@@ -1284,74 +1335,81 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
 
-
-			ImGui::Begin("Settings");
-			if (ImGui::BeginTabBar("OBJ"))
-			{
-				// Objの値変更
-				if (ImGui::BeginTabItem("OBJ"))
-				{
-					ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
-					ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
-					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-					if (ImGui::Button("*Lighting")) {
-						if (materialDate->enableLighting) {
-							materialDate->enableLighting = 0;
-						}
-						else if (!materialDate->enableLighting) {
-							materialDate->enableLighting = 1;
-						}
-					}if (ImGui::Button("*HalfLambert")) {
-						if (materialDate->enableLighting) {
-							materialDate->enableLighting = 2;
-						}
-					}
-					ImGui::EndTabItem();
-				}
-				//UVの値変更
-				if (ImGui::BeginTabItem("UV"))
-				{
-					ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
-					ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-					ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-					ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
-					ImGui::EndTabItem();
-				}
-				//Sphereの値変更
-				if (ImGui::BeginTabItem("Sphere"))
-				{
-					ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
-					ImGui::DragFloat3("*scale", &transformSphere.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-					ImGui::DragFloat3("*rotate", &transformSphere.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-					ImGui::DragFloat3("*translate", &transformSphere.translate.x, 0.01f);
-					ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
-					ImGui::DragFloat("*α", &directionalLightDataSphere->color.w, 0.01f, -1.0f, 1.0f);
-					if (ImGui::Button("*Lighting")) {
-						if (materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = 0;
-						}
-						else if (!materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = 1;
-						}
-					}
-					if (ImGui::Button("*HalfLambert")) {
-						if (materialDataSphere->enableLighting) {
-							materialDataSphere->enableLighting = 2;
-						}
-
-					}
-					ImGui::EndTabItem();
-				}
-				ImGui::EndTabItem();
+			for (uint32_t index = 0; index < kNumInstance; ++index) {
+				Matrix4x4 worldMatrix = MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, worldViewProjectionMatrix);
+				instancingData[index].WVP = worldViewProjectionMatrix;
+				instancingData[index].World = worldMatrix;
 			}
 
 
-			ImGui::End();
-			ImGui::Render();
+			//ImGui::Begin("Settings");
+			//if (ImGui::BeginTabBar("OBJ"))
+			//{
+			//	// Objの値変更
+			//	if (ImGui::BeginTabItem("OBJ"))
+			//	{
+			//		ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
+			//		ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+			//		ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+			//		ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
+			//		ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+			//		if (ImGui::Button("*Lighting")) {
+			//			if (materialDate->enableLighting) {
+			//				materialDate->enableLighting = 0;
+			//			}
+			//			else if (!materialDate->enableLighting) {
+			//				materialDate->enableLighting = 1;
+			//			}
+			//		}if (ImGui::Button("*HalfLambert")) {
+			//			if (materialDate->enableLighting) {
+			//				materialDate->enableLighting = 2;
+			//			}
+			//		}
+			//		ImGui::EndTabItem();
+			//	}
+			//	//UVの値変更
+			//	if (ImGui::BeginTabItem("UV"))
+			//	{
+			//		ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
+			//		ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
+			//		ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
+			//		ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			//		ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			//		ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
+			//		ImGui::EndTabItem();
+			//	}
+			//	//Sphereの値変更
+			//	if (ImGui::BeginTabItem("Sphere"))
+			//	{
+			//		ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
+			//		ImGui::DragFloat3("*scale", &transformSphere.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+			//		ImGui::DragFloat3("*rotate", &transformSphere.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+			//		ImGui::DragFloat3("*translate", &transformSphere.translate.x, 0.01f);
+			//		ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
+			//		ImGui::DragFloat("*α", &directionalLightDataSphere->color.w, 0.01f, -1.0f, 1.0f);
+			//		if (ImGui::Button("*Lighting")) {
+			//			if (materialDataSphere->enableLighting) {
+			//				materialDataSphere->enableLighting = 0;
+			//			}
+			//			else if (!materialDataSphere->enableLighting) {
+			//				materialDataSphere->enableLighting = 1;
+			//			}
+			//		}
+			//		if (ImGui::Button("*HalfLambert")) {
+			//			if (materialDataSphere->enableLighting) {
+			//				materialDataSphere->enableLighting = 2;
+			//			}
+
+			//		}
+			//		ImGui::EndTabItem();
+			//	}
+			//	ImGui::EndTabItem();
+			//}
+
+
+			//ImGui::End();
+			//ImGui::Render();
 
 
 
@@ -1406,25 +1464,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			////commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 
 
-			//// モデル用の設定 
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
+			// モデル用の設定 (インスタンシング)
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
 			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			//commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			commandList->SetGraphicsRootConstantBufferView(1, instancingResource->GetGPUVirtualAddress());
+			// シェーダーでインスタンスごとの変換行列にアクセスできるようにSRVを設定
+			commandList->SetGraphicsRootDescriptorTable(2, instancingSrvHandleGPU);
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 
-			// スプライト用の設定
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			commandList->IASetIndexBuffer(&indexBufferViewSprite);
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-			for (int instanceCount = 0; instanceCount < 10; ++instanceCount) {
-			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), instanceCount, 0, 0);
+			//// 10個のインスタンスを描画
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
 
-			}
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			//// スプライト用の設定
+			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); // スプライト用のテクスチャSRVを設定
+			//commandList->IASetIndexBuffer(&indexBufferViewSprite);               // インデックスバッファ設定
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);      // スプライト用のVBV設定
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+
+			//// スプライトのインスタンス描画
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+
 
 			// 実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
