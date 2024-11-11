@@ -158,7 +158,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->Initialize(winAPI);
 
 	// スプライト共通部の初期化
-	SpriteCommon* spriteCommon = nullptr;
+	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 #pragma endregion 
 
@@ -360,7 +360,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//
 	//
-	//
+	
+	
 	//#pragma region スフィアの表示
 	//	//Sphereの頂点情報//////////////////////
 	//	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
@@ -440,7 +441,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//		}
 	//	}
 	//#pragma endregion
-	//
+	
 	//
 	//	//DepthStencilTextureをウィンドウのサイズで作成
 	//	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device, WinAPI::kClientWidth, WinAPI::kClientHeight);
@@ -452,44 +453,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//	//頂点バッファービューを作成する
 	//
-	//	//リソースの先頭のアドレスから使う
-	//	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-	//	//使用するリソースのサイズは頂点６個分のサイズ
-	//	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
-	//	//頂点当たりのサイズ
-	//	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-	//
-	//	
-	//	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	//
 	//
 	//	/////////////////////////////////////////////////////////////
-	//	//Indexのあれやこれや
-	//	
-	//	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(indexSpriteData));
 	//
-	//	
-	//	//リソースの先頭のアドレスから使う
-	//	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	//	//使用するリソースのサイズはインデックス６つ分のサイズ
-	//	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
-	//	//インデックスはuint32_tとする
-	//	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
 	//	//インデックスリソースにデータを書き込む
 	//	uint32_t* indexDataSprite = nullptr;
 	//	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	//	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	//	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
+	//	
+	//	
 	//
 	//	/////////////////////////////////////////////////////////////
 	//
 	//
-	//	vertexDataSprite[0].normal = { 0.0f,0.0f,-1.0f };
-	//	vertexDataSprite[1].normal = { 0.0f,0.0f,-1.0f };
-	//	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
-	//	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
-	//	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
-	//	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
+	//	
+	//	
+	//	
+	//	
+	//	
+	//	
 	//	//１枚目の三角形
 	//	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
 	//	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
@@ -524,7 +505,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	//
 	//
-	//
+	
 	//	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	//
 	//
@@ -567,7 +548,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::NewFrame();*/
 		//ゲームの処理
 		input->Update();
-
+		sprite->Update();
 
 		if (input->TriggerKey(DIK_1)) {
 			OutputDebugStringA("Hit_1\n");
@@ -682,8 +663,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->DrawSettingCommon();
 
-
-
+		sprite->Draw();
 
 
 

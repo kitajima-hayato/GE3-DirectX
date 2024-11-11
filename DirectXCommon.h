@@ -63,6 +63,11 @@ public:		// Getter,Setter
 	/// </summary>
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> GetIncludeHandler()const { return includeHandler; }
 
+	/// <summary>
+	/// srvDescriptorHeap取得関数
+	/// </summary>
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> GetSrvDescriptorHeap()const { return srvDescriptorHeap; }
+
 private:	// 内部処理専用関数
 	/// <summary>
 	/// コマンド関連の初期化
@@ -150,7 +155,7 @@ private:	// 内部処理専用関数
 	static std::wstring ConvertString(const std::string& str);
 	static std::string ConvertString(const std::wstring& str);
 
-	
+
 
 	/// <summary>
 	/// テクスチャリソースの生成

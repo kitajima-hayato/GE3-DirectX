@@ -18,6 +18,7 @@ public:		//	Getter,Setter
 
 public:	// Spriteクラスに向けたラッパー関数(wrapper function)
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateSpriteVertexResource();
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateSpriteIndexResource();
 private:	// メンバ関数
 	/// <summary>
 	/// ルートシグネチャの作成
@@ -55,5 +56,7 @@ private:	// メンバ変数
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature = nullptr;
 	// パイプラインステートの作成
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
+	// 入力要素の定義配列を初期化
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 };
 
