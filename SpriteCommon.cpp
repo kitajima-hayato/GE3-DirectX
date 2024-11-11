@@ -6,7 +6,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
 	//引数で受け取ってメンバ変数に記録する
 	dxCommon_ = dxCommon;
-
+	CreateGraficsPipeLine();
 }
 
 void SpriteCommon::CreateRootSignatrue()
@@ -41,12 +41,23 @@ void SpriteCommon::CreateRootSignatrue()
 	descriptionRootSignature.pParameters = rootParamaters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParamaters);//
 #pragma endregion
+	// ルートシグネチャのシリアライズ結果を格納するBlob
+	Microsoft::WRL::ComPtr <ID3DBlob> signatureBlob = nullptr;
+	// エラーメッセージが発生した場合に格納するBlob
+	Microsoft::WRL::ComPtr <ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr)) {
+		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		assert(false);
+	}
+	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	assert(SUCCEEDED(hr));
+	
 }
 
 void SpriteCommon::InitializePixelShaderOutput()
 {
-	// 入力要素の定義配列を初期化
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+	
 	// 頂点の位置データを表すセマンティクスを設定
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -63,12 +74,8 @@ void SpriteCommon::InitializePixelShaderOutput()
 	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
-
-	
 	inputLayoutDescs.pInputElementDescs = inputElementDescs;
 	inputLayoutDescs.NumElements = _countof(inputElementDescs);
-
-
 
 	// レンダーターゲットの書き込みマスクを設定。全ての色チャンネルに書き込みを許可
 	blendDesc.RenderTarget[0].RenderTargetWriteMask =
@@ -89,7 +96,6 @@ void SpriteCommon::InitializePixelShaderOutput()
 		L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
-
 	
 	//Depthの機能を有効化する
 	depthStencilDesc.DepthEnable = true;
@@ -98,11 +104,12 @@ void SpriteCommon::InitializePixelShaderOutput()
 	//比較関数はLessEqual。つまり、近ければ描画される
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-
 }
 
 void SpriteCommon::DrawSettingCommon()
-{// RootSignatureを設定。PSOに設定しているけど別途設定が必要
+{
+	
+	// RootSignatureを設定。PSOに設定しているけど別途設定が必要
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());  // PSOを設定
 
@@ -111,30 +118,13 @@ void SpriteCommon::DrawSettingCommon()
 
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> 
-SpriteCommon::CreateSpriteVertexResource()
-{
-	Microsoft::WRL::ComPtr<ID3D12Resource>spriteResource = nullptr;
-	spriteResource=dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
-	return spriteResource;
-}
-
 
 void SpriteCommon::CreateGraficsPipeLine()
 {
-
 	// ルートシグネチャの作成
 	CreateRootSignatrue();
 
-	// ルートシグネチャのシリアライズ結果を格納するBlob
-	Microsoft::WRL::ComPtr <ID3DBlob> signatureBlob = nullptr;
-	// エラーメッセージが発生した場合に格納するBlob
-	Microsoft::WRL::ComPtr <ID3DBlob> errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-		assert(false);
-	}
+	InitializePixelShaderOutput();
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;//バイリニアフィルタ
@@ -148,11 +138,6 @@ void SpriteCommon::CreateGraficsPipeLine()
 	descriptionRootSignature.pStaticSamplers = staticSamplers;
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
-	
-	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-	assert(SUCCEEDED(hr));
-
-	
 
 	// グラフィックスパイプラインのステートオブジェクトのデスクリプタを設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -177,8 +162,25 @@ void SpriteCommon::CreateGraficsPipeLine()
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// パイプラインステートの作成
-	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 
 	assert(SUCCEEDED(hr));
 }
 
+
+
+Microsoft::WRL::ComPtr<ID3D12Resource>
+SpriteCommon::CreateSpriteVertexResource()
+{
+	Microsoft::WRL::ComPtr<ID3D12Resource>spriteResource = nullptr;
+	spriteResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
+	return spriteResource;
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource>
+SpriteCommon::CreateSpriteIndexResource()
+{
+	Microsoft::WRL::ComPtr<ID3D12Resource>indexResource = nullptr;
+	indexResource = dxCommon_->CreateBufferResource(sizeof(uint32_t) * 6);
+	return indexResource;
+}

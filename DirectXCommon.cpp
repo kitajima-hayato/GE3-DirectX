@@ -593,7 +593,8 @@ std::string DirectXCommon::ConvertString(const std::wstring& str)
 	return result;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_t sizeInBytes)
+Microsoft::WRL::ComPtr<ID3D12Resource>
+DirectXCommon::CreateBufferResource(size_t sizeInBytes)
 {
 	//頂点リソース用のヒープ設定
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
