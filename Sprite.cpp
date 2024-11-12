@@ -49,9 +49,6 @@ void Sprite::Update()
 
 void Sprite::Draw()
 {
-	// 画像データ指定
-	//ここに変更した画像データを
-	//spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 	// VertexbufferViewを設定
 	spriteCommon->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 
