@@ -172,15 +172,15 @@ void SpriteCommon::CreateGraficsPipeLine()
 Microsoft::WRL::ComPtr<ID3D12Resource>
 SpriteCommon::CreateSpriteVertexResource()
 {
-	Microsoft::WRL::ComPtr<ID3D12Resource>spriteResource = nullptr;
-	spriteResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
-	return spriteResource;
+	vertexResource = nullptr;
+	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
+	return vertexResource;
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource>
 SpriteCommon::CreateSpriteIndexResource()
 {
-	Microsoft::WRL::ComPtr<ID3D12Resource>indexResource = nullptr;
+	indexResource = nullptr;
 	indexResource = dxCommon_->CreateBufferResource(sizeof(uint32_t) * 6);
 	return indexResource;
 }

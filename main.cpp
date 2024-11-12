@@ -465,27 +465,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	/////////////////////////////////////////////////////////////
 	//
 	//
-	//	
-	//	
-	//	
-	//	
-	//	
-	//	
-	//	//１枚目の三角形
-	//	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
-	//	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	//	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	//	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	//	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	//	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-	//	//２枚目の三角形
-	//	vertexDataSprite[3].position = vertexDataSprite[1].position;
-	//	vertexDataSprite[3].texcoord = vertexDataSprite[1].texcoord;
-	//	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	//	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	//	vertexDataSprite[5].position = vertexDataSprite[2].position;
-	//	vertexDataSprite[5].texcoord = vertexDataSprite[2].texcoord;
-	//
 	//
 	//	//Sprite用のTrandformaitionMatrix用のリソースをつくる。Matrix4x4 １つ分のサイズを用意する
 	//	Microsoft::WRL::ComPtr <ID3D12Resource>

@@ -3,16 +3,14 @@
 void Sprite::Initialize(SpriteCommon* spriteCommon)
 {
 	this->spriteCommon = spriteCommon;
-	CreateVertexData();
-	CreateMaterialData();
+	CreateMaterialResource();
+	CreateVertexResourceData();
 	CreateTransformationMatrixData();
 }
 
 void Sprite::Update()
 {
-	// 頂点リソースにデータを書き込む(4点分)
-	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
-	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
+	
 	// インデックスリソースにデータを書き込む(6個分)
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
@@ -20,6 +18,21 @@ void Sprite::Update()
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[4].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[5].normal = { 0.0f,0.0f,-1.0f };
+
+	//１枚目の三角形
+	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
+	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
+	//２枚目の三角形
+	vertexData[3].position = vertexData[1].position;
+	vertexData[3].texcoord = vertexData[1].texcoord;
+	vertexData[4].position = { 640.0f,0.0f,0.0f,1.0f };
+	vertexData[4].texcoord = { 1.0f,0.0f };
+	vertexData[5].position = vertexData[2].position;
+	vertexData[5].texcoord = vertexData[2].texcoord;
 	// Transform情報を作る
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	// TransformからWorld行列を作る
@@ -36,6 +49,9 @@ void Sprite::Update()
 
 void Sprite::Draw()
 {
+	// 画像データ指定
+	//ここに変更した画像データを
+	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 	// VertexbufferViewを設定
 	spriteCommon->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 
@@ -46,42 +62,49 @@ void Sprite::Draw()
 	// 座標変換行列CBufferの場所を設定
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// SRVのDescriptorHeapの場所を設定
-	//auto srvHandle = spriteCommon->GetDxCommon()->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart()
-	);
+	
 	// 描画
 	//commandList->DrawInstanced(6, 1, 0, 0);
 	spriteCommon->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
-void Sprite::CreateVertexData()
+void Sprite::CreateVertexResourceData()
 {
 	// VertexResourceを作る
 	vertexResource = spriteCommon->CreateSpriteVertexResource();
-
-	// IndexResourceを作る
-	indexResource = spriteCommon->CreateSpriteIndexResource();
 	// VertexBufferViewを作成する(値を設定するだけ)
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	// 6個分のデータを書き込むので6倍
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	// 1頂点分のサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-	// IndexBufferViewを作成する
-	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
-	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
-	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-
 	// VertexResourceにデータを書き込むためのアドレスを取得してvertexDataに割り当てる
 	vertexData = nullptr;	// nullptrを代入しておく
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));	// マップする
 
+
+	// IndexResourceを作る
+	indexResource = spriteCommon->CreateSpriteIndexResource();
+
+	// IndexBufferViewを作成する
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	// 6個分のデータを書き込むので6倍
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
+	// 1頂点分のサイズ
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+
 	// IndexResourceにデータを書き込むためのアドレスを取得してindexDataに割り当てる
 	indexData = nullptr;	// nullptrを代入しておく
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));	// マップする
+
+	// 頂点リソースにデータを書き込む(4点分)
+	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
+	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
+
 }
 
 
-void Sprite::CreateMaterialData() {
+void Sprite::CreateMaterialResource() {
 	// マテリアルデータを作成する
 	materialResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(Material));
 	// マテリアルリソースにデータを書き込むためのアドレスを取得してmaterialに割り当てる
@@ -97,7 +120,7 @@ void Sprite::CreateMaterialData() {
 void Sprite::CreateTransformationMatrixData()
 {
 	// 変換行列データを作成する
-	transformationMatrixResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(Matrix4x4));
+	transformationMatrixResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
 
 	// 変換行列リソースにデータを書き込むためのアドレスを取得してtransformationMatrixに割り当てる
 	transformationMatrix = nullptr; // nullptrを代入しておく
@@ -106,5 +129,12 @@ void Sprite::CreateTransformationMatrixData()
 	//単位行列を書き込んでおく
 	transformationMatrix->WVP = MakeIdentity4x4();
 	transformationMatrix->World = MakeIdentity4x4();
+}
+
+void Sprite::DrawSetting()
+{
+    spriteCommon->GetDxCommon()->LoadTexture("resources/uvChecker.png");
+	spriteCommon->DrawSettingCommon();
+	spriteCommon->GetDxCommon()->CreateTextureResource();
 }
 	
