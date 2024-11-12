@@ -331,37 +331,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//#pragma region エラーが出たらこいつに要注意
 	//	//Textureを読んで転送する
-	//	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
-	//	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	//	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
-	//	Microsoft::WRL::ComPtr < ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
+	DirectX::ScratchImage mipImages = DirectXCommon::LoadTexture("resources/uvChecker.png");
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
+	Microsoft::WRL::ComPtr < ID3D12Resource> intermediateResource = dxCommon->UploadTextureData(textureResource, mipImages);
+
+
+	//2枚目のTextureを読んで転送する
+	DirectX::ScratchImage mipImages2 = DirectXCommon::LoadTexture("resources/monsterball.png");
+	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
+	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource(metadata2);
+	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(textureResource2, mipImages2);
 	//
 	//#pragma endregion
 	//
 	//
 	//
 	//
-	//	//metaDataを基にSRVの設定
-	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	//	srvDesc.Format = metadata.format;
-	//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	//	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-	//
-	//	//SRVを作成するDescriptorHeapの場所を決める
-	//	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-	//	//先頭はImGuiが使っているのでその次を使う
-	//	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	//	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	//	//SRVの生成  シェーダーリソースビュー
-	//	device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-	//
-	//
+	//metaDataを基にSRVの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = metadata.format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+	//SRVを作成するDescriptorHeapの場所を決める
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetSrvDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
+	//先頭はImGuiが使っているのでその次を使う
+	textureSrvHandleCPU.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	textureSrvHandleGPU.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//SRVの生成  シェーダーリソースビュー
+	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 	//
 	//
-	
-	
+	//
+	//
+
+
 	//#pragma region スフィアの表示
 	//	//Sphereの頂点情報//////////////////////
 	//	const float kLatEvery = std::numbers::pi_v<float> / float(kSubdivision);			//緯度分割１つ分の角度
@@ -441,7 +448,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//		}
 	//	}
 	//#pragma endregion
-	
+
 	//
 	//	//DepthStencilTextureをウィンドウのサイズで作成
 	//	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device, WinAPI::kClientWidth, WinAPI::kClientHeight);
@@ -465,27 +472,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	/////////////////////////////////////////////////////////////
 	//
 	//
-	//	
-	//	
-	//	
-	//	
-	//	
-	//	
-	//	//１枚目の三角形
-	//	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
-	//	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	//	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	//	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	//	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	//	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-	//	//２枚目の三角形
-	//	vertexDataSprite[3].position = vertexDataSprite[1].position;
-	//	vertexDataSprite[3].texcoord = vertexDataSprite[1].texcoord;
-	//	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	//	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	//	vertexDataSprite[5].position = vertexDataSprite[2].position;
-	//	vertexDataSprite[5].texcoord = vertexDataSprite[2].texcoord;
-	//
 	//
 	//	//Sprite用のTrandformaitionMatrix用のリソースをつくる。Matrix4x4 １つ分のサイズを用意する
 	//	Microsoft::WRL::ComPtr <ID3D12Resource>
@@ -505,15 +491,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	//
 	//
-	
+
 	//	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	//
 	//
-	//	//2枚目のTextureを読んで転送する
-	//	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
-	//	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
-	//	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource2 = CreateTextureResource(device, metadata2);
-	//	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource2 = UploadTextureData(textureResource2, mipImages2, device, commandList);
+
 	//
 	//	//metaDataを基にSRVの設定
 	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
@@ -696,22 +678,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//
 		//		// 実際のcommandListのImGuiの描画コマンドを積む
 		//		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
-		//
-
-
-
-
-
-
-
 
 		dxCommon->PostDraw();
-
-
-
-
-
-
 
 
 	}

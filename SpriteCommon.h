@@ -58,5 +58,11 @@ private:	// メンバ変数
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
 	// 入力要素の定義配列を初期化
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+
+
+private:	// メンバ変数
+	Microsoft::WRL::ComPtr<ID3D12Resource>vertexResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource>indexResource = nullptr;
+
 };
 

@@ -42,6 +42,18 @@ public:
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource>
 		CreateBufferResource(size_t sizeInBytes);
+
+	/// <summary>
+	/// テクスチャファイルパスの読み込み
+	/// <param name ="filePath"テクスチャファイルのパス>
+	/// </summary>
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
+	/// <summary>
+	/// テクスチャリソースの生成
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTextureResource(const DirectX::TexMetadata& metadata);
+
 public:		// Getter,Setter
 	/// <summary>
 	/// getter
@@ -51,22 +63,53 @@ public:		// Getter,Setter
 	/// <summary>
 	/// DxcUtils取得関数
 	/// </summary>
-	Microsoft::WRL::ComPtr <IDxcUtils> GetDxcUtils()const { return dxcUtils; }
+	Microsoft::WRL::ComPtr <IDxcUtils> 
+		GetDxcUtils()const { return dxcUtils; }
 
 	/// <summary>
 	/// DxcCompiler取得関数
 	/// </summary>
-	Microsoft::WRL::ComPtr<IDxcCompiler3> GetDxcCompiler()const { return dxcCompiler; }
+	Microsoft::WRL::ComPtr<IDxcCompiler3> 
+		GetDxcCompiler()const { return dxcCompiler; }
 
 	/// <summary>
 	/// インクルードハンドラ取得関数
 	/// </summary>
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> GetIncludeHandler()const { return includeHandler; }
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> 
+		GetIncludeHandler()const { return includeHandler; }
 
 	/// <summary>
 	/// srvDescriptorHeap取得関数
 	/// </summary>
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> GetSrvDescriptorHeap()const { return srvDescriptorHeap; }
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> 
+		GetSrvDescriptorHeap()const { return srvDescriptorHeap; }
+
+	/// <summary>
+	/// 指定番号のCPUディスクリプタハンドルを取得する
+	/// </summary>
+	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	/// <summary>
+	/// 指定番号のGPUディスクリプタハンドルを取得する
+	/// </summary>
+	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+
+	/// <summary>
+	/// テクスチャデータの転送
+	/// [[nodiscard]]とは、戻り値が無視されると警告を出す
+	/// </summary>
+	[[nodiscard]]
+	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData
+	(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+
+	/// <summary>
+	/// SRVの指定番号のCPUディスクリプタハンドルを取得する
+	/// </summary>
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
+
+	/// <summary>
+	/// SRVの指定番号のGPUディスクリプタハンドルを取得する
+	/// </summary>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 private:	// 内部処理専用関数
 	/// <summary>
@@ -100,15 +143,7 @@ private:	// 内部処理専用関数
 	/// レンダーターゲットビューの初期化
 	/// </summary>
 	void InitRenderTargetView();
-	/// <summary>
-	/// SRVの指定番号のCPUディスクリプタハンドルを取得する
-	/// </summary>
-	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
-
-	/// <summary>
-	/// SRVの指定番号のGPUディスクリプタハンドルを取得する
-	/// </summary>
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+	
 
 	/// <summary>
 	/// 深度ステンシルビューの初期化
@@ -140,15 +175,7 @@ private:	// 内部処理専用関数
 	/// </summary>
 	void InitImGui();
 
-	/// <summary>
-	/// 指定番号のCPUディスクリプタハンドルを取得する
-	/// </summary>
-	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
-	/// <summary>
-	/// 指定番号のGPUディスクリプタハンドルを取得する
-	/// </summary>
-	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
-
+	
 	/// <summary>
 	/// シェーダーコンパイル関数
 	/// </summary>
@@ -157,25 +184,8 @@ private:	// 内部処理専用関数
 
 
 
-	/// <summary>
-	/// テクスチャリソースの生成
-	/// </summary>
-	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTextureResource(const DirectX::TexMetadata& metadata);
-
-	/// <summary>
-	/// テクスチャデータの転送
-	/// [[nodiscard]]とは、戻り値が無視されると警告を出す
-	/// </summary>
-	[[nodiscard]]
-	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData
-	(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
-
-	/// <summary>
-	/// テクスチャファイルパスの読み込み
-	/// <param name ="filePath"テクスチャファイルのパス>
-	/// </summary>
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
+	
+	
 	/// <summary>
 	/// FPS固定初期化
 	/// </summary>

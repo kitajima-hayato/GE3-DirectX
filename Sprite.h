@@ -12,9 +12,10 @@ public:	// メンバ関数
 	void Update();
 	void Draw();
 private:	// メンバ関数
-	void CreateVertexData();
-	void CreateMaterialData();
+	void CreateVertexResourceData();
+	void CreateMaterialResource();
 	void CreateTransformationMatrixData();
+	void DrawSetting();
 private:	// メンバ変数
 	// CreateBufferResourceを呼びたい
 	// スプライトの設定用クラス
@@ -26,8 +27,8 @@ private:	// メンバ変数
 	VertexData* vertexData = nullptr;
 	uint32_t* indexData = nullptr;
 	// バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-	D3D12_INDEX_BUFFER_VIEW indexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// バッファリソース
 	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = nullptr;
