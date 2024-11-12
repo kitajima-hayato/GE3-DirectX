@@ -51,7 +51,7 @@ void Sprite::Draw()
 {
 	// 画像データ指定
 	//ここに変更した画像データを
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+	//spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSrvDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 	// VertexbufferViewを設定
 	spriteCommon->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 
@@ -61,6 +61,7 @@ void Sprite::Draw()
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// 座標変換行列CBufferの場所を設定
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSRVGPUDescriptorHandle(1));
 	// SRVのDescriptorHeapの場所を設定
 	
 	// 描画

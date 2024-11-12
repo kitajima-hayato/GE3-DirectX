@@ -253,7 +253,7 @@ void DirectXCommon::CreateDescriptorHeaps()
 {
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
+	///////////////////////////////dsV!!!!!!!!!!!!!!!!!!!!!!!!
 #pragma region DescriptorHEAPの生成
 	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
@@ -380,8 +380,8 @@ void DirectXCommon::PostDraw()
 #pragma endregion
 #pragma region GPUコマンドの実行
 	//GPUにコマンドリストの実行を行わせる
-	Microsoft::WRL::ComPtr < ID3D12CommandList> commandLists[] = { commandList };
-	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+	ID3D12CommandList* commandLists[] = { commandList.Get()};
+	commandQueue->ExecuteCommandLists(1, commandLists);
 #pragma endregion
 #pragma region GPU画面の交換を通知
 	//GPUとOSに画面の交渉を行うように通知する

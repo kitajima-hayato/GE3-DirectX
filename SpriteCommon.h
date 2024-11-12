@@ -63,5 +63,6 @@ private:	// メンバ変数
 private:	// メンバ変数
 	Microsoft::WRL::ComPtr<ID3D12Resource>vertexResource = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource>indexResource = nullptr;
+
 };
 
