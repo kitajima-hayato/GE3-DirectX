@@ -26,6 +26,7 @@
 #include "D3DResourceLeakChecker.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
+#include "TextureManager.h"
 
 using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
@@ -169,6 +170,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     sprites.clear();
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon);
+
+	// テクスチャマネージャーの初期化
+	TextureManager::GetInstance()->Initialize();
+	
+
 #pragma endregion
 
 
@@ -687,7 +693,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();*/
 
 	//CloseHandle(fenceEvent);
-
+	//TextureManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
 #pragma endregion
