@@ -11,7 +11,10 @@ class TextureManager
 public:// メンバ関数
 	// 初期化
 	void Initialize();
+	// 終了処理
 	void Finalize();
+	// テクスチャの読み込み
+	void LoadTexture(const std::string& filePath);
 public:
 	// シングルトンインスタンスを取得
 	static TextureManager* GetInstance();

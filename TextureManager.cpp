@@ -24,3 +24,12 @@ void TextureManager::Initialize()
 	// テクスチャの最大枚数を取得
 	textureDatas.reserve(DirectXCommon::kMaxSRVCount);
 }
+
+void TextureManager::Finalize()
+{
+}
+
+void TextureManager::LoadTexture(const std::string& filePath)
+{
+
+}

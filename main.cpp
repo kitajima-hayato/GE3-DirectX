@@ -341,6 +341,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//#pragma region エラーが出たらこいつに要注意
 	//	//Textureを読んで転送する
+	//　
 	DirectX::ScratchImage mipImages = DirectXCommon::LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
@@ -693,7 +694,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();*/
 
 	//CloseHandle(fenceEvent);
-	//TextureManager::GetInstance()->Finalize();
+	TextureManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
 #pragma endregion
