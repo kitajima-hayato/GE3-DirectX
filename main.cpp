@@ -569,76 +569,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//
 		//
 		//
-		//		ImGui::Begin("Settings");
-		//		if (ImGui::BeginTabBar("OBJ"))
-		//		{
-		//			// Objの値変更
-		//			if (ImGui::BeginTabItem("OBJ"))
-		//			{
-		//				ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
-		//				ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-		//				ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-		//				ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
-		//				ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-		//				if (ImGui::Button("*Lighting")) {
-		//					if (materialDate->enableLighting) {
-		//						materialDate->enableLighting = 0;
-		//					}
-		//					else if (!materialDate->enableLighting) {
-		//						materialDate->enableLighting = 1;
-		//					}
-		//				}if (ImGui::Button("*HalfLambert")) {
-		//					if (materialDate->enableLighting) {
-		//						materialDate->enableLighting = 2;
-		//					}
-		//				}
-		//				ImGui::EndTabItem();
-		//			}
-		//			//UVの値変更
-		//			if (ImGui::BeginTabItem("UV"))
-		//			{
-		//				ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
-		//				ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
-		//				ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
-		//				ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-		//				ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-		//				ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
-		//				ImGui::EndTabItem();
-		//			}
-		//			//Sphereの値変更
-		//			if (ImGui::BeginTabItem("Sphere"))
-		//			{
-		//				ImGui::ColorEdit4("*color", &materialDataSphere->color.x);
-		//				ImGui::DragFloat3("*scale", &transformSphere.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-		//				ImGui::DragFloat3("*rotate", &transformSphere.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-		//				ImGui::DragFloat3("*translate", &transformSphere.translate.x, 0.01f);
-		//				ImGui::DragFloat3("*shadow", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
-		//				if (ImGui::Button("*Lighting")) {
-		//					if (materialDataSphere->enableLighting) {
-		//						materialDataSphere->enableLighting = 0;
-		//					}
-		//					else if (!materialDataSphere->enableLighting) {
-		//						materialDataSphere->enableLighting = 1;
-		//					}
-		//				}
-		//				if (ImGui::Button("*HalfLambert")) {
-		//					if (materialDataSphere->enableLighting) {
-		//						materialDataSphere->enableLighting = 2;
-		//					}
-		//
-		//				}
-		//				ImGui::EndTabItem();
-		//			}
-		//			ImGui::EndTabItem();
-		//		}
+				//ImGui::Begin("Settings");
+				//if (ImGui::BeginTabBar("OBJ"))
+				//{
+				//	// Objの値変更
+				//	if (ImGui::BeginTabItem("Sprite"))
+				//	{
+		//ImGui::DragFloat2("*spritePos", &pos.x);
 
 
-//		ImGui::End();
-//		ImGui::Render();
+				//		
+				//		ImGui::EndTabItem();
+				//	}
+				//	
+				//}
+
+		Vector2 pos = sprite->GetPosition();
+		pos.x += 0.1f;
+		sprite->SetPosition(pos);
+		/*ImGui::End();
+		ImGui::Render();*/
 
 
 
-//DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
+		//DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
 
 		dxCommon->PreDraw();
 
@@ -685,9 +639,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 #pragma region  解放処理
 
-	//ImGui_ImplDX12_Shutdown();
-	//ImGui_ImplWin32_Shutdown();
-	//ImGui::DestroyContext();
+	/*ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();*/
 
 	//CloseHandle(fenceEvent);
 

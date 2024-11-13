@@ -46,6 +46,8 @@ void DirectXCommon::Initialize(WinAPI* winAPI)
 	InitViewportRect();
 	//シザリング矩形の初期化
 	InitScissorRect();
+	// imguiの初期化
+	//InitImGui();
 
 	//DXCコンパイラの生成
 	CreateDXCCompiler();

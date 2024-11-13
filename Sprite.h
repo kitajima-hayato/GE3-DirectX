@@ -11,6 +11,10 @@ public:	// メンバ関数
 	void Initialize(SpriteCommon* spriteCommon);
 	void Update();
 	void Draw();
+
+public:	// Getter,Setter
+	const Vector2& GetPosition()const { return position; }
+	void SetPosition(const Vector2& position) { this->position = position; }
 private:	// メンバ関数
 	void CreateVertexResourceData();
 	void CreateMaterialResource();
@@ -39,6 +43,9 @@ private:	// メンバ変数
 	Microsoft::WRL::ComPtr <ID3D12Resource>transformationMatrixResource;
 	// バッファリソース内のデータを示すポインタ
 	TransformationMatrix* transformationMatrix = nullptr;
+
+	// 座標
+	Vector2 position = { 0.0f,0.0f };
 
 };
 

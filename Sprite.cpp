@@ -10,7 +10,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon)
 
 void Sprite::Update()
 {
-	
+#pragma region 頂点データの設定
 	// インデックスリソースにデータを書き込む(6個分)
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
@@ -33,8 +33,10 @@ void Sprite::Update()
 	vertexData[4].texcoord = { 1.0f,0.0f };
 	vertexData[5].position = vertexData[2].position;
 	vertexData[5].texcoord = vertexData[2].texcoord;
+#pragma endregion
 	// Transform情報を作る
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	transform.translate = { position.x,position.y,0.0f };
 	// TransformからWorld行列を作る
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	// ViewMatrixを作って単位行列を代入
