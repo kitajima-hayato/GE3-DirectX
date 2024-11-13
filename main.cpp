@@ -162,7 +162,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	spriteCommon->Initialize(dxCommon);
 #pragma endregion 
 
+
 #pragma region 最初のシーンの初期化
+	std::vector<Sprite*> sprites;
+   
+    sprites.clear();
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon);
 #pragma endregion
@@ -530,7 +534,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::NewFrame();*/
 		//ゲームの処理
 		input->Update();
-		sprite->Update();
+		
 
 		if (input->TriggerKey(DIK_1)) {
 			OutputDebugStringA("Hit_1\n");
@@ -583,10 +587,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//	}
 				//	
 				//}
+		
 
-		Vector2 pos = sprite->GetPosition();
-		pos.x += 0.1f;
-		sprite->SetPosition(pos);
+		
+
+
 		/*ImGui::End();
 		ImGui::Render();*/
 
@@ -599,8 +604,46 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->DrawSettingCommon();
 
-		sprite->Draw();
+		
+		//// positionの変更
+		//Vector2 pos = sprite->GetPosition();
+		//pos.x += 0.1f;
+		//sprite->SetPosition(pos);
+		//// rotationの変更
+		//float angle = sprite->GetRotation();
+		//angle += 0.01f;
+		//sprite->SetRotation(angle);
+		//// colorの変更
+		//Vector4 color = sprite->GetColor();
+		//color.x += 0.1f;
+		//if (color.x > 1.0f) color.x = 0.0f;
+		//sprite->SetColor(color);
+		//// scaleの変更
+		//Vector2 size = sprite->GetSize();
+		//size.x -= 0.1f;
+		//size.y += 0.1f;
+		//sprite->SetSize(size);
 
+		//スプライトの複数描画
+       
+        for (uint32_t i = 0; i < 5; ++i) {
+            Sprite* sprite = new Sprite();
+            sprite->Initialize(spriteCommon);
+			Vector2 pos = sprite->GetPosition();
+            pos.x = static_cast<float>(i * 100); // 各スプライトのx座標を設定
+			sprite->SetPosition(pos);
+            sprites.push_back(sprite);
+			Vector2 size = sprite->GetSize();
+			size.x = 100.0f;
+			size.y = 100.0f;
+			sprite->SetSize(size);
+
+
+        }
+        for (Sprite* sprite : sprites) {
+            sprite->Update();
+            sprite->Draw();
+        }
 
 
 		//
@@ -655,6 +698,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//OutputDebugStringA("Hello,DirectX!\n");
 
 	//解放
+	for (auto sprite : sprites) {
+		delete sprite;
+	}
 	delete sprite;
 	delete spriteCommon;
 	delete dxCommon;

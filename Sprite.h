@@ -13,8 +13,19 @@ public:	// メンバ関数
 	void Draw();
 
 public:	// Getter,Setter
+	// Position
 	const Vector2& GetPosition()const { return position; }
 	void SetPosition(const Vector2& position) { this->position = position; }
+	// Rotation
+	float GetRotation()const { return rotation; }
+	void SetRotation(float rotation) { this->rotation = rotation; }
+	// color
+	const Vector4& GetColor()const { return materialData->color; }
+	void SetColor(const Vector4& color) { materialData->color = color; }
+	// size
+	const Vector2& GetSize()const { return size; }
+	void SetSize(const Vector2& size) { this->size = size; }
+	
 private:	// メンバ関数
 	void CreateVertexResourceData();
 	void CreateMaterialResource();
@@ -46,6 +57,9 @@ private:	// メンバ変数
 
 	// 座標
 	Vector2 position = { 0.0f,0.0f };
+	float rotation = 0.0f;
+	// 色はmaterialDataに格納されているのでそちらを参照
+	Vector2 size = { 640.0f,360.0f };
 
 };
 

@@ -12,35 +12,44 @@ void Sprite::Update()
 {
 #pragma region 頂点データの設定
 	// インデックスリソースにデータを書き込む(6個分)
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[4].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[5].normal = { 0.0f,0.0f,-1.0f };
+	for (int i = 0; i < 6; ++i) {
+		vertexData[i].normal = { 0.0f, 0.0f, -1.0f };
+	}
 
-	//１枚目の三角形
-	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f };//abc bdc
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	//２枚目の三角形
+	// 1枚目の三角形
+	// 左上
+	vertexData[0].position = { 0.0f, 1.0f, 0.0f, 1.0f };
+	vertexData[0].texcoord = { 0.0f, 1.0f };
+	// 左下
+	vertexData[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vertexData[1].texcoord = { 0.0f, 0.0f };
+	//	右下
+	vertexData[2].position = { 1.0f, 1.0f, 0.0f, 1.0f };
+	vertexData[2].texcoord = { 1.0f, 1.0f };
+
+	// 2枚目の三角形
+	// 左上
 	vertexData[3].position = vertexData[1].position;
 	vertexData[3].texcoord = vertexData[1].texcoord;
-	vertexData[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexData[4].texcoord = { 1.0f,0.0f };
+	// 右上
+	vertexData[4].position = { 1.0f, 0.0f, 0.0f, 1.0f };
+	vertexData[4].texcoord = { 1.0f, 0.0f };
+	// 右下
 	vertexData[5].position = vertexData[2].position;
 	vertexData[5].texcoord = vertexData[2].texcoord;
 #pragma endregion
+
 	// Transform情報を作る
-	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	transform.translate = { position.x,position.y,0.0f };
+	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+	transform.translate = { position.x, position.y, 0.0f };
+	transform.rotate = { 0.0f, 0.0f, rotation };
+	transform.scale = { size.x, size.y, 1.0f };
 	// TransformからWorld行列を作る
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
 	// ViewMatrixを作って単位行列を代入
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
+
 	// ProjectionMatrixを作って平行投影行列を代入
 	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinAPI::kClientWidth), float(WinAPI::kClientHeight), 0.0f, 100.0f);
 
@@ -48,6 +57,22 @@ void Sprite::Update()
 	transformationMatrix->WVP = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 	transformationMatrix->World = worldMatrix;
 }
+//#pragma endregion
+//	// Transform情報を作る
+//	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+//	transform.translate = { position.x,position.y,0.0f };
+//	transform.rotate = { 0.0f,0.0f,rotation };
+//	// TransformからWorld行列を作る
+//	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+//	// ViewMatrixを作って単位行列を代入
+//	Matrix4x4 viewMatrix = MakeIdentity4x4();
+//	// ProjectionMatrixを作って平行投影行列を代入
+//	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinAPI::kClientWidth), float(WinAPI::kClientHeight), 0.0f, 100.0f);
+//
+//	// WVP行列を計算
+//	transformationMatrix->WVP = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+//	transformationMatrix->World = worldMatrix;
+//}
 
 void Sprite::Draw()
 {
@@ -62,7 +87,7 @@ void Sprite::Draw()
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSRVGPUDescriptorHandle(1));
 	// SRVのDescriptorHeapの場所を設定
-	
+
 	// 描画
 	spriteCommon->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
 	//spriteCommon->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
@@ -133,8 +158,7 @@ void Sprite::CreateTransformationMatrixData()
 
 void Sprite::DrawSetting()
 {
-    spriteCommon->GetDxCommon()->LoadTexture("resources/uvChecker.png");
+	spriteCommon->GetDxCommon()->LoadTexture("resources/uvChecker.png");
 	spriteCommon->DrawSettingCommon();
 	//spriteCommon->GetDxCommon()->CreateTextureResource();
 }
-	
