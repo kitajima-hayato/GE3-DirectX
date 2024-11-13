@@ -62,8 +62,8 @@ void Sprite::Draw()
 	// SRVのDescriptorHeapの場所を設定
 	
 	// 描画
-	//commandList->DrawInstanced(6, 1, 0, 0);
-	spriteCommon->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+	spriteCommon->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+	//spriteCommon->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
 void Sprite::CreateVertexResourceData()
