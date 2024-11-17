@@ -8,10 +8,15 @@
 #include "WinAPI.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
+// 最大SRV数(最大テクスチャ枚数)
+
+
 // DirectX基盤
 class DirectXCommon
 {
 public:
+	static uint32_t kMaxSRVCount;
+
 	/// <summary>
 	// コンストラクタ
 	/// <summary>
@@ -116,18 +121,22 @@ private:	// 内部処理専用関数
 	/// コマンド関連の初期化
 	/// </summary>
 	void InitCommand();
+
 	/// <summary>
 	/// デバイスの初期化
 	/// </summary>
 	void InitDevice();
+
 	/// <summary>
 	/// SwapChainの生成
 	/// </summary>
 	void CreateSwapChain();
+
 	/// <summary>
 	/// 深度バッファの生成
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthBuffer(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
+	
 	/// <summary>
 	/// ディスクリプターヒープ作成関数
 	/// </summary>
@@ -135,16 +144,17 @@ private:	// 内部処理専用関数
 		D3D12_DESCRIPTOR_HEAP_TYPE heapType,
 		UINT numDescriptors,
 		bool shaderVisible);
+	
 	/// <summary>
 	/// 各種ディスクリプターヒープの生成
 	/// </summary>
+	
 	void CreateDescriptorHeaps();
 	/// <summary>
 	/// レンダーターゲットビューの初期化
 	/// </summary>
 	void InitRenderTargetView();
 	
-
 	/// <summary>
 	/// 深度ステンシルビューの初期化
 	/// </summary>
@@ -175,21 +185,17 @@ private:	// 内部処理専用関数
 	/// </summary>
 	void InitImGui();
 
-	
 	/// <summary>
 	/// シェーダーコンパイル関数
 	/// </summary>
 	static std::wstring ConvertString(const std::string& str);
 	static std::string ConvertString(const std::wstring& str);
-
-
-
-	
 	
 	/// <summary>
 	/// FPS固定初期化
 	/// </summary>
 	void InitializeFixFPS();
+	
 	/// <summary>
 	/// FPS固定更新
 	/// </summary>
@@ -254,4 +260,7 @@ private:		// メンバ変数
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource;
 	// 記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
+
+	
 };
+

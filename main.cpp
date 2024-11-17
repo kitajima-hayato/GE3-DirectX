@@ -26,6 +26,7 @@
 #include "D3DResourceLeakChecker.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
+#include "TextureManager.h"
 
 using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
@@ -169,6 +170,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     sprites.clear();
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon);
+
+	// テクスチャマネージャーの初期化
+	TextureManager::GetInstance()->Initialize();
+	
+
 #pragma endregion
 
 
@@ -335,6 +341,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//#pragma region エラーが出たらこいつに要注意
 	//	//Textureを読んで転送する
+	//　
 	DirectX::ScratchImage mipImages = DirectXCommon::LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
@@ -687,7 +694,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();*/
 
 	//CloseHandle(fenceEvent);
-
+	TextureManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
 #pragma endregion

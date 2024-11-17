@@ -16,6 +16,10 @@ using namespace Logger;
 #pragma comment(lib,"dxguid.lib")
 
 using namespace Microsoft::WRL;
+
+
+uint32_t DirectXCommon::kMaxSRVCount = 512;
+
 DirectXCommon::DirectXCommon()
 {
 }
@@ -258,7 +262,7 @@ void DirectXCommon::CreateDescriptorHeaps()
 	///////////////////////////////dsV!!!!!!!!!!!!!!!!!!!!!!!!
 #pragma region DescriptorHEAPの生成
 	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
 	// DSV用のヒープでディスクリプタの数は１。DSVはShader内で触るものではないので、ShaderVisibleはfalse
 	dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 #pragma endregion
