@@ -49,12 +49,6 @@ public:
 		CreateBufferResource(size_t sizeInBytes);
 
 	/// <summary>
-	/// テクスチャファイルパスの読み込み
-	/// <param name ="filePath"テクスチャファイルのパス>
-	/// </summary>
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
-	/// <summary>
 	/// テクスチャリソースの生成
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTextureResource(const DirectX::TexMetadata& metadata);
