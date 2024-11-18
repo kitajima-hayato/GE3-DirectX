@@ -56,7 +56,8 @@ void TextureManager::Initialize(DirectXCommon* dxCommon)
 }
 
 void TextureManager::Finalize()
-{
+{// テクスチャデータのクリア
+	textureDatas.clear();
 }
 
 void TextureManager::LoadTexture(const std::string& filePath)
