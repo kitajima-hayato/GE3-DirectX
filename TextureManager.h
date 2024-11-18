@@ -30,6 +30,10 @@ public:	// Getter,Setter
 	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
 	// テクスチャ番号からGPUハンドルを取得
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex);
+
+	// メタデータを取得
+	const DirectX::TexMetadata& GetMetadata(uint32_t textureIndex);
+
 private: // メンバ関数/構造体
 	
 

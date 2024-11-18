@@ -124,7 +124,7 @@ void SpriteCommon::CreateGraficsPipeLine()
 
 
 	// カリングモードを設定
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	// ポリゴンのフィルモードを設定。ポリゴンの塗り潰し
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
