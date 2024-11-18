@@ -48,6 +48,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(uint32_t textureInde
 	return textureData.srvHandleGPU;
 }
 
+const DirectX::TexMetadata& TextureManager::GetMetadata(uint32_t textureIndex)
+{
+	// 範囲指定違反チェック
+	assert(textureIndex < textureDatas.size());
+	TextureData& textureData = textureDatas[textureIndex];
+	return textureData.metadata;
+}
+
 void TextureManager::Initialize(DirectXCommon* dxCommon)
 {
 	this->dxCommon = dxCommon;
