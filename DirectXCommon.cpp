@@ -285,7 +285,6 @@ void DirectXCommon::InitRenderTargetView()
 	// ディスクリプタの先頭を取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	// エラーが出たら　rtvHandles=rtvStartHandleをfor分の外へ　rtvHandles[0] = rtvStartHandle;
 
 	for (uint32_t i = 0; i < 2; ++i) {
 		rtvHandles[i] = rtvStartHandle;
