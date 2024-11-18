@@ -169,12 +169,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 最初のシーンの初期化
 	std::vector<Sprite*> sprites;
-	std::vector<Sprite*> sprites2;
+	//std::vector<Sprite*> sprites2;
     sprites.clear();
-	sprites2.clear();
+	//sprites2.clear();
+	Sprite* sprite = new Sprite();
+	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
+	Vector2 pos = { 0.0f, 0.0f };
+	sprite->SetPosition(pos);
+	//Vector2 size = { 100.0f, 100.0f };
+	//sprite->SetSize(size);
+	sprites.push_back(sprite);
 	
-	
-	for (uint32_t i = 0; i < 5; ++i) {
+	/*for (uint32_t i = 0; i < 5; ++i) {
 		Sprite* sprite = new Sprite();
 		sprite->Initialize(spriteCommon, "resources/uvChecker.png");
 		Vector2 pos = { 100.0f * i, 100.0f };
@@ -191,7 +197,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector2 size = { 100.0f, 100.0f };
 		sprite2->SetSize(size);
 		sprites.push_back(sprite2);
-	}
+	}*/
 #pragma endregion
 
 
@@ -641,9 +647,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (Sprite* sprite : sprites) {
 			sprite->Draw();
 		}
-		for (Sprite* sprite2 : sprites2) {
+		/*for (Sprite* sprite2 : sprites2) {
 			sprite2->Draw();
-		}
+		}*/
 
 		//
 		//		// スフィア用の設定
@@ -697,9 +703,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//OutputDebugStringA("Hello,DirectX!\n");
 
 	//解放
-	for (Sprite* sprite2 : sprites2) {
+	/*for (Sprite* sprite2 : sprites2) {
 		delete sprite2;
-	}
+	}*/
 	for (Sprite* sprite : sprites) {
 		delete sprite;
 	}
