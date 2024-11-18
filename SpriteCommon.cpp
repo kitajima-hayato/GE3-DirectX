@@ -15,7 +15,6 @@ void SpriteCommon::CreateRootSignatrue()
 	//RootSignature作成
 	descriptionRootSignature.Flags =
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
 #pragma region DescriptorRange
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;//0から始まる

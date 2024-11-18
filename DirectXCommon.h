@@ -35,6 +35,11 @@ public:
 	/// </summary>
 	void PostDraw();
 
+	///
+	///
+	/// 
+	void WaitCommand();
+
 	/// <summary>
 	/// シェーダーのコンパイル
 	/// </summary>
@@ -47,12 +52,6 @@ public:
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource>
 		CreateBufferResource(size_t sizeInBytes);
-
-	/// <summary>
-	/// テクスチャファイルパスの読み込み
-	/// <param name ="filePath"テクスチャファイルのパス>
-	/// </summary>
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
 	/// <summary>
 	/// テクスチャリソースの生成

@@ -427,6 +427,50 @@ void DirectXCommon::PostDraw()
 
 }
 
+void DirectXCommon::WaitCommand()
+{
+	
+#pragma region グラフィックコマンドをクローズ
+	// コマンドリストの内容を確定させる。すべてのコマンドを積んでから Close すること
+	HRESULT hr = commandList->Close();
+	assert(SUCCEEDED(hr));
+#pragma endregion
+#pragma region GPUコマンドの実行
+	//GPUにコマンドリストの実行を行わせる
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists);
+#pragma endregion
+
+#pragma region Fenceの値を更新
+	//Fenceの値を更新
+	fenceValue++;
+	//GPUがここまでたどり着いた時に、Fenceの値を指定した値に代入するようにSignalを送る
+	commandQueue->Signal(fence.Get(), fenceValue);
+#pragma endregion
+#pragma region コマンド完了待ち
+	// Fenceの値が指定したSignal値にたどり着いているか確認する
+		//GetCompletedValueの初期値はFence作成時に渡した初期値
+	if (fence->GetCompletedValue() < fenceValue) {
+		//指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		//イベントを待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+#pragma endregion
+#pragma region コマンドアロケーターのリセット
+	//次のフレーム用のコマンドリストを準備
+	hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+#pragma endregion
+#pragma region コマンドリストのリセット
+	hr = commandList->Reset(commandAllocator.Get(), nullptr);
+	assert(SUCCEEDED(hr));
+#pragma endregion
+
+
+
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVCPUDescriptorHandle(uint32_t index)
 {
 	return GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
@@ -651,6 +695,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(cons
 		nullptr,						// Clear最適値 使わないのでnullptr
 		IID_PPV_ARGS(&resource)			// 作成するResourceポインタへのポインタ
 	);
+
 	assert(SUCCEEDED(hr));
 	return resource;
 }
@@ -674,22 +719,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(Microsof
 	commandList->ResourceBarrier(1, &barrier);
 
 	return intermediateResource;
-}
-
-DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
-{
-	//テクスチャファイルを読んでプログラムで扱えるようにする
-	DirectX::ScratchImage image{};
-	std::wstring filePathW = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-	assert(SUCCEEDED(hr));
-
-	//ミップマップの作成
-	DirectX::ScratchImage mipImages{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
-	assert(SUCCEEDED(hr));
-	//ミップマップ付きのデータを返す
-	return mipImages;
 }
 
 void DirectXCommon::InitializeFixFPS()
