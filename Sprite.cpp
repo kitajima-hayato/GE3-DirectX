@@ -1,20 +1,22 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
-void Sprite::Initialize(SpriteCommon* spriteCommon)
+#include "TextureManager.h"
+void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 {
 	this->spriteCommon = spriteCommon;
-	CreateMaterialResource();
 	CreateVertexResourceData();
+	CreateMaterialResource();
 	CreateTransformationMatrixData();
+	// 単位行列を書き込んでおく
+	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 }
 
 void Sprite::Update()
 {
 #pragma region 頂点データの設定
-	// インデックスリソースにデータを書き込む(6個分)
-	for (int i = 0; i < 6; ++i) {
-		vertexData[i].normal = { 0.0f, 0.0f, -1.0f };
-	}
+
 
 	// 1枚目の三角形
 	// 左上
@@ -38,9 +40,14 @@ void Sprite::Update()
 	vertexData[5].position = vertexData[2].position;
 	vertexData[5].texcoord = vertexData[2].texcoord;
 #pragma endregion
+	// インデックスリソースにデータを書き込む(6個分)
+	for (int i = 0; i < 6; ++i) {
+		vertexData[i].normal = { 0.0f, 0.0f, -1.0f };
+	}
+
 
 	// Transform情報を作る
-	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+
 	transform.translate = { position.x, position.y, 0.0f };
 	transform.rotate = { 0.0f, 0.0f, rotation };
 	transform.scale = { size.x, size.y, 1.0f };
@@ -52,27 +59,12 @@ void Sprite::Update()
 
 	// ProjectionMatrixを作って平行投影行列を代入
 	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinAPI::kClientWidth), float(WinAPI::kClientHeight), 0.0f, 100.0f);
+	Matrix4x4 worldProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 	// WVP行列を計算
-	transformationMatrix->WVP = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	transformationMatrix->WVP = worldProjectionMatrix;
 	transformationMatrix->World = worldMatrix;
 }
-//#pragma endregion
-//	// Transform情報を作る
-//	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-//	transform.translate = { position.x,position.y,0.0f };
-//	transform.rotate = { 0.0f,0.0f,rotation };
-//	// TransformからWorld行列を作る
-//	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-//	// ViewMatrixを作って単位行列を代入
-//	Matrix4x4 viewMatrix = MakeIdentity4x4();
-//	// ProjectionMatrixを作って平行投影行列を代入
-//	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinAPI::kClientWidth), float(WinAPI::kClientHeight), 0.0f, 100.0f);
-//
-//	// WVP行列を計算
-//	transformationMatrix->WVP = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-//	transformationMatrix->World = worldMatrix;
-//}
 
 void Sprite::Draw()
 {
@@ -85,8 +77,8 @@ void Sprite::Draw()
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// 座標変換行列CBufferの場所を設定
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, spriteCommon->GetDxCommon()->GetSRVGPUDescriptorHandle(1));
 	// SRVのDescriptorHeapの場所を設定
+	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
 
 	// 描画
 	spriteCommon->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
@@ -95,6 +87,7 @@ void Sprite::Draw()
 
 void Sprite::CreateVertexResourceData()
 {
+
 	// VertexResourceを作る
 	vertexResource = spriteCommon->CreateSpriteVertexResource();
 	// VertexBufferViewを作成する(値を設定するだけ)
@@ -103,10 +96,6 @@ void Sprite::CreateVertexResourceData()
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
 	// 1頂点分のサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	// VertexResourceにデータを書き込むためのアドレスを取得してvertexDataに割り当てる
-	vertexData = nullptr;	// nullptrを代入しておく
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));	// マップする
-
 
 	// IndexResourceを作る
 	indexResource = spriteCommon->CreateSpriteIndexResource();
@@ -126,6 +115,19 @@ void Sprite::CreateVertexResourceData()
 	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
 	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
 
+	
+
+
+
+	// VertexResourceにデータを書き込むためのアドレスを取得してvertexDataに割り当てる
+	vertexData = nullptr;	// nullptrを代入しておく
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));	// マップする
+
+
+
+
+	
+
 }
 
 
@@ -133,7 +135,6 @@ void Sprite::CreateMaterialResource() {
 	// マテリアルデータを作成する
 	materialResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(Material));
 	// マテリアルリソースにデータを書き込むためのアドレスを取得してmaterialに割り当てる
-	materialData = nullptr;	// nullptrを代入しておく
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));	// マップする
 
 	// マテリアルデータの初期化
@@ -156,9 +157,9 @@ void Sprite::CreateTransformationMatrixData()
 	transformationMatrix->World = MakeIdentity4x4();
 }
 
-void Sprite::DrawSetting()
-{
-	spriteCommon->GetDxCommon()->LoadTexture("resources/uvChecker.png");
-	spriteCommon->DrawSettingCommon();
-	//spriteCommon->GetDxCommon()->CreateTextureResource();
-}
+//void Sprite::DrawSetting()
+//{
+//	spriteCommon->GetDxCommon()->LoadTexture("resources/uvChecker.png");
+//	spriteCommon->DrawSettingCommon();
+//	//spriteCommon->GetDxCommon()->CreateTextureResource();
+//}

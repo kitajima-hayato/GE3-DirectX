@@ -158,6 +158,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winAPI);
 
+	// テクスチャマネージャーの初期化
+	TextureManager::GetInstance()->Initialize(dxCommon);
+
 	// スプライト共通部の初期化
 	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
@@ -166,23 +169,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 最初のシーンの初期化
 	std::vector<Sprite*> sprites;
-   
+	std::vector<Sprite*> sprites2;
     sprites.clear();
-	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon);
-
-	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize();
+	sprites2.clear();
 	
-
+	
+	for (uint32_t i = 0; i < 5; ++i) {
+		Sprite* sprite = new Sprite();
+		sprite->Initialize(spriteCommon, "resources/uvChecker.png");
+		Vector2 pos = { 100.0f * i, 100.0f };
+		sprite->SetPosition(pos);
+		Vector2 size = { 100.0f, 100.0f };
+		sprite->SetSize(size);
+		sprites.push_back(sprite);
+	}
+	for (uint32_t i = 0; i < 5; ++i) {
+		Sprite* sprite2 = new Sprite();
+		sprite2->Initialize(spriteCommon, "resources/monsterball.png");
+		Vector2 pos = { 100.0f * i, 200.0f };
+		sprite2->SetPosition(pos);
+		Vector2 size = { 100.0f, 100.0f };
+		sprite2->SetSize(size);
+		sprites.push_back(sprite2);
+	}
 #pragma endregion
-
-
-
-
-
-
-
 
 
 
@@ -196,12 +206,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
 	//	assert(false);
 	//}
-
-
-
-
-
-
 	//SpriteCommon移植済み
 	//	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	//	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();//
@@ -342,24 +346,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//#pragma region エラーが出たらこいつに要注意
 	//	//Textureを読んで転送する
 	//　
-	DirectX::ScratchImage mipImages = DirectXCommon::LoadTexture("resources/uvChecker.png");
+	
+
+
+	/*::ScratchImage mipImages;
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
 	Microsoft::WRL::ComPtr < ID3D12Resource> intermediateResource = dxCommon->UploadTextureData(textureResource, mipImages);
-
-
 	//2枚目のTextureを読んで転送する
 	DirectX::ScratchImage mipImages2 = DirectXCommon::LoadTexture("resources/monsterball.png");
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource2 = dxCommon->CreateTextureResource(metadata2);
 	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(textureResource2, mipImages2);
-	//
-	//#pragma endregion
-	//
-	//
-	//
-	//
-	//metaDataを基にSRVの設定
+	
+	#pragma endregion
+	
+	
+	
+	
+	metaDataを基にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = metadata.format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -374,10 +379,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	textureSrvHandleGPU.ptr += dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//SRVの生成  シェーダーリソースビュー
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-	//
-	//
-	//
-	//
+	*/
 
 
 	//#pragma region スフィアの表示
@@ -547,6 +549,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			OutputDebugStringA("Hit_1\n");
 		}
 
+		for (Sprite* sprite : sprites) {
+			sprite->Update();
+
+		}
+
 		//		//三角形の回転
 		//		//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 		//		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -594,10 +601,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//	}
 				//	
 				//}
-		
-
-		
-
 
 		/*ImGui::End();
 		ImGui::Render();*/
@@ -633,25 +636,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//スプライトの複数描画
        
-        for (uint32_t i = 0; i < 5; ++i) {
-            Sprite* sprite = new Sprite();
-            sprite->Initialize(spriteCommon);
-			Vector2 pos = sprite->GetPosition();
-            pos.x = static_cast<float>(i * 100); // 各スプライトのx座標を設定
-			sprite->SetPosition(pos);
-            sprites.push_back(sprite);
-			Vector2 size = sprite->GetSize();
-			size.x = 100.0f;
-			size.y = 100.0f;
-			sprite->SetSize(size);
-
-
-        }
-        for (Sprite* sprite : sprites) {
-            sprite->Update();
-            sprite->Draw();
-        }
-
+		
+       
+		for (Sprite* sprite : sprites) {
+			sprite->Draw();
+		}
+		for (Sprite* sprite2 : sprites2) {
+			sprite2->Draw();
+		}
 
 		//
 		//		// スフィア用の設定
@@ -705,10 +697,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//OutputDebugStringA("Hello,DirectX!\n");
 
 	//解放
-	for (auto sprite : sprites) {
+	for (Sprite* sprite2 : sprites2) {
+		delete sprite2;
+	}
+	for (Sprite* sprite : sprites) {
 		delete sprite;
 	}
-	delete sprite;
 	delete spriteCommon;
 	delete dxCommon;
 	delete input;

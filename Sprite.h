@@ -8,7 +8,7 @@ class Sprite
 {
 public:	// メンバ関数
 	// 初期化
-	void Initialize(SpriteCommon* spriteCommon);
+	void Initialize(SpriteCommon* spriteCommon,std::string textureFilePath);
 	void Update();
 	void Draw();
 
@@ -30,7 +30,7 @@ private:	// メンバ関数
 	void CreateVertexResourceData();
 	void CreateMaterialResource();
 	void CreateTransformationMatrixData();
-	void DrawSetting();
+	//void DrawSetting();
 private:	// メンバ変数
 	// CreateBufferResourceを呼びたい
 	// スプライトの設定用クラス
@@ -61,5 +61,10 @@ private:	// メンバ変数
 	// 色はmaterialDataに格納されているのでそちらを参照
 	Vector2 size = { 640.0f,360.0f };
 
+	// テクスチャ番号
+	uint32_t textureIndex = 0;
+
+	// 
+	Transform transform;
 };
 

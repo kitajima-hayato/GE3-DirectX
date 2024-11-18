@@ -35,6 +35,11 @@ public:
 	/// </summary>
 	void PostDraw();
 
+	///
+	///
+	/// 
+	void WaitCommand();
+
 	/// <summary>
 	/// シェーダーのコンパイル
 	/// </summary>

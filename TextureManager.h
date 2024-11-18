@@ -13,23 +13,25 @@ class TextureManager
 	static uint32_t kSRVIndexTop;
 public:// メンバ関数
 	// 初期化
-	void Initialize();
+	void Initialize(DirectXCommon*dxCommon);
 	// 終了処理
 	void Finalize();
-	// テクスチャの読み込み
+	/// <summary>
+	/// テクスチャファイルパスの読み込み
+	/// <param name ="filePath"テクスチャファイルのパス>
+	/// </summary>
 	void LoadTexture(const std::string& filePath);
 public:	// Getter,Setter
 	// シングルトンインスタンスを取得
 	static TextureManager* GetInstance();
 	// シングルトンインスタンスを解放
 	static void DeleteInstance();
-
+	// SRVインデックスの開始番号
+	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
+	// テクスチャ番号からGPUハンドルを取得
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex);
 private: // メンバ関数/構造体
-	/// <summary>
-	/// テクスチャファイルパスの読み込み
-	/// <param name ="filePath"テクスチャファイルのパス>
-	/// </summary>
-	void LoadTexture(const std::string& filePath);
+	
 
 	//テクスチャ１枚分の情報
 	struct TextureData
@@ -54,9 +56,7 @@ private:// メンバ変数
 	
 	// テクスチャデータ
 	std::vector<TextureData> textureDatas;	// vectorにすることで読み込み済みのテクスチャの枚数をカウントできる
-	///テクスチャファイルを読んでプログラムで扱えるようにする
-	//irectX::ScratchImage image{};
-	///ミップマップの作成
-	//irectX::ScratchImage mipImages{};
+	
+	
 };
 
