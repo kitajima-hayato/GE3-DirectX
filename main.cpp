@@ -27,6 +27,8 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "TextureManager.h"
+#include "Object3D.h"
+#include "Object3DCommon.h"
 
 using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
@@ -164,10 +166,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// スプライト共通部の初期化
 	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
+
+	// 3Dオブジェクト共通部の初期化
+	Object3DCommon* object3DCommon = new Object3DCommon();
+	object3DCommon->Initialize();
+
+
 #pragma endregion 
 
 
 #pragma region 最初のシーンの初期化
+	// 
+	Object3D* object3D = new Object3D();
+	object3D->Initialize();
+
 	std::vector<Sprite*> sprites;
 	//std::vector<Sprite*> sprites2;
     sprites.clear();
@@ -198,6 +210,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite2->SetSize(size);
 		sprites.push_back(sprite2);
 	}*/
+
+
 #pragma endregion
 
 
@@ -709,6 +723,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (Sprite* sprite : sprites) {
 		delete sprite;
 	}
+	delete object3D;
+	delete object3DCommon;
 	delete spriteCommon;
 	delete dxCommon;
 	delete input;
