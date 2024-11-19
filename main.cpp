@@ -716,9 +716,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;		//PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0;						//レジスタ番号０とバインド
 
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 1;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing);
 
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;			//DescriptorTableを使う
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;						//PixelShaderで使う
@@ -733,10 +734,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//
 #pragma endregion
-
-
-
-
 
 	///////////////////////////////////////////////////////////////////////////////////
 	//Particle
@@ -978,6 +975,48 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	modelData.material.textureFilePath = "./resources/uvChecker.png";
 
 
+
+#pragma region Particle
+
+	//Particle
+	//Particle用のPSOを生成する
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC particlePipelineStateDesc{};
+	particlePipelineStateDesc.pRootSignature = rootSignature.Get();
+	particlePipelineStateDesc.InputLayout = inputLayoutDescs;
+	particlePipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() };
+	particlePipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() };
+	particlePipelineStateDesc.BlendState = blendDesc;
+	particlePipelineStateDesc.RasterizerState = rasterizerDesc;
+	//DepthStencilの設定 
+	particlePipelineStateDesc.DepthStencilState = depthStencilDesc;
+	particlePipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	//書き込むRTVの情報 
+	particlePipelineStateDesc.NumRenderTargets = 1;
+	particlePipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	//利用する形状のタイプ 
+	particlePipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	//どのように画面に色を打ち込むかの設定（気にせんでいい）
+	particlePipelineStateDesc.SampleDesc.Count = 1;
+	particlePipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+	//生成
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> particlePipelineState = nullptr;
+	hr = device->CreateGraphicsPipelineState(&particlePipelineStateDesc, IID_PPV_ARGS(&particlePipelineState));
+	assert(SUCCEEDED(hr));
+
+#pragma endregion
+
+
+
+
+
+
+
+
+
+
+
+
 	//PSOを生成する
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
@@ -1121,6 +1160,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region CG301_00Particleで新規作成した
 	////////////////////////////////////////////////////////////////
 	////////Instancing用にTransformationMatrixを１０個格納できるResourceの作成
+
 	const uint32_t kNumInstance = 10;	//インスタンス数
 	// Instancing用のTransformationMatrixリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource =
@@ -1143,14 +1183,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 	instancingSrvDesc.Buffer.NumElements = kNumInstance;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
-	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 1);
-	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 1);
+	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
 	Transform transforms[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
 		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].rotate = { 0.0f,0.0f,0.0f };
+		transforms[index].rotate = { 2.0f,0.0f,0.0f };
 		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 	}
 
@@ -1521,7 +1561,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->RSSetScissorRects(1, &scissorRect);   // Scissorを設定
 			// RootSignatureを設定。PSOに設定しているけど別途設定が必要
 			commandList->SetGraphicsRootSignature(rootSignature.Get());
-			commandList->SetPipelineState(graphicsPipelineState.Get());  // PSOを設定
+			commandList->SetPipelineState(particlePipelineState.Get());  // PSOを設定
 
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
