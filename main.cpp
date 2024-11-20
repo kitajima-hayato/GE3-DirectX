@@ -1,29 +1,37 @@
-#include<Windows.h>
-#include<cstdint>
-#include<string>
-#include<format>
-#include<d3d12.h>
-#include<dxgi1_6.h>
-#include<cassert>
-#include<dxgidebug.h>
-#include<dxcapi.h>
-#include"Math.h"
-#include"MakeMatrix.h"
-#include"externals/imgui/imgui.h"
-#include"externals/imgui/imgui_impl_dx12.h"
-#include"externals/imgui/imgui_impl_win32.h"
-#include"externals/DirectXTex/DirectXTex.h"
-#include"externals/DirectXTex/d3dx12.h"
-#include<vector>
-#include<fstream>
-#include<sstream>
-#include<wrl.h>
-#include"numbers"
+#include <Windows.h>
+#include <cstdint>
+#include <string>
+#include <format>
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <cassert>
+#include <dxgidebug.h>
+#include <dxcapi.h>
+#include "Math.h"
+#include "MakeMatrix.h"
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
+#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/DirectXTex/d3dx12.h"
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <wrl.h>
+#include "numbers"
+#include <random>
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 
+struct Particle {
+	Transform transform;
+	Vector3 velocity;
+	Vector4 color;
+};
+// Δtを定義６０fos固定
+const float kDeltaTime = 1.0f / 60.0f;
 using namespace std;
 
 enum BlendMode {
@@ -55,6 +63,19 @@ struct D3DResourceLeakChecker {
 		}
 	}
 };
+
+
+Particle MakeParticle(std::mt19937& randomEngine) {
+	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	Particle particle;
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	return particle;
+}
+
+
 
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -1215,11 +1236,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-	Transform transforms[kNumInstance];
+	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
-		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].rotate = { 3.0f,0.0f,3.15f };
-		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
+		particles[index].transform.rotate = { 3.0f,0.0f,3.15f };
+		particles[index].transform.translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 	}
 
 
@@ -1424,8 +1445,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useMonsterBall = false;
 
 
-
-
+	std::random_device seedGen;
+	std::mt19937 randomEngine(seedGen());
+	
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -1443,8 +1465,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::NewFrame();
 			//ゲームの処理
 
-			//三角形の回転
-			//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 
@@ -1473,23 +1493,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
-			
+
 
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
-				Matrix4x4 worldMatrix = MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrixSphere));
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
-				
+				particles[index].velocity = { 0.0f,0.01f,0.0f };
+				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
+				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
+				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+				//particles[index]= MakeParticle(randomEngine);
+
+			
+
 			}
 
 			ImGui::Begin("plane");
-			ImGui::DragFloat3("rotate", &transforms[0].rotate.x, 0.05f);
+			ImGui::DragFloat3("rotate", &particles[0].transform.rotate.x, 0.05f);
 			ImGui::End();
 
-
 			ImGui::Render();
-			
+
 
 
 			// ここから書き込むバックバッファのインデックスを取得
