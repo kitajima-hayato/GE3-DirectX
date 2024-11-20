@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <vector>
 #include <wrl.h>
+#include "TextureManager.h"
 // 3Dオブジェクト
 // 3Dオブジェクト共通部前方宣言
 class Object3DCommon;
@@ -14,6 +15,8 @@ class Object3D
 public:	// メンバ関数
 	// 初期化
 	void Initialize(Object3DCommon* obj3dCommon);
+	// 更新
+	void Update();
 	// 描画
 	void Draw();
 	// モデルデータの読み込み
@@ -56,5 +59,8 @@ private:// メンバ変数
 	// バッファリソース内のデータを指すポインタ
 	DirectionalLight* directionalLightData = nullptr;
 
+	// Transform
+	Transform transform;
+	Transform cameraTransform;
 };
 

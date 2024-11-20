@@ -210,15 +210,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	wvpData->WVP = MakeIdentity4x4();
 	//	wvpData->World = MakeIdentity4x4();
 	//
-	//	//
-	//
-	//
-	//
-	//
-	//
-	//	Transform transform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
+	//	 
 	//	Transform transformSphere{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
-	//	Transform cameraTransform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -5.0f } };
+	//	 
 	//
 	//
 	//
@@ -422,7 +416,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::NewFrame();*/
 		//ゲームの処理
 		input->Update();
-		
+		object3D->Update();
 
 		if (input->TriggerKey(DIK_1)) {
 			OutputDebugStringA("Hit_1\n");
@@ -434,15 +428,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//		//三角形の回転
 		//		//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
-		//		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-		//		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+		//		
+		//		
 		//
 		//		//座標変換<obj>
-		//		Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-		//		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinAPI::kClientWidth) / float(WinAPI::kClientHeight), 0.1f, 100.0f);
-		//		Matrix4x4 worldViewProjection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-		//		wvpData->WVP = worldViewProjection;
-		//		wvpData->World = worldMatrix;
+		//		
+		//		
 		//		//座標変換<sphere>
 		//		Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
 		//		Matrix4x4 projectionMatrixSphere = MakePerspectiveFovMatrix(0.45f, float(WinAPI::kClientWidth) / float(WinAPI::kClientHeight), 0.1f, 100.0f);
@@ -490,7 +481,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->DrawSettingCommon();
-
+		object3D->Draw();
 		//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->DrawSettingCommon();
 

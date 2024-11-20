@@ -12,6 +12,45 @@ void Object3D::Initialize(Object3DCommon* obj3dCommon)
 	CreateVertexResourceData();
 	CreateMaterialResource();
 	CreateTransformationMatrixData();
+	CreateDirectionalLightResource();
+	// .objの参照しているテクスチャファイル読み込み
+	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
+	// 読み込んだテクスチャのインデックスを取得
+	TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
+
+	// Transformの初期化
+	transform={ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
+	cameraTransform={ { 1.0f, 1.0f, 1.0f },{ 0.3f, 0.0f, 0.0f }, { 0.0f, 4.0f, -10.0f } };
+}
+
+void Object3D::Update()
+{
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinAPI::kClientWidth) / float(WinAPI::kClientHeight), 0.1f, 100.0f);
+	Matrix4x4 worldViewProjection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	wvpData->WVP = worldViewProjection;
+	wvpData->World = worldMatrix;
+
+
+}
+
+void Object3D::Draw()
+{
+	// 頂点バッファービューをセット
+	object3DCommon->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	// マテリアルデータをセット
+	object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	// 座標変換行列をセット
+	object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+	object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureIndex) );
+	// 平行光源データをセット
+	object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	// テクスチャをセット
+	//object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRoot32BitConstant(3, modelData.material.textureIndex, 0);
+	// 描画
+	object3DCommon->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 }
 
 MaterialData Object3D::LoadMaterialTempLateFile(const std::string& directoryPath, const std::string& filename)

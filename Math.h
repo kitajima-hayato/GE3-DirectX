@@ -30,6 +30,7 @@ struct Matrix4x4 {
 
 struct MaterialData {
 	std::string textureFilePath;
+	uint32_t textureIndex = 0;
 };
 struct VertexData {
 	Vector4 position;
@@ -55,4 +56,14 @@ struct DirectionalLight {
 	Vector3 direction; //ライトの向き
 	float intensity;	//輝度
 };
-
+struct Transform {
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
+};
+struct SpriteData {
+	Vector2 pos;
+	Vector2 size;
+	float rotate;
+	Vector4 color;
+};
