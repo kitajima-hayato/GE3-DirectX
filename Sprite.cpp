@@ -37,7 +37,7 @@ void Sprite::Update()
 	}
 
 	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata(textureIndex);
-	
+
 	float texleft = textureLeftTop.x / metadata.width;
 	float texright = (textureLeftTop.x + textureSize.x) / metadata.width;
 	float textop = textureLeftTop.y / metadata.height;
@@ -144,18 +144,9 @@ void Sprite::CreateVertexResourceData()
 	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
 	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
 
-
-
-
-
 	// VertexResourceにデータを書き込むためのアドレスを取得してvertexDataに割り当てる
 	vertexData = nullptr;	// nullptrを代入しておく
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));	// マップする
-
-
-
-
-
 
 }
 

@@ -169,7 +169,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 3Dオブジェクト共通部の初期化
 	Object3DCommon* object3DCommon = new Object3DCommon();
-	object3DCommon->Initialize();
+	object3DCommon->Initialize(dxCommon);
 
 
 #pragma endregion 
@@ -216,40 +216,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	// SpriteCommon移植済み
-	//// ルートシグネチャのシリアライズ結果を格納するBlob
-	//Microsoft::WRL::ComPtr <ID3DBlob> signatureBlob = nullptr;
-	//// エラーメッセージが発生した場合に格納するBlob
-	//Microsoft::WRL::ComPtr <ID3DBlob> errorBlob = nullptr;
-	//HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	//if (FAILED(hr)) {
-	//	Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-	//	assert(false);
-	//}
-	//SpriteCommon移植済み
-	//	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	//	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();//
-	//	graphicsPipelineStateDesc.InputLayout = inputLayoutDescs;//
-	//	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() };//
-	//	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() };//
-	//	graphicsPipelineStateDesc.BlendState = blendDesc;//
-	//	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;//
-	//	//
-	//	graphicsPipelineStateDesc.NumRenderTargets = 1;
-	//	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	//	//
-	//	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	//	//
-	//	graphicsPipelineStateDesc.SampleDesc.Count = 1;
-	//	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	//	//
-	//	//DepthStencilの設定
-	//	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-	//	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	//	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
-	//	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
-	//
-	//	assert(SUCCEEDED(hr));
+	
+
 
 	//	const uint32_t kSubdivision = 64;		//分割数 16or32
 	//	Transform uvTransformSprite{
@@ -270,19 +238,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//
 	//
-	//	//Sprite用のマテリアルリソースを作る
-	//	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-	//	Material* materialDataSprite = nullptr;
-	//	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-	//	materialDataSprite->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	//	materialDataSprite->enableLighting = 0;
-	//	materialDataSprite->uvTransform = MakeIdentity4x4();
-	//	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
-	//	DirectionalLight* directionalLightData = nullptr;
-	//	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
-	//	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
-	//	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
-	//	directionalLightData->intensity = 1.0f;
+	
 	//
 	//
 	//	//モデル読み込み
@@ -298,7 +254,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));//書き込むためのアドレスを取得
 	//	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());//頂点データをリソースにコピー
 	//
-	//
+	
 	//
 	//#pragma region スフィア用の新規作成
 	//
@@ -571,7 +527,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		for (Sprite* sprite : sprites) {
 			sprite->Update();
-
 		}
 
 		//		//三角形の回転
@@ -628,8 +583,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		//DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
-
 		dxCommon->PreDraw();
+		
+		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
+		object3DCommon->DrawSettingCommon();
 
 		//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->DrawSettingCommon();
