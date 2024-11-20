@@ -28,10 +28,17 @@ struct Matrix4x4 {
 };
 #pragma endregion
 
+struct MaterialData {
+	std::string textureFilePath;
+};
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
 	Vector3 normal;
+};
+struct ModelData {
+	std::vector<VertexData>vertices;
+	MaterialData material;
 };
 struct Material {
 	Vector4 color;
@@ -49,10 +56,3 @@ struct DirectionalLight {
 	float intensity;	//輝度
 };
 
-struct MaterialData {
-	std::string textureFilePath;
-};
-struct ModelData {
-	std::vector<VertexData>vertices;
-	MaterialData material;
-};
