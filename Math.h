@@ -28,10 +28,18 @@ struct Matrix4x4 {
 };
 #pragma endregion
 
+struct MaterialData {
+	std::string textureFilePath;
+	uint32_t textureIndex = 0;
+};
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
 	Vector3 normal;
+};
+struct ModelData {
+	std::vector<VertexData>vertices;
+	MaterialData material;
 };
 struct Material {
 	Vector4 color;
@@ -48,11 +56,14 @@ struct DirectionalLight {
 	Vector3 direction; //ライトの向き
 	float intensity;	//輝度
 };
-
-struct MaterialData {
-	std::string textureFilePath;
+struct Transform {
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
 };
-struct ModelData {
-	std::vector<VertexData>vertices;
-	MaterialData material;
+struct SpriteData {
+	Vector2 pos;
+	Vector2 size;
+	float rotate;
+	Vector4 color;
 };

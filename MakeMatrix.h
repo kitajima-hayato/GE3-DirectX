@@ -4,11 +4,7 @@
 #include <stdio.h>
 #include"Math.h"
 
-struct Transform {
-	Vector3 scale;
-	Vector3 rotate;
-	Vector3 translate;
-};
+
 Matrix4x4 Add(const Matrix4x4& mt1, const Matrix4x4& mt2);
 
 Matrix4x4 Subtract(const Matrix4x4& mt1, const Matrix4x4& mt2);
