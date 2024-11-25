@@ -598,7 +598,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}*/
 	for (Sprite* sprite : sprites) {
 		delete sprite;
-	}
+	} 
 	delete model2;
 	delete object3D2;
 	delete model;
