@@ -6,6 +6,7 @@
 #include <dxcapi.h>
 #include <chrono>
 #include "WinAPI.h"
+
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 // 最大SRV数(最大テクスチャ枚数)

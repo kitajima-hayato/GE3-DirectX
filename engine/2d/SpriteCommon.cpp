@@ -1,6 +1,6 @@
 #include "SpriteCommon.h"
 #include "Logger.h"
-#include "Math.h"
+#include "MyMath.h"
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
