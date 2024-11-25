@@ -18,7 +18,6 @@ private:	// メンバ関数
 	// グラフィックスパイプラインの生成
 	void CreateGraficsPipeLine();
 
-
 private:	// メンバ変数
 	// 絶対にnew,deleteしない
 	DirectXCommon* dxCommon_;

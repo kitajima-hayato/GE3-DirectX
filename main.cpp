@@ -29,7 +29,9 @@
 #include "TextureManager.h"
 #include "Object3D.h"
 #include "Object3DCommon.h"
-
+#include "Model.h"
+#include "ModelCommon.h"
+#include "ModelManager.h"
 using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -65,7 +67,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
-
+	// 3Dモデルマネージャの初期化
+	ModelManager::GetInstance()->Initialize(dxCommon);
+	
 	// スプライト共通部の初期化
 	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
@@ -73,6 +77,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 3Dオブジェクト共通部の初期化
 	Object3DCommon* object3DCommon = new Object3DCommon();
 	object3DCommon->Initialize(dxCommon);
+
+	// モデル共通部の初期化
+	ModelCommon* modelCommon = new ModelCommon();
+	modelCommon->Initialize(dxCommon);
 
 
 #pragma endregion 
@@ -82,6 +90,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 
 	Object3D* object3D = new Object3D();
 	object3D->Initialize(object3DCommon);
+
+	Model* model = new Model();
+	model->Initialize(modelCommon,"resources","axis.obj");
+	ModelManager::GetInstance()->LoadModel("axis.obj");
+	object3D->SetModel("axis.obj");
+
+	// モデルをもう一つ読み込む
+	Model* model2 = new Model();
+	model2->Initialize(modelCommon, "resources", "plane.obj");
+	ModelManager::GetInstance()->LoadModel("plane.obj");
+	Object3D* object3D2 = new Object3D();
+	object3D2->Initialize(object3DCommon);
+	object3D2->SetModel("plane.obj");
+
 
 	std::vector<Sprite*> sprites;
 	//std::vector<Sprite*> sprites2;
@@ -417,7 +439,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ゲームの処理
 		input->Update();
 		object3D->Update();
-
+		object3D2->Update();
 		if (input->TriggerKey(DIK_1)) {
 			OutputDebugStringA("Hit_1\n");
 		}
@@ -482,6 +504,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->DrawSettingCommon();
 		object3D->Draw();
+		object3D2->Draw();
 		//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->DrawSettingCommon();
 
@@ -558,6 +581,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//CloseHandle(fenceEvent);
 	TextureManager::GetInstance()->Finalize();
+	// モデルマネージャの終了処理
+	ModelManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
 #pragma endregion
@@ -574,6 +599,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (Sprite* sprite : sprites) {
 		delete sprite;
 	}
+	delete model2;
+	delete object3D2;
+	delete model;
 	delete object3D;
 	delete object3DCommon;
 	delete spriteCommon;
