@@ -85,7 +85,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion 
 
-
 #pragma region 最初のシーンの初期化
 	// 
 	Object3D* object3D = new Object3D();
@@ -108,7 +107,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::vector<Sprite*> sprites;
 	//std::vector<Sprite*> sprites2;
     sprites.clear();
-	//sprites2.clear();
+	//sprites2.clear(); 
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
 	Vector2 pos = { 0.0f, 0.0f };
