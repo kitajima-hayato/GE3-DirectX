@@ -1,5 +1,5 @@
 #pragma once
-#include "Math.h"
+#include "MyMath.h"
 #include <d3d12.h>
 #include <wrl.h>
 #include "MakeMatrix.h"
