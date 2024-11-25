@@ -16,12 +16,21 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{594812c4-8a90-4be3-a6d0-a97173671ae6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\3d">
+      <UniqueIdentifier>{5acd36b9-5656-455c-a4b4-d43ab72a4b96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\2d">
+      <UniqueIdentifier>{36fac186-041e-4da4-8bf8-4d83e6a3c83d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\bace">
+      <UniqueIdentifier>{6b872dcb-1519-4c01-bb9b-1d8524eb2f8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\math">
+      <UniqueIdentifier>{1ed84c41-44ce-4800-8160-b51a1ff42753}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="MakeMatrix.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -45,47 +54,50 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="WinAPI.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\bace</Filter>
     </ClCompile>
     <ClCompile Include="DirectXCommon.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="StringUtility.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\bace</Filter>
     </ClCompile>
     <ClCompile Include="D3DResourceLeakChecker.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteCommon.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sprite.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object3DCommon.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\bace</Filter>
     </ClCompile>
     <ClCompile Include="Object3D.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Object3DCommon.cpp">
+      <Filter>ソース ファイル\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteCommon.cpp">
+      <Filter>ソース ファイル\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>ソース ファイル\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtility.cpp">
+      <Filter>ソース ファイル\bace</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>ソース ファイル\bace</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\3d</Filter>
     </ClCompile>
     <ClCompile Include="ModelCommon.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\3d</Filter>
     </ClCompile>
     <ClCompile Include="ModelManager.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>ソース ファイル\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="MakeMatrix.cpp">
+      <Filter>ソース ファイル\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>ソース ファイル\bace</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
