@@ -32,6 +32,7 @@
 #include "Model.h"
 #include "ModelCommon.h"
 #include "ModelManager.h"
+#include "ImGuiManager.h"
 using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -54,6 +55,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winAPI = new WinAPI();
 	winAPI->Initialize();
 
+
+
 	//入力処理のクラスポインタ
 	Input* input = nullptr;
 	input = new Input();
@@ -64,6 +67,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	DirectXCommon* dxCommon = nullptr;
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winAPI);
+
+	// ImGuiの初期化
+	ImGuiManager* imguiManager = new ImGuiManager();
+	imguiManager->Initialize(winAPI,dxCommon);
 
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
@@ -573,10 +580,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 #pragma region  解放処理
-
-	/*ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();*/
+	// ImGuiの終了処理
+	imguiManager->Finalize();
 
 	//CloseHandle(fenceEvent);
 	TextureManager::GetInstance()->Finalize();
@@ -606,6 +611,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete spriteCommon;
 	delete dxCommon;
 	delete input;
+	delete imguiManager;
 	delete winAPI;
 	return 0;
 }
