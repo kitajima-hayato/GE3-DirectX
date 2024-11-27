@@ -7,8 +7,9 @@
 #include <chrono>
 #include "WinAPI.h"
 
-#include"externals/DirectXTex/DirectXTex.h"
-#include"externals/DirectXTex/d3dx12.h"
+#include"../externals/DirectXTex/DirectXTex.h"
+#include"../externals/DirectXTex/d3dx12.h"
+
 // 最大SRV数(最大テクスチャ枚数)
 
 
@@ -115,6 +116,11 @@ public:		// Getter,Setter
 	/// SRVの指定番号のGPUディスクリプタハンドルを取得する
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+
+	/// <summary>
+	/// バックバッファの数
+	/// </summary>
+	size_t GetBackBufferCount() const { return swapChainResources.size(); }
 
 private:	// 内部処理専用関数
 	/// <summary>
