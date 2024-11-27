@@ -1,0 +1,19 @@
+﻿  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_dx12.cpp
+  imgui_impl_win32.cpp
+  imgui_tables.cpp
+  imgui_widgets.cpp
+  ImGuiManager.cpp
+C:\Users\k023g\Desktop\GE3\project\imgui\ImGuiManager.cpp(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+C:\Users\k023g\Desktop\GE3\project\imgui\ImGuiManager.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ImGuiManager.cpp' をコンパイルしています)
+  
+C:\Users\k023g\Desktop\GE3\project\engine\bace\WinAPI.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ImGuiManager.cpp' をコンパイルしています)
+  
+C:\Users\k023g\Desktop\GE3\project\engine\bace\DirectXCommon.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ImGuiManager.cpp' をコンパイルしています)
+  
+  imgui.vcxproj -> C:\Users\k023g\Desktop\GE3\generated\outputs\Release\imgui.lib
