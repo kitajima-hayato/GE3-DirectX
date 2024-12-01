@@ -36,6 +36,7 @@ public:
 	void Draw();
 
 private:
+	DirectXCommon* dxCommon_ = nullptr;
 	// 
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	

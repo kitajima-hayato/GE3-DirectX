@@ -5,6 +5,9 @@
 
 void ImGuiManager::Initialize(WinAPI* winAPI, DirectXCommon* dxCommon)
 {
+	// 引数のnullptrチェック
+	assert(dxCommon);
+	dxCommon_ = dxCommon;
 	// ImGuiのコンテキストを生成
 	ImGui::CreateContext();
 	// ImGuiのスタイルを設定
@@ -49,12 +52,25 @@ void ImGuiManager::Finalize()
 
 void ImGuiManager::Begin()
 {
+	// ImGuiのフレームを開始
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 }
 
 void ImGuiManager::End()
 {
+	
+	// ImGuiのフレームを終了
+	ImGui::Render();
 }
 
 void ImGuiManager::Draw()
 {
+	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
+	// ディスクリプタヒープの配列をセットするコマンド
+	ID3D12DescriptorHeap* ppHeaps[] = { srvHeap_.Get() };
+	commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	// ImGuiの描画コマンドを積む
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 }
