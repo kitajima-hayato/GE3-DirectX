@@ -33,9 +33,9 @@
 #include "ModelCommon.h"
 #include "ModelManager.h"
 #include "ImGuiManager.h"
-using namespace Logger;
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+using namespace Logger;
 using namespace std;
 
 
@@ -55,8 +55,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winAPI = new WinAPI();
 	winAPI->Initialize();
 
-
-
 	//入力処理のクラスポインタ
 	Input* input = nullptr;
 	input = new Input();
@@ -69,8 +67,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->Initialize(winAPI);
 
 	// ImGuiの初期化
-	ImGuiManager* imguiManager = new ImGuiManager();
-	imguiManager->Initialize(winAPI,dxCommon);
+	ImGuiManager* imGui = new ImGuiManager();
+	imGui->Initialize(winAPI,dxCommon);
 
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
@@ -410,40 +408,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//
 	//
 
-	//
-	//	//metaDataを基にSRVの設定
-	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	//	srvDesc2.Format = metadata2.format;
-	//	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	//	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	//	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-	//
-	//	//SRVを作成するDescriptorHeapの場所を決める
-	//	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
-	//	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
-	//
-	//	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
-	//
-	//	bool useMonsterBall = false;
-	//
 
 
 
-
-
-		//ウィンドウの×ボタンが押されるまでループ
+	// ウィンドウの×ボタンが押されるまでループ
 	while (true) {		// ゲームループ
 		//Windowのメッセージ処理
 		if (winAPI->ProcessMessage()) {
 			//ゲームループを抜ける
 			break;
 		}
+		// ImGuiの処理
+		imGui->Begin();
+
 		//ImGui始まるよ
 		/*ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();*/
+
 		//ゲームの処理
-		input->Update();
+		
 		object3D->Update();
 		object3D2->Update();
 		if (input->TriggerKey(DIK_1)) {
@@ -454,14 +438,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			sprite->Update();
 		}
 
-		//		//三角形の回転
-		//		//transform.rotate.y += 0.03f;//ここコメントアウトすると止まるよ
-		//		
-		//		
-		//
-		//		//座標変換<obj>
-		//		
-		//		
 		//		//座標変換<sphere>
 		//		Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
 		//		Matrix4x4 projectionMatrixSphere = MakePerspectiveFovMatrix(0.45f, float(WinAPI::kClientWidth) / float(WinAPI::kClientHeight), 0.1f, 100.0f);
@@ -480,10 +456,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//		uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 		//		uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 		//		materialDataSprite->uvTransform = uvTransformMatrix;
-		//
-		//
-		//
-		//
+
 				//ImGui::Begin("Settings");
 				//if (ImGui::BeginTabBar("OBJ"))
 				//{
@@ -502,10 +475,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*ImGui::End();
 		ImGui::Render();*/
 
-
-
-		//DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
+		imGui->End();
+		
+		// DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
 		dxCommon->PreDraw();
+
+
+		// ImGuiの描画
+
+
 		
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->DrawSettingCommon();
@@ -515,6 +493,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		spriteCommon->DrawSettingCommon();
 
 		
+
+		// ImGuiの描画
+		
+
 		//// positionの変更
 		//Vector2 pos = sprite->GetPosition();
 		//pos.x += 0.1f;
@@ -545,45 +527,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			sprite2->Draw();
 		}*/
 
-		//
-		//		// スフィア用の設定
-		//		commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);  // VBVを設定
-		//		commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());
-		//		commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
-		//		commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-		//		commandList->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-		//		commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-		//
-		//
-		//		// モデル用の設定 
-		//		commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
-		//		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		//		commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-		//		commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-		//		commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-		//
-		//
-		//		// スプライト用の設定
-		//		commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//		commandList->IASetIndexBuffer(&indexBufferViewSprite);
-		//		commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-		//		commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-		//		commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-		//		commandList->DrawInstanced(6, 1, 0, 0);
-		//		commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-		//
-		//		// 実際のcommandListのImGuiの描画コマンドを積む
-		//		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
-
+		// ImGuiの描画
+		imGui->Draw();
 		dxCommon->PostDraw();
 
-
 	}
+	
 #pragma region  解放処理
 	// ImGuiの終了処理
-	imguiManager->Finalize();
-
-	//CloseHandle(fenceEvent);
+	imGui->Finalize();
+	// CloseHandle(fenceEvent);
 	TextureManager::GetInstance()->Finalize();
 	// モデルマネージャの終了処理
 	ModelManager::GetInstance()->Finalize();
@@ -611,7 +564,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete spriteCommon;
 	delete dxCommon;
 	delete input;
-	delete imguiManager;
+	delete imGui;
 	delete winAPI;
 	return 0;
 }

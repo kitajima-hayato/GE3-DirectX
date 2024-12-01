@@ -37,9 +37,9 @@ public:
 	/// </summary>
 	void PostDraw();
 
-	///
-	///
-	/// 
+	/// <summary>
+	/// コマンドの実行
+	/// </summary>
 	void WaitCommand();
 
 	/// <summary>
@@ -118,9 +118,9 @@ public:		// Getter,Setter
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	/// <summary>
-	/// バックバッファの数
+	/// バックバッファの数を取得
 	/// </summary>
-	size_t GetBackBufferCount() const { return swapChainResources.size(); }
+	size_t GetBackBufferCount() const { return backBufferIndex; }
 
 private:	// 内部処理専用関数
 	/// <summary>
@@ -212,7 +212,7 @@ private:
 	// WindowsAPI
 	WinAPI* winAPI_ = nullptr;
 
-private:		// メンバ変数
+private:	// メンバ変数
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	// DXGIファクトリ

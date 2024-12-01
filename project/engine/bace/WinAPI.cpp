@@ -1,7 +1,9 @@
 #include "WinAPI.h"
 #include <cstdint>
 #include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_win32.h"
 #pragma comment(lib,"winmm.lib")
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT WinAPI::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -9,15 +11,15 @@ LRESULT WinAPI::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
-	//メッセージに応じてゲーム固有の処理を行う
+	// メッセージに応じてゲーム固有の処理を行う
 	switch (msg) {
-		//ウィンドウが破棄された
+		// ウィンドウが破棄された
 	case WM_DESTROY:
-		//OSに対してアプリの終了を伝える
+		// OSに対してアプリの終了を伝える
 		PostQuitMessage(0);
 		return 0;
 	}
-	//標準メッセージの処理を行う
+	// 標準メッセージの処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam); 
 }
 
