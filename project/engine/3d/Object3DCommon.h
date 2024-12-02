@@ -1,5 +1,6 @@
 #pragma once
 #include "DirectXCommon.h"
+#include "Camera.h"
 // 3Dオブジェクト共通部
 class Object3DCommon
 {
@@ -12,6 +13,8 @@ public:	// Getter/Setter
 	// DirectXCommon
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
 	
+	void SetDefaultCamera(Camera* camera) { this->defaultCamera = camera; }
+	Camera* GetDefaultCamera()const { return defaultCamera; }
 private:	// メンバ関数
 	// ルートシグネチャの作成
 	void CreateRootSignatrue();
@@ -19,6 +22,8 @@ private:	// メンバ関数
 	void CreateGraficsPipeLine();
 
 private:	// メンバ変数
+	// カメラ
+	Camera* defaultCamera = nullptr;
 	// 絶対にnew,deleteしない
 	DirectXCommon* dxCommon_;
 	// RootSignature作成

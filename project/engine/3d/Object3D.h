@@ -7,6 +7,7 @@
 #include "TextureManager.h"
 #include "Object3DCommon.h"
 #include "Model.h"
+#include "Camera.h"
 // 3Dオブジェクト
 // 3Dオブジェクト共通部前方宣言
 class Object3DCommon;
@@ -24,6 +25,8 @@ public:	// メンバ関数
 
 
 public:	// Getter/Setter
+	void SetCamera(Camera* camera) { this->camera = camera; }
+
 	void SetModel(Model* model) { this->model = model; }
 	void SetModel(const std::string& filePath);
 	void SetScale(const Vector3& scale) { transform.scale = scale; }
@@ -41,6 +44,8 @@ private: // メンバ関数
 
 	
 private:// メンバ変数
+	// カメラ
+	Camera* camera = nullptr;
 	// 3Dオブジェクト共通部
 	Object3DCommon* object3DCommon = nullptr;
 	// モデルデータ
@@ -56,6 +61,5 @@ private:// メンバ変数
 
 	// Transform
 	Transform transform;
-	Transform cameraTransform;
 };
 
