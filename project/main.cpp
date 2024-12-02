@@ -65,6 +65,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ImGuiの初期化
 	ImGuiManager* imGui = new ImGuiManager();
 	imGui->Initialize(winAPI,dxCommon);
+   
 
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
@@ -111,7 +112,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//sprites2.clear(); 
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
-	Vector2 pos = { 0.0f, 0.0f };
+	Vector2 pos = { 100.0f, 100.0f };
 	sprite->SetPosition(pos);
 	//Vector2 size = { 100.0f, 100.0f };
 	//sprite->SetSize(size);
@@ -129,10 +130,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ImGuiの処理
 		imGui->Begin();
 
-		//ImGui始まるよ
-		/*ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();*/
+	
 
 		//ゲームの処理
 		
@@ -145,7 +143,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (Sprite* sprite : sprites) {
 			sprite->Update();
 		}
-
+		ImGui::SetWindowSize(ImVec2(500.0f, 100.0f));
+		// ImGuiのデモ
+		ImGui::ShowDemoWindow();
+		ImGui::Text("Hello, world %d", 123);
+		if (ImGui::Button("Save")) {
+			OutputDebugStringA("Save\n");
+		}
+		ImGui::SliderFloat2("Position", &pos.x, 0.0f,1000.0f,"%.1f");
+		sprite->SetPosition(pos);
 	
 
 		imGui->End();
