@@ -32,17 +32,19 @@
 #include "Model.h"
 #include "ModelCommon.h"
 #include "ModelManager.h"
+
+#ifdef _DEBUG
 #include "ImGuiManager.h"
+#endif
+
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 using namespace Logger;
 using namespace std;
 
-
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
-
 
 #pragma region 基盤システムの初期化
 	//ポインタ
@@ -56,22 +58,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input = new Input();
 	input->Initialize(winAPI);
 
-
 	//ポインタと初期化
 	DirectXCommon* dxCommon = nullptr;
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winAPI);
 
+#ifdef _DEBUG
 	// ImGuiの初期化
 	ImGuiManager* imGui = new ImGuiManager();
-	imGui->Initialize(winAPI,dxCommon);
-   
+	imGui->Initialize(winAPI, dxCommon);
+#endif
 
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
 	// 3Dモデルマネージャの初期化
 	ModelManager::GetInstance()->Initialize(dxCommon);
-	
+
 	// スプライト共通部の初期化
 	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
@@ -84,7 +86,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelCommon* modelCommon = new ModelCommon();
 	modelCommon->Initialize(dxCommon);
 
-
 #pragma endregion 
 
 #pragma region 最初のシーンの初期化
@@ -93,7 +94,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D->Initialize(object3DCommon);
 
 	Model* model = new Model();
-	model->Initialize(modelCommon,"resources","axis.obj");
+	model->Initialize(modelCommon, "resources", "axis.obj");
 	ModelManager::GetInstance()->LoadModel("axis.obj");
 	object3D->SetModel("axis.obj");
 
@@ -105,19 +106,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D2->Initialize(object3DCommon);
 	object3D2->SetModel("plane.obj");
 
-
 	std::vector<Sprite*> sprites;
-	//std::vector<Sprite*> sprites2;
-    sprites.clear();
-	//sprites2.clear(); 
+	sprites.clear();
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
 	Vector2 pos = { 100.0f, 100.0f };
 	sprite->SetPosition(pos);
-	//Vector2 size = { 100.0f, 100.0f };
-	//sprite->SetSize(size);
 	sprites.push_back(sprite);
-	
+
 #pragma endregion
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -127,13 +123,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ゲームループを抜ける
 			break;
 		}
+
+#ifdef _DEBUG
 		// ImGuiの処理
 		imGui->Begin();
-
-	
+#endif
 
 		//ゲームの処理
-		
 		object3D->Update();
 		object3D2->Update();
 		if (input->TriggerKey(DIK_1)) {
@@ -143,6 +139,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (Sprite* sprite : sprites) {
 			sprite->Update();
 		}
+
+#ifdef _DEBUG
 		ImGui::SetWindowSize(ImVec2(500.0f, 100.0f));
 		// ImGuiのデモ
 		ImGui::ShowDemoWindow();
@@ -150,20 +148,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::Button("Save")) {
 			OutputDebugStringA("Save\n");
 		}
-		ImGui::SliderFloat2("Position", &pos.x, 0.0f,1000.0f,"%.1f");
+		ImGui::SliderFloat2("Position", &pos.x, 0.0f, 1000.0f, "%.1f");
 		sprite->SetPosition(pos);
-	
-
 		imGui->End();
-		
+#endif
+
 		// DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
 		dxCommon->PreDraw();
 
-
-		// ImGuiの描画
-
-
-		
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->DrawSettingCommon();
 		object3D->Draw();
@@ -171,28 +163,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->DrawSettingCommon();
 
-		
-
-		// ImGuiの描画
-		
-
-       
-		
-       
 		for (Sprite* sprite : sprites) {
 			sprite->Draw();
 		}
-	
 
+#ifdef _DEBUG
 		// ImGuiの描画
 		imGui->Draw();
+#endif
 		dxCommon->PostDraw();
-
 	}
-	
+
 #pragma region  解放処理
+#ifdef _DEBUG
 	// ImGuiの終了処理
 	imGui->Finalize();
+#endif
 	// CloseHandle(fenceEvent);
 	TextureManager::GetInstance()->Finalize();
 	// モデルマネージャの終了処理
@@ -201,23 +187,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-
-
-	////出力ウィンドウへの文字出力　実行すると出る下の文字
-	//OutputDebugStringA("Hello,DirectX!\n");
-
 	//解放
-	
 	for (Sprite* sprite : sprites) {
 		delete sprite;
-	} 
+	}
 	delete model2;
 	delete object3D2;
 	delete model;
 	delete object3D;
 	delete object3DCommon;
 	delete spriteCommon;
+#ifdef _DEBUG
 	delete imGui;
+#endif
 	delete dxCommon;
 	delete input;
 	delete winAPI;
