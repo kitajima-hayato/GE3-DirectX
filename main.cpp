@@ -66,12 +66,22 @@ struct D3DResourceLeakChecker {
 
 
 Particle MakeParticle(std::mt19937& randomEngine) {
-	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distPosition(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distVelocity(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+
 	Particle particle;
+
 	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
-	particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particle.transform.rotate = { 0.0f,3.3f,0.0f };
+	// 位置と速度を[-1~1], 色は[0~1]の範囲でランダムに生成
+	particle.transform.translate = { distPosition(randomEngine),distPosition(randomEngine),distPosition(randomEngine) };
+	particle.velocity = { distVelocity(randomEngine),distVelocity(randomEngine),distVelocity(randomEngine) };
+	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
+	//particle.lifeTime = distTime(randomEngine);
+	//particle.currentTime = 0;
+
 	return particle;
 }
 
@@ -1447,7 +1457,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::random_device seedGen;
 	std::mt19937 randomEngine(seedGen());
-	
+	std::uniform_real_distribution<float> distribution(-3.0f, 3.0f);
+
+	for (uint32_t index = 0; index < kNumInstance; ++index) {
+		particles[index] = MakeParticle(randomEngine);
+	}
+
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -1496,17 +1511,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
+				
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrixSphere));
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
-				particles[index].velocity = { 0.0f,0.01f,0.0f };
+				
 				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
 				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
 				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
-				//particles[index]= MakeParticle(randomEngine);
+				//
 
-			
 
 			}
 
