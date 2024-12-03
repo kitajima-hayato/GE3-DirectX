@@ -1182,7 +1182,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Transform transform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
 	Transform transformSphere{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
-	Transform cameraTransform{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -5.0f } };
+	Transform cameraTransform{
+		{ 1.0f, 1.0f, 1.0f },
+		{std::numbers::pi_v<float> / 3.0f, std::numbers::pi_v<float>, 0.0f},
+		{ 0.0f, 0.0f, -5.0f } };
 
 
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -1478,6 +1481,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 	}
 
+	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+	
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1534,13 +1539,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
 				instancingData[index].color = particles[index].color;
-				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 
-				instancingData[numInstance].color.w = alpha;
 				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
 				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
 				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
 				particles[index].currentTime += kDeltaTime;
+
+				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+
+				Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+				billboardMatrix.m[3][0] = 0.0f;
+				billboardMatrix.m[3][1] = 0.0f;
+				billboardMatrix.m[3][2] = 0.0f;
+
+				worldMatrix = Multiply(scaleMatrix, Multiply(billboardMatrix, translateMatrix));
+				worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrixSphere));
+
+				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+
+				instancingData[numInstance].color.w = alpha;
+
 				++numInstance;	// 生きているParticleの数を１つカウントする
 				//
 
@@ -1551,6 +1570,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("rotate", &particles[0].transform.rotate.x, 0.05f);
 			ImGui::DragFloat("currentTime", &particles[0].currentTime, 0.05f);
 			ImGui::DragFloat("lifeTime", &particles[0].lifeTime, 0.05f);
+			
+			// カメラの移動
+			ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.05f);
+			// パーティクル発生用のボタン
+
+
 			ImGui::End();
 
 			ImGui::Render();
