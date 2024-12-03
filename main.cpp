@@ -29,6 +29,14 @@ struct Particle {
 	Transform transform;
 	Vector3 velocity;
 	Vector4 color;
+	float lifeTime;
+	float currentTime;
+};
+struct ParticleForGPU
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	Vector4 color;
 };
 // Δtを定義６０fos固定
 const float kDeltaTime = 1.0f / 60.0f;
@@ -868,7 +876,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	BlendMode blendMode = kBlendModeNone;
+	BlendMode blendMode = kBlendModeAdd;
 	//
 	D3D12_BLEND_DESC blendDesc{};
 	//
@@ -942,7 +950,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//Depthの機能を有効かする
 	depthStencilDesc.DepthEnable = true;
 	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	//比較関数はLessEqual。つまり、近ければ描画される
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -1184,7 +1192,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = LoadTexture("resources/circle.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
 	Microsoft::WRL::ComPtr < ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
@@ -1220,17 +1228,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	////////////////////////////////////////////////////////////////
 	////////Instancing用にTransformationMatrixを１０個格納できるResourceの作成
 
-	const uint32_t kNumInstance = 10;	//インスタンス数
+	const uint32_t kNumMaxInstance = 10;	//インスタンス数
 	// Instancing用のTransformationMatrixリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource =
-		CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+		CreateBufferResource(device, sizeof(ParticleForGPU) * kNumMaxInstance);
 	// 書き込むためのアドレスを取得
-	TransformationMatrix* instancingData = nullptr;
+	ParticleForGPU* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
 	// 単位行列を書き込んでおく
-	for (uint32_t index = 0; index < kNumInstance; ++index) {
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 		instancingData[index].WVP = MakeIdentity4x4();
 		instancingData[index].World = MakeIdentity4x4();
+		
 	}
 
 
@@ -1240,19 +1249,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kNumInstance;
-	instancingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
+	instancingSrvDesc.Buffer.NumElements = kNumMaxInstance;
+	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-	Particle particles[kNumInstance];
-	for (uint32_t index = 0; index < kNumInstance; ++index) {
+	Particle particles[kNumMaxInstance];
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
 		particles[index].transform.rotate = { 3.0f,0.0f,3.15f };
 		particles[index].transform.translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 	}
 
+	
 
 #pragma endregion
 
@@ -1458,11 +1468,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::random_device seedGen;
 	std::mt19937 randomEngine(seedGen());
 	std::uniform_real_distribution<float> distribution(-3.0f, 3.0f);
-
-	for (uint32_t index = 0; index < kNumInstance; ++index) {
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+	
+	
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 		particles[index] = MakeParticle(randomEngine);
+		particles[index].lifeTime = distTime(randomEngine);
+		particles[index].currentTime = 0;
+		
 	}
-
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -1508,18 +1522,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
-
-
-			for (uint32_t index = 0; index < kNumInstance; ++index) {
-				
+			// 描画すべきインスタンス数
+			uint32_t numInstance = 0;
+			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+				// 生存時間を過ぎていたら更新せず描画対象にしない
+				if (particles[index].lifeTime <= particles[index].currentTime) {
+					continue;
+				}
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrixSphere));
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
-				
+				instancingData[index].color = particles[index].color;
+				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+
+				instancingData[numInstance].color.w = alpha;
 				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
 				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
 				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+				particles[index].currentTime += kDeltaTime;
+				++numInstance;	// 生きているParticleの数を１つカウントする
 				//
 
 
@@ -1527,6 +1549,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("plane");
 			ImGui::DragFloat3("rotate", &particles[0].transform.rotate.x, 0.05f);
+			ImGui::DragFloat("currentTime", &particles[0].currentTime, 0.05f);
+			ImGui::DragFloat("lifeTime", &particles[0].lifeTime, 0.05f);
 			ImGui::End();
 
 			ImGui::Render();
@@ -1594,7 +1618,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			//// 10個のインスタンスを描画
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
 			//// スプライト用の設定
 			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); // スプライト用のテクスチャSRVを設定
