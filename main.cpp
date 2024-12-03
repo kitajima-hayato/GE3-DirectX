@@ -1258,8 +1258,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-	Particle particles[kNumMaxInstance];
-	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+	
+	std::list<Particle> particles;
+	for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();++particleIterator) {
 		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
 		particles[index].transform.rotate = { 3.0f,0.0f,3.15f };
 		particles[index].transform.translate = { index * 0.1f,index * 0.1f,index * 0.1f };
@@ -1474,7 +1475,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
 	
 	
-	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+	for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end(); ++particleIterator) {
 		particles[index] = MakeParticle(randomEngine);
 		particles[index].lifeTime = distTime(randomEngine);
 		particles[index].currentTime = 0;
@@ -1529,9 +1530,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// 描画すべきインスタンス数
 			uint32_t numInstance = 0;
-			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
 				// 生存時間を過ぎていたら更新せず描画対象にしない
-				if (particles[index].lifeTime <= particles[index].currentTime) {
+				if ((*particleIterator).lifeTime<=(*particleIterator).currentTime) {
+					// 消す
+					particleIterator = particles.erase(particleIterator);
 					continue;
 				}
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
@@ -1562,14 +1565,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				++numInstance;	// 生きているParticleの数を１つカウントする
 				//
-
+				++particleIterator
 
 			}
 
 			ImGui::Begin("plane");
-			ImGui::DragFloat3("rotate", &particles[0].transform.rotate.x, 0.05f);
-			ImGui::DragFloat("currentTime", &particles[0].currentTime, 0.05f);
-			ImGui::DragFloat("lifeTime", &particles[0].lifeTime, 0.05f);
+		
+			if (ImGui::Button("Particle Add")) {
+				particles.push_back(MakeParticle(randomEngine));
+				particles.push_back(MakeParticle(randomEngine));
+				particles.push_back(MakeParticle(randomEngine));
+			}
 			
 			// カメラの移動
 			ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.05f);
