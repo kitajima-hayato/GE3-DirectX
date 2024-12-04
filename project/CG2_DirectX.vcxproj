@@ -103,6 +103,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="engine\bace\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engine\bace\DirectXCommon.cpp" />
     <ClCompile Include="engine\bace\Input.cpp" />
@@ -119,8 +120,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\bace\StringUtility.cpp" />
     <ClCompile Include="engine\bace\TextureManager.cpp" />
     <ClCompile Include="engine\bace\WinAPI.cpp" />
+    <ClCompile Include="SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="engine\bace\D3DResourceLeakChecker.h" />
     <ClInclude Include="engine\bace\DirectXCommon.h" />
     <ClInclude Include="engine\bace\Input.h" />
@@ -131,12 +134,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\3d\ModelCommon.h" />
     <ClInclude Include="engine\3d\ModelManager.h" />
     <ClInclude Include="engine\3d\Object3D.h" />
-    <ClInclude Include="engine\2d\Object3DCommon.h" />
+    <ClInclude Include="engine\3d\Object3DCommon.h" />
     <ClInclude Include="engine\2d\Sprite.h" />
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\bace\StringUtility.h" />
     <ClInclude Include="engine\bace\TextureManager.h" />
     <ClInclude Include="engine\bace\WinAPI.h" />
+    <ClInclude Include="SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

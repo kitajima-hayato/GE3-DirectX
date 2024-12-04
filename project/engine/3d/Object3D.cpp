@@ -9,23 +9,26 @@ using namespace std;
 void Object3D::Initialize(Object3DCommon* obj3dCommon)
 {
 	this->object3DCommon = obj3dCommon;
-	
+	this->camera = obj3dCommon->GetDefaultCamera();
 
 	CreateTransformationMatrixData();
 	CreateDirectionalLightResource();
 
 	// Transformの初期化
 	transform={ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
-	cameraTransform={ { 1.0f, 1.0f, 1.0f },{ 0.3f, 0.0f, 0.0f }, { 0.0f, 4.0f, -10.0f } };
-}
+	}
 
 void Object3D::Update()
 {
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinAPI::kClientWidth) / float(WinAPI::kClientHeight), 0.1f, 100.0f);
-	Matrix4x4 worldViewProjection = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 worldViewProjection;
+	if (camera) {
+		const Matrix4x4& viewProjectionMatrix = camera->GetViewProjectionMatrix();
+		worldViewProjection = Multiply(worldMatrix, viewProjectionMatrix);
+	}
+else {
+		worldViewProjection = worldMatrix;
+	}
 	wvpData->WVP = worldViewProjection;
 	wvpData->World = worldMatrix;
 }

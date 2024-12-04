@@ -86,6 +86,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelCommon* modelCommon = new ModelCommon();
 	modelCommon->Initialize(dxCommon);
 
+	// カメラ
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
+	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
+	object3DCommon->SetDefaultCamera(camera);
+
 #pragma endregion 
 
 #pragma region 最初のシーンの初期化
@@ -128,7 +134,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ImGuiの処理
 		imGui->Begin();
 #endif
-
+		
 		//ゲームの処理
 		object3D->Update();
 		object3D2->Update();
@@ -141,7 +147,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 #ifdef _DEBUG
-		ImGui::SetWindowSize(ImVec2(500.0f, 100.0f));
+		ImGui::SetWindowSize(ImVec2(500.0f, 2000.0f));
 		// ImGuiのデモ
 		ImGui::ShowDemoWindow();
 		ImGui::Text("Hello, world %d", 123);
@@ -150,7 +156,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		ImGui::SliderFloat2("Position", &pos.x, 0.0f, 1000.0f, "%.1f");
 		sprite->SetPosition(pos);
-		imGui->End();
+
+		Vector3 cameraPos = camera->GetTranslate();
+		Vector3 cameraRotate = camera->GetRotate();
+		ImGui::DragFloat3("cameraPosition", &cameraPos.x, 0.1f);
+		ImGui::DragFloat3("cameraRotate", &cameraRotate.x, 0.1f);
+		camera->SetTranslate(cameraPos);
+		camera->SetRotate(cameraRotate);
+		camera->Update();
+			imGui->End();
 #endif
 
 		// DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
