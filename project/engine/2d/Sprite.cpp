@@ -36,7 +36,7 @@ void Sprite::Update()
 		bottom = -bottom;
 	}
 
-	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata(textureIndex);
+	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata("textureIndex");
 
 	float texleft = textureLeftTop.x / metadata.width;
 	float texright = (textureLeftTop.x + textureSize.x) / metadata.width;
@@ -180,7 +180,7 @@ void Sprite::CreateTransformationMatrixData()
 void Sprite::AdjustTextureSizee()
 {
 	// テクスチャメタデータを取得
-	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata(textureIndex);
+	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata("textureIndex");
 	textureSize = { static_cast<float>(metadata.width),static_cast<float>(metadata.height) };
 	// 画像サイズをテクスチャサイズに合わせる
 	size = textureSize;

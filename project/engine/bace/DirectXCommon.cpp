@@ -18,7 +18,7 @@ using namespace Logger;
 using namespace Microsoft::WRL;
 
 
-uint32_t DirectXCommon::kMaxSRVCount = 512;
+
 
 DirectXCommon::DirectXCommon()
 {
@@ -255,7 +255,7 @@ DirectXCommon::CreateDescriptorHeap(
 	return descriptorHeap;
 }
 
-void DirectXCommon::CreateDescriptorHeaps()
+void DirectXCommon::CreateDescriptorHeaps() 
 {
 	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -352,11 +352,7 @@ void DirectXCommon::PreDraw()
 
 
 
-#pragma region SRV用のディスクリプターヒープを指定
-	// 描画用のDescriptorHeapの設定
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
-#pragma endregion
+
 
 #pragma region ビューポート領域の設定
 	commandList->RSSetViewports(1, &viewport);   // Viewportを設定

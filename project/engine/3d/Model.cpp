@@ -28,7 +28,7 @@ void Model::Draw()
 	// マテリアルデータをセット
 	modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// 座標変換行列をセット
-	modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureIndex));
+	modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU("modelData.material.textureIndex"));
 
 	// テクスチャをセット
 	//modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRoot32BitConstant(3, modelData.material.textureIndex, 0);

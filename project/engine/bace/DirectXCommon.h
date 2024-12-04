@@ -10,14 +10,12 @@
 #include"../externals/DirectXTex/DirectXTex.h"
 #include"../externals/DirectXTex/d3dx12.h"
 
-// 最大SRV数(最大テクスチャ枚数)
-
 
 // DirectX基盤
 class DirectXCommon
 {
 public:
-	static uint32_t kMaxSRVCount;
+	
 
 	/// <summary>
 	// コンストラクタ
@@ -60,6 +58,13 @@ public:
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTextureResource(const DirectX::TexMetadata& metadata);
 
+	/// <summary>
+	/// ディスクリプターヒープ作成関数
+	/// </summary>
+	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap>  CreateDescriptorHeap(
+		D3D12_DESCRIPTOR_HEAP_TYPE heapType,
+		UINT numDescriptors,
+		bool shaderVisible);
 public:		// Getter,Setter
 	/// <summary>
 	/// getter
@@ -142,20 +147,12 @@ private:	// 内部処理専用関数
 	/// 深度バッファの生成
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthBuffer(Microsoft::WRL::ComPtr<ID3D12Device> device, int32_t width, int32_t height);
-	
-	/// <summary>
-	/// ディスクリプターヒープ作成関数
-	/// </summary>
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap>  CreateDescriptorHeap(
-		D3D12_DESCRIPTOR_HEAP_TYPE heapType,
-		UINT numDescriptors,
-		bool shaderVisible);
-	
+
 	/// <summary>
 	/// 各種ディスクリプターヒープの生成
 	/// </summary>
-	
 	void CreateDescriptorHeaps();
+
 	/// <summary>
 	/// レンダーターゲットビューの初期化
 	/// </summary>
@@ -235,10 +232,8 @@ private:	// メンバ変数
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	// 各ディスクリプターヒープのメンバ変数
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap;
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap;
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap;
-	// 各種ディスクリプタサイズ
-	uint32_t descriptorSizeSRV;
+	// RTVディスクリプタサイズ
 	uint32_t descriptorSizeRTV;
 
 	// 生成の成果物、フェンス

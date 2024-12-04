@@ -32,7 +32,7 @@
 #include "Model.h"
 #include "ModelCommon.h"
 #include "ModelManager.h"
-
+#include "srvManager.h"
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
@@ -91,6 +91,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
+
+	// SRVマネージャーの初期化
+	SrvManager* srvManager = nullptr;
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
 
 #pragma endregion 
 
@@ -214,6 +219,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #ifdef _DEBUG
 	delete imGui;
 #endif
+	delete srvManager;
 	delete dxCommon;
 	delete input;
 	delete winAPI;
