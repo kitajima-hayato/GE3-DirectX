@@ -44,6 +44,18 @@ struct Emitter {
 	float frequency;		// 生成する頻度
 	float frequencyTime;	// 生成する時間
 };
+struct ParticleSystem {
+	std::list<Particle> particles;
+	Emitter emitter;
+};
+struct AABB {
+	Vector3 min;//最小点
+	Vector3 max;//最大点
+};
+struct AccelerationField {
+	Vector3 acceleration;
+	AABB area;
+};
 using namespace std;
 
 
@@ -123,6 +135,7 @@ Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate) {
 
 }
 
+
 std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
 	std::list<Particle> particles;
 	for (uint32_t count = 0; count < emitter.count; ++count) {
@@ -130,6 +143,15 @@ std::list<Particle> Emit(const Emitter& emitter, std::mt19937& randomEngine) {
 	}
 	return particles;
 }
+
+bool IsCollision(const AABB& aabb, const Vector3& point) {
+	if (aabb.min.x <= point.x && point.x <= aabb.max.x &&
+		aabb.min.y <= point.y && point.y <= aabb.max.y &&
+		aabb.min.z <= point.z && point.z <= aabb.max.z) {
+		return true;
+	}
+	return false;
+};
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -1526,6 +1548,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
 
+
+	AccelerationField accelerationField;
+	accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+	accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	accelerationField.area.max = { 1.0f,1.0f,1.0f };
+
+	
+
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1612,6 +1642,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				instancingData[particles.size()].World = worldMatrixParticle;
 				instancingData[particles.size()].color = (*particleIterator).color;
+
+				if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+
+					(*particleIterator).velocity.x += accelerationField.acceleration.x * kDeltaTime;
+					(*particleIterator).velocity.y += accelerationField.acceleration.y * kDeltaTime;
+					(*particleIterator).velocity.z += accelerationField.acceleration.z * kDeltaTime;
+				}
+
+
 
 				(*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
 				(*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
