@@ -18,7 +18,7 @@ public:
 	/// <summary>
 	/// 終了処理
 	/// </summary>
-	void Finalize();
+	void Finalize(); 
 	
 	/// <summary>
 	/// ImGui受付開始
