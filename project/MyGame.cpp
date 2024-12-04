@@ -108,8 +108,7 @@ void MyGame::Update()
 	if (ImGui::Button("Save")) {
 		OutputDebugStringA("Save\n");
 	}
-	ImGui::SliderFloat2("Position", &pos.x, 0.0f, 1000.0f, "%.1f");
-	sprite->SetPosition(pos);
+
 
 	Vector3 cameraPos = camera->GetTranslate();
 	Vector3 cameraRotate = camera->GetRotate();
@@ -147,36 +146,37 @@ void MyGame::Draw()
 void MyGame::Finalize()
 {
 	dxCommon->PostDraw();
-}
-
 #pragma region  解放処理
 #ifdef _DEBUG
-// ImGuiの終了処理
-imGui->Finalize();
+	// ImGuiの終了処理
+	imGui->Finalize();
 #endif
-// CloseHandle(fenceEvent);
-TextureManager::GetInstance()->Finalize();
-// モデルマネージャの終了処理
-ModelManager::GetInstance()->Finalize();
-winAPI->Finalize();
+	// CloseHandle(fenceEvent);
+	TextureManager::GetInstance()->Finalize();
+	// モデルマネージャの終了処理
+	ModelManager::GetInstance()->Finalize();
+	winAPI->Finalize();
 
 #pragma endregion
 
-//解放
-for (Sprite* sprite : sprites) {
-	delete sprite;
-}
-delete model2;
-delete object3D2;
-delete model;
-delete object3D;
-delete object3DCommon;
-delete spriteCommon;
-delete srvManager;
+	//解放
+	for (Sprite* sprite : sprites) {
+		delete sprite;
+	}
+	delete model2;
+	delete object3D2;
+	delete model;
+	delete object3D;
+	delete object3DCommon;
+	delete spriteCommon;
+	delete srvManager;
 #ifdef _DEBUG
-delete imGui;
+	delete imGui;
 #endif
-delete dxCommon;
-delete input;
-delete winAPI;
+	delete dxCommon;
+	delete input;
+	delete winAPI;
 }
+
+
+

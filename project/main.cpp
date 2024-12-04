@@ -33,6 +33,7 @@
 #include "ModelCommon.h"
 #include "ModelManager.h"
 #include "srvManager.h"
+#include "MyGame.h"
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
@@ -47,10 +48,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 
 
-	
+	MyGame game;
 
 	
-
+	// ゲームの初期化
+	game.Initialize();
 
 
 	// ウィンドウの×ボタンが押されるまでループ
