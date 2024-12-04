@@ -68,14 +68,15 @@ void SrvManager::SetGraphicsDescriptorTable(UINT RootParameterIndex, uint32_t sr
 	dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(RootParameterIndex, GetGPUDescriptorHandle(srvIndex));
 }
 
-bool SrvManager::TextureMaxCountChecker()
+bool SrvManager::IsAllocate()
 {
-	if (kMaxSRVCount <= useIndex) {
+	if (kMaxSRVCount > useIndex) {
 		return true;
 	}
-	return false;
+	else {
+		return false;
+	}
 }
-
 
 D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(uint32_t index)
 {

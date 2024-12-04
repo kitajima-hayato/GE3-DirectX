@@ -4,12 +4,13 @@
 void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 {
 	this->spriteCommon = spriteCommon;
+	this->textureFilePath = textureFilePath;
 	CreateVertexResourceData();
 	CreateMaterialResource();
 	CreateTransformationMatrixData();
 	// 単位行列を書き込んでおく
 	TextureManager::GetInstance()->LoadTexture(textureFilePath);
-	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	textureIndex = TextureManager::GetInstance()->GetSrvIndex(textureFilePath);
 	transform = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 	AdjustTextureSizee();
 }
@@ -36,7 +37,7 @@ void Sprite::Update()
 		bottom = -bottom;
 	}
 
-	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata("textureIndex");
+	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata(textureFilePath);
 
 	float texleft = textureLeftTop.x / metadata.width;
 	float texright = (textureLeftTop.x + textureSize.x) / metadata.width;
@@ -107,7 +108,7 @@ void Sprite::Draw()
 	// 座標変換行列CBufferの場所を設定
 	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// SRVのDescriptorHeapの場所を設定
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath));
 
 	// 描画
 	spriteCommon->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
@@ -180,7 +181,7 @@ void Sprite::CreateTransformationMatrixData()
 void Sprite::AdjustTextureSizee()
 {
 	// テクスチャメタデータを取得
-	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata("textureIndex");
+	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetadata(textureFilePath);
 	textureSize = { static_cast<float>(metadata.width),static_cast<float>(metadata.height) };
 	// 画像サイズをテクスチャサイズに合わせる
 	size = textureSize;

@@ -69,8 +69,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	imGui->Initialize(winAPI, dxCommon);
 #endif
 
+	// SRVマネージャーの初期化
+	SrvManager* srvManager = nullptr;
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
 	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon);
+	TextureManager::GetInstance()->Initialize(dxCommon,srvManager);
 	// 3Dモデルマネージャの初期化
 	ModelManager::GetInstance()->Initialize(dxCommon);
 
@@ -92,10 +96,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
 
-	// SRVマネージャーの初期化
-	SrvManager* srvManager = nullptr;
-	srvManager = new SrvManager();
-	srvManager->Initialize(dxCommon);
 
 #pragma endregion 
 
@@ -174,7 +174,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
 		dxCommon->PreDraw();
-
+		srvManager->PreDraw();
 		// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->DrawSettingCommon();
 		object3D->Draw();
@@ -190,6 +190,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ImGuiの描画
 		imGui->Draw();
 #endif
+		
 		dxCommon->PostDraw();
 	}
 
@@ -216,10 +217,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete object3D;
 	delete object3DCommon;
 	delete spriteCommon;
+	delete srvManager;
 #ifdef _DEBUG
 	delete imGui;
 #endif
-	delete srvManager;
 	delete dxCommon;
 	delete input;
 	delete winAPI;

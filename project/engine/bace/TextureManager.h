@@ -25,6 +25,7 @@ public:// メンバ関数
 	/// <param name ="filePath"テクスチャファイルのパス>
 	/// </summary>
 	void LoadTexture(const std::string& filePath);
+
 public:	// Getter,Setter
 	// シングルトンインスタンスを取得
 	static TextureManager* GetInstance();
@@ -35,10 +36,10 @@ public:	// Getter,Setter
 	const DirectX::TexMetadata& GetMetadata(const std::string& filePath);
 
 	// SRVインデックスの開始番号
-	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
+	uint32_t GetSrvIndex(const std::string& filePath);
 	//D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filePath);
 	// テクスチャ番号からGPUハンドルを取得
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filePath);
 
 private: // メンバ関数/構造体
 
