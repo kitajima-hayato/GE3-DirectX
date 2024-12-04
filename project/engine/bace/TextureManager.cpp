@@ -36,46 +36,51 @@ const DirectX::TexMetadata& TextureManager::GetMetadata(const std::string& fileP
 }
 
 
-uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filePath)
+uint32_t TextureManager::GetSrvIndex(const std::string& filePath)
 {
-
-	// テクスチャデータを検索
-	return textureDatas.find(filePath) != textureDatas.end();
-	//// 読み込み済みのデータ検索
-	//auto it = std::find_if(
-	//	textureDatas.begin(),
-	//	textureDatas.end(),
-	//	[&](TextureData& textureData) {
-	//		return textureData.filePath == filePath; }
-	//);
-	//if (it != textureDatas.end()) {
-	//	// 読み込み済みなら要素番号を返す
-	//	uint32_t textureIndex = static_cast<uint32_t>(std::distance(textureDatas.begin(), it));
-	//	return textureIndex;
-	//}
-	//assert(0);
-	//return 0;
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(uint32_t textureIndex)
-{
-	// 範囲外指定違反チェック
-	assert(textureIndex < textureDatas.size());
-	TextureData& textureData = textureDatas[textureIndex];
-	return textureData.srvHandleGPU;
+	// テクスチャが存在するか確認
+	auto it = textureDatas.find(filePath);
+	if (it == textureDatas.end()) {
+		// なかったらエラーメッセージ
+		throw std::runtime_error("Texture not found for filePath: " + filePath);
+	}
+	if (it != textureDatas.end()) {
+		// 読み込み済みなら要素番号を返す
+		uint32_t textureIndex = static_cast<uint32_t>(std::distance(textureDatas.begin(), it));
+		return textureIndex;
+	}
+	assert(0);
+	return 0;
 }
 
 //D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& filePath)
 //{
-//    // テクスチャデータを検索
-//    auto it = textureDatas.find(filePath);
+//	// テクスチャが存在するか確認
+//	auto it = textureDatas.find(filePath);
+//	if (it == textureDatas.end()) {
+//		// なかったらエラーメッセージ
+//		
+//		throw std::runtime_error("Texture not found for filePath: " + filePath);
+//	}
 //
-//    // テクスチャが見つからない場合はエラー
-//    assert(it != textureDatas.end());
-//
-//    // 見つかったテクスチャデータのGPUハンドルを返す
-//    return it->second.srvHandleGPU;
+//	// テクスチャデータの参照を取得
+//	TextureData& textureData = it->second;
+//	return textureData.srvHandleGPU;
 //}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& filePath)
+{
+	// テクスチャデータを検索
+	auto it = textureDatas.find(filePath);
+
+	// テクスチャが見つからない場合は例外を投げる
+	if (it == textureDatas.end()) {
+		throw std::runtime_error("Texture not found for filePath: " + filePath);
+	}
+	// 見つかったテクスチャデータのGPUハンドルを返す
+	return it->second.srvHandleGPU;
+}
+
 
 
 
@@ -101,7 +106,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	}
 
 	// テクスチャ枚数上限を超えている場合
-	assert(srvManager->TextureMaxCountChecker());
+	assert(srvManager->IsAllocate());
 
 	// テクスチャファイルを読んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};

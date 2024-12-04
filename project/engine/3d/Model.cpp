@@ -18,7 +18,7 @@ void Model::Initialize(ModelCommon* modelCommon, const string& directorypath, co
 	// .objの参照しているテクスチャファイル読み込み
 	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
 	// 読み込んだテクスチャのインデックスを取得
-	TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
+	TextureManager::GetInstance()->GetSrvIndex(modelData.material.textureFilePath);
 }
 
 void Model::Draw()
@@ -27,8 +27,8 @@ void Model::Draw()
 	modelCommon->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 	// マテリアルデータをセット
 	modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	// 座標変換行列をセット
-	modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU("modelData.material.textureIndex"));
+	// 
+	modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureFilePath));
 
 	// テクスチャをセット
 	//modelCommon->GetDxCommon()->GetCommandList()->SetGraphicsRoot32BitConstant(3, modelData.material.textureIndex, 0);

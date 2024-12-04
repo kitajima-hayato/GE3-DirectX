@@ -19,7 +19,8 @@ public:
 	// SRVセットコマンド
 	void SetGraphicsDescriptorTable(UINT RootParameterIndex, uint32_t srvIndex);
 	// 最大数を超えているか
-	bool TextureMaxCountChecker();
+	//bool TextureMaxCountChecker();
+	bool IsAllocate();
 public:	// 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index);

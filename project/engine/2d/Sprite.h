@@ -53,6 +53,8 @@ private:	// メンバ関数
 	
 	//void DrawSetting();
 private:	// メンバ変数
+	std::string textureFilePath;
+
 	// CreateBufferResourceを呼びたい
 	// スプライトの設定用クラス
 	SpriteCommon* spriteCommon = nullptr;

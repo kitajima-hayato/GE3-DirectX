@@ -92,8 +92,8 @@ public:		// Getter,Setter
 	/// <summary>
 	/// srvDescriptorHeap取得関数
 	/// </summary>
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> 
-		GetSrvDescriptorHeap()const { return srvDescriptorHeap; }
+	/*Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> 
+		GetSrvDescriptorHeap()const { return srvDescriptorHeap; }*/
 
 	/// <summary>
 	/// 指定番号のCPUディスクリプタハンドルを取得する
@@ -115,12 +115,12 @@ public:		// Getter,Setter
 	/// <summary>
 	/// SRVの指定番号のCPUディスクリプタハンドルを取得する
 	/// </summary>
-	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
+	//D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 
 	/// <summary>
 	/// SRVの指定番号のGPUディスクリプタハンドルを取得する
 	/// </summary>
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+	//D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	/// <summary>
 	/// バックバッファの数を取得
