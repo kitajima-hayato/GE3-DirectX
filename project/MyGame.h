@@ -44,6 +44,8 @@ private:
 	WinAPI* winAPI = nullptr;
 	// DirectX共通部
 	DirectXCommon* dxCommon = nullptr;
+	// 入力処理
+	Input* input = nullptr;
 	// ImGui
 #ifdef _DEBUG
 	ImGuiManager* imGui = nullptr;
