@@ -1554,7 +1554,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
 	accelerationField.area.max = { 1.0f,1.0f,1.0f };
 
-	
+	bool useBillboard = false;
 
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
@@ -1603,25 +1603,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-			ImGui::Begin("plane");
+			ImGui::Begin("Particle");
 			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
 			if (ImGui::Button("Particle Add")) {
 				particles.splice(particles.end(), Emit(emitter, randomEngine));
 			}
+
 			// カメラの移動
 			ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.05f);
-			// パーティクル発生用のボタン
+			ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f);
+
+			// ビルボードの有無
+			ImGui::Checkbox("UseBillboard", &useBillboard);
+
 
 
 			ImGui::End();
-
 			ImGui::Render();
 
 
 			// 描画すべきインスタンス数
 			uint32_t numInstance = 0;
 			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
-
 
 				// 生存時間を過ぎていたら更新せず描画対象にしない
 				if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
@@ -1668,10 +1671,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				
 
 
-
+				// ビルボードを使うかどうかでワールド行列を変える
+				if (useBillboard) {
 				worldMatrixParticle = Multiply( Multiply(scaleMatrix, billboardMatrix),translateMatrix);
-				//worldMatrixParticle = MakeAffineMatrix((*particleIterator).transform.scale, (*particleIterator).transform.rotate, (*particleIterator).transform.translate);
+				}
+				else {
+					worldMatrixParticle = Multiply(scaleMatrix, translateMatrix);
+				}
+				// ブレンドモードの切り替え
 
+				
 				Matrix4x4 WVPMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
 
 				float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifeTime);
