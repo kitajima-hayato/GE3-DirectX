@@ -84,12 +84,18 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
+	//Windowのメッセージ処理
+	if (winAPI->ProcessMessage()) {
+		//ゲームループを抜ける
+		return;
+	}
+	input->Update();
 #ifdef _DEBUG
 	// ImGuiの処理
 	imGui->Begin();
 #endif
 
-	//ゲームの処理
+	// ゲームの処理
 	object3D->Update();
 	object3D2->Update();
 	if (input->TriggerKey(DIK_1)) {
@@ -169,6 +175,7 @@ void MyGame::Finalize()
 	delete object3D;
 	delete object3DCommon;
 	delete spriteCommon;
+	delete camera;
 	delete srvManager;
 #ifdef _DEBUG
 	delete imGui;

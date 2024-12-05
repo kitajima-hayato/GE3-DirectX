@@ -39,6 +39,9 @@ public:
 	// 終了処理
 	void Finalize();
 
+	// 終了フラグのチェック
+	bool IsEndRequst() { return isEndRequst; }
+
 private:
 	// ウィンドウAPI
 	WinAPI* winAPI = nullptr;
@@ -72,6 +75,9 @@ private:
 	Object3D* object3D2 = nullptr;
 	// 3Dモデル
 	Model* model2 = nullptr;
+
+	// ゲーム終了フラグ
+	bool isEndRequst = false;
 
 };
 

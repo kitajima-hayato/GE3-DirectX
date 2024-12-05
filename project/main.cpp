@@ -57,17 +57,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (true) {		// ゲームループ
-		//Windowのメッセージ処理
-		if (winAPI->ProcessMessage()) {
-			//ゲームループを抜ける
+		// ゲームの更新
+		game.Update();
+		
+
+
+
+
+
+
+
+
+
+
+
+
+		// ウィンドウの×ボタンが押されたらループを抜ける
+		if (game.IsEndRequst()) {
 			break;
 		}
+		// ゲームの描画
+		game.Draw();
+	}
+	// ゲームの終了処理
+	game.Finalize();
 
-
-
-
-		
-		
-		
 	return 0;
 }
