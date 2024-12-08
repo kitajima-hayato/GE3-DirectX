@@ -1716,8 +1716,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// エナジーパーティクル設定
 			ImGui::Begin("Energy Particle Settings");
 
-			// エナジーパーティクルの発生
-			ImGui::Checkbox("StartEnergyParticle", &startEnergyParticle);
+			if (ImGui::Button("Energy Particle Add")) {
+				energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));
+			}
 			// エナジーパーティクルのビルボードの有無
 			ImGui::Checkbox("UseEnergyBillboard", &useEnergyBillboard);
 
@@ -1728,9 +1729,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat("Energy EmitterFrequency", &emitterEnergy.frequency, 0.01f, 0.01f, 10.0f);
 			ImGui::DragInt("Energy EmitterCount", reinterpret_cast<int*>(&emitterEnergy.count), 1, 1, 1000);
 
-			if (ImGui::Button("Energy Particle Add")) {
-				energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));
-			}
+			
 
 			
 			ImGui::End();
