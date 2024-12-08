@@ -153,6 +153,53 @@ bool IsCollision(const AABB& aabb, const Vector3& point) {
 	return false;
 };
 
+Particle MakeEnergyParticle(std::mt19937& randomEngine, const Vector3& center) {
+	std::uniform_real_distribution<float> distPosition(-5.0f, 5.0f); // 中心から遠い位置に設定
+	std::uniform_real_distribution<float> distVelocity(0.5f, 1.5f);	// 中心に向かう速度を設定
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);		// ライフタイムを設定
+
+	Particle particle;
+	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
+	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
+
+	// ランダムな位置を生成
+	Vector3 randomPosition = { distPosition(randomEngine), distPosition(randomEngine), distPosition(randomEngine) };
+	particle.transform.translate.x = center.x + randomPosition.x;
+	particle.transform.translate.y = center.y + randomPosition.y;
+	particle.transform.translate.z = center.z + randomPosition.z;
+
+	// 中心に向かう速度を設定
+	Vector3 direction = {
+		center.x - particle.transform.translate.x,
+		center.y - particle.transform.translate.y,
+		center.z - particle.transform.translate.z
+	};
+	float length = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+	direction.x /= length;
+	direction.y /= length;
+	direction.z /= length;
+	particle.velocity.x = direction.x * distVelocity(randomEngine);
+	particle.velocity.y = direction.y * distVelocity(randomEngine);
+	particle.velocity.z = direction.z * distVelocity(randomEngine);
+
+	// 初期色を青色に設定
+	particle.color = { 1.0f, 0.0f, 0.0f, 1.0f };
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0;
+
+	return particle;
+}
+
+std::list<Particle> EmitEnergyParticles(const Emitter& emitter, std::mt19937& randomEngine, const Vector3& center) {
+	std::list<Particle> particles;
+	for (uint32_t count = 0; count < emitter.count; ++count) {
+		particles.push_back(MakeEnergyParticle(randomEngine, center));
+	}
+	return particles;
+}
+
+
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {
@@ -554,7 +601,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;//上の関数を渡している
 	//ウィンドウクラス名
-	wc.lpszClassName = L"CG2";
+	wc.lpszClassName = L"LE2B_09_キタジマ_ハヤト";
 	//インスタンスハンドル
 	wc.hInstance = GetModuleHandle(nullptr);
 	//カーソル
@@ -1550,12 +1597,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	AccelerationField accelerationField;
-	accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+	accelerationField.acceleration = { 0.0f,0.0f,0.0f };
 	accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
 	accelerationField.area.max = { 1.0f,1.0f,1.0f };
 
-	bool useBillboard = false;
+	Emitter emitterEnergy{};
+	emitterEnergy.transform.translate = { 0.0f, 0.0f, 0.0f };
+	emitterEnergy.transform.rotate = { 0.0f, 0.0f, 0.0f };
+	emitterEnergy.transform.scale = { 1.0f, 1.0f, 1.0f };
+	emitterEnergy.count = 100; // 生成するパーティクルの数
+	emitterEnergy.frequency = 0.5f;
+	emitterEnergy.frequencyTime = 0.0f;
 
+	
+
+	Vector3 center = { 0.0f, 0.0f, 0.0f }; // 中心の位置
+
+	// エネルギーパーティクルのリストを初期化
+	std::list<Particle> energyParticles;
+	for (std::list<Particle>::iterator particleIterator = energyParticles.begin(); particleIterator != energyParticles.end(); ++particleIterator) {
+		energyParticles.push_back(MakeEnergyParticle(randomEngine, center));
+	}
+
+
+
+	bool useBillboard = false;
+	bool startParticle = false;
+	bool windDirection = false;
+	bool startEnergyParticle = false;
+	bool useEnergyBillboard = false;
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1603,21 +1673,66 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-			ImGui::Begin("Particle");
-			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
-			if (ImGui::Button("Particle Add")) {
-				particles.splice(particles.end(), Emit(emitter, randomEngine));
-			}
+			// 通常のパーティクル設定
+			ImGui::Begin("Particle Settings");
 
-			// カメラの移動
-			ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.05f);
-			ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f);
-
+			// パーティクルの発生
+			ImGui::Checkbox("StartParticle", &startParticle);
 			// ビルボードの有無
 			ImGui::Checkbox("UseBillboard", &useBillboard);
+			
+			ImGui::DragFloat3("Acceleration", &accelerationField.acceleration.x, 0.01f, -100.0f, 100.0f);
 
+			// エミッターの設定
+			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+			ImGui::DragFloat3("EmitterRotate", &emitter.transform.rotate.x, 0.01f, -3.14f, 3.14f);
+			ImGui::DragFloat3("EmitterScale", &emitter.transform.scale.x, 0.01f, 0.1f, 10.0f);
+			ImGui::DragFloat("EmitterFrequency", &emitter.frequency, 0.01f, 0.01f, 10.0f);
+			ImGui::DragInt("EmitterCount", reinterpret_cast<int*>(&emitter.count), 1, 1, 1000);
 
+			if (ImGui::Button("Particle Add")) {
+				particles.splice(particles.end(), Emit(emitter, randomEngine));
+			}// 加速度場の設定
+			ImGui::Checkbox("DetailedPreference", &windDirection);
+			if (windDirection) {
+				if (ImGui::Button("UP")) {
+					accelerationField.acceleration = { 0.0f, 30.0f, 0.0f };
+				}
+				if (ImGui::Button("DOWN")) {
+					accelerationField.acceleration = { 0.0f, -30.0f, 0.0f };
+				}
+				if (ImGui::Button("RIGHT")) {
+					accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
+				}
+				if (ImGui::Button("LEFT")) {
+					accelerationField.acceleration = { -15.0f, 0.0f, 0.0f };
+				}
+			}
 
+			
+
+			ImGui::End();
+
+			// エナジーパーティクル設定
+			ImGui::Begin("Energy Particle Settings");
+
+			// エナジーパーティクルの発生
+			ImGui::Checkbox("StartEnergyParticle", &startEnergyParticle);
+			// エナジーパーティクルのビルボードの有無
+			ImGui::Checkbox("UseEnergyBillboard", &useEnergyBillboard);
+
+			// エミッターの設定
+			ImGui::DragFloat3("Energy EmitterTranslate", &emitterEnergy.transform.translate.x, 0.01f, -100.0f, 100.0f);
+			ImGui::DragFloat3("Energy EmitterRotate", &emitterEnergy.transform.rotate.x, 0.01f, -3.14f, 3.14f);
+			ImGui::DragFloat3("Energy EmitterScale", &emitterEnergy.transform.scale.x, 0.01f, 0.1f, 10.0f);
+			ImGui::DragFloat("Energy EmitterFrequency", &emitterEnergy.frequency, 0.01f, 0.01f, 10.0f);
+			ImGui::DragInt("Energy EmitterCount", reinterpret_cast<int*>(&emitterEnergy.count), 1, 1, 1000);
+
+			if (ImGui::Button("Energy Particle Add")) {
+				energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));
+			}
+
+			
 			ImGui::End();
 			ImGui::Render();
 
@@ -1635,7 +1750,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				Matrix4x4 worldMatrixParticle = MakeAffineMatrix((*particleIterator).transform.scale, (*particleIterator).transform.rotate, (*particleIterator).transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
-
+				// インスタンス数が上限を超えていないならインスタンスデータを書き込む
 				if (numInstance < kNumMaxInstance)
 				{
 					instancingData[particles.size()].WVP = worldViewProjectionMatrix;
@@ -1678,7 +1793,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				else {
 					worldMatrixParticle = Multiply(scaleMatrix, translateMatrix);
 				}
-				// ブレンドモードの切り替え
+				
 
 				
 				Matrix4x4 WVPMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
@@ -1695,16 +1810,97 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				++particleIterator;
 
 			}
-				// 時刻を進める
-				emitter.frequencyTime += kDeltaTime;
-				if (emitter.frequency <= emitter.frequencyTime) {						// 頻度より大きいなら発生
-					particles.splice(particles.end(), Emit(emitter, randomEngine));		// 発生処理
-					emitter.frequencyTime -= emitter.frequency;							// 余計に過ぎた時間も加味して頻度計算する
+
+			
+			// エネルギーパーティクルの処理
+			for (std::list<Particle>::iterator particleIterator = energyParticles.begin(); particleIterator != energyParticles.end();) {
+				if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
+					particleIterator = energyParticles.erase(particleIterator);
+					continue;
 				}
+
+				// パーティクルの寿命に応じた色の変化
+				float lifeRatio = (*particleIterator).currentTime / (*particleIterator).lifeTime;
+				(*particleIterator).color.x = 1.0f - lifeRatio;
+				(*particleIterator).color.y = 0.5f * (1.0f - lifeRatio);
+				(*particleIterator).color.z = lifeRatio;
+
+				// パーティクルの寿命に応じたサイズの変化
+				(*particleIterator).transform.scale = { 1.0f + lifeRatio, 1.0f + lifeRatio, 1.0f + lifeRatio };
+
+				// パーティクルの位置更新
+				Vector3 direction = {
+					center.x - (*particleIterator).transform.translate.x,
+					center.y - (*particleIterator).transform.translate.y,
+					center.z - (*particleIterator).transform.translate.z
+				};
+				float length = sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+				direction.x /= length;
+				direction.y /= length;
+				direction.z /= length;
+
+				// 寿命が尽きる直前に中心に向かう力を強くする
+				float attractionStrength = 1.0f + (1.0f - lifeRatio) * 10.0f;
+				(*particleIterator).velocity.x = direction.x * attractionStrength;
+				(*particleIterator).velocity.y = direction.y * attractionStrength;
+				(*particleIterator).velocity.z = direction.z * attractionStrength;
+
+				(*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
+				(*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
+				(*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;
+				(*particleIterator).currentTime += kDeltaTime;
+
+				// ビルボードの処理を追加
+				Matrix4x4 scaleMatrix = MakeScaleMatrix((*particleIterator).transform.scale);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
+
+				Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+				billboardMatrix.m[3][0] = 0.0f;
+				billboardMatrix.m[3][1] = 0.0f;
+				billboardMatrix.m[3][2] = 0.0f;
+
+				Matrix4x4 worldMatrixParticle;
+				// ビルボードを使うかどうかでワールド行列を変える
+				if (useEnergyBillboard) {
+					worldMatrixParticle = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
+				}
+				else {
+					worldMatrixParticle = Multiply(scaleMatrix, translateMatrix);
+				}
+
+				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
+				if (numInstance < kNumMaxInstance) {
+					instancingData[numInstance].WVP = worldViewProjectionMatrix;
+					instancingData[numInstance].World = worldMatrixParticle;
+					instancingData[numInstance].color = (*particleIterator).color;
+					instancingData[numInstance].color.w = 1.0f - lifeRatio;
+					++numInstance;
+				}
+
+				// 次のパーティクルに進める
+				++particleIterator;
+			}
 
 			
 
-		
+
+			if (startParticle) {
+				// 時刻を進める
+				emitter.frequencyTime += kDeltaTime;
+				if (emitter.frequency <= emitter.frequencyTime) {  // 頻度より大きいなら発生
+					particles.splice(particles.end(), Emit(emitter, randomEngine));  // 発生処理
+					emitter.frequencyTime -= emitter.frequency;  // 余計に過ぎた時間も加味して頻度計算する
+				}
+			}
+
+			if (startEnergyParticle) {
+				// 時刻を進める
+				emitterEnergy.frequencyTime += kDeltaTime;
+				if (emitterEnergy.frequency <= emitterEnergy.frequencyTime) {  // 頻度より大きいなら発生
+					energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));  // 発生処理
+					emitterEnergy.frequencyTime -= emitterEnergy.frequency;  // 余計に過ぎた時間も加味して頻度計算する
+				}
+			}
 
 
 			// ここから書き込むバックバッファのインデックスを取得
