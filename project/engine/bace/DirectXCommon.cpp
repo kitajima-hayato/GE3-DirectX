@@ -255,7 +255,7 @@ DirectXCommon::CreateDescriptorHeap(
 	return descriptorHeap;
 }
 
-void DirectXCommon::CreateDescriptorHeaps() 
+void DirectXCommon::CreateDescriptorHeaps()
 {
 	//descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -381,7 +381,7 @@ void DirectXCommon::PostDraw()
 #pragma endregion
 #pragma region GPUコマンドの実行
 	//GPUにコマンドリストの実行を行わせる
-	ID3D12CommandList* commandLists[] = { commandList.Get()};
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
 	commandQueue->ExecuteCommandLists(1, commandLists);
 #pragma endregion
 #pragma region GPU画面の交換を通知
@@ -424,7 +424,7 @@ void DirectXCommon::PostDraw()
 
 void DirectXCommon::WaitCommand()
 {
-	
+
 #pragma region グラフィックコマンドをクローズ
 	// コマンドリストの内容を確定させる。すべてのコマンドを積んでから Close すること
 	HRESULT hr = commandList->Close();
@@ -650,16 +650,16 @@ DirectXCommon::CreateBufferResource(size_t sizeInBytes)
 	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 	// バッファサイズの指定
 	vertexResourceDesc.Width = sizeInBytes;
-	
+
 	vertexResourceDesc.Height = 1;				// バッファのサイズは常に１
 	vertexResourceDesc.DepthOrArraySize = 1;	// 深さまたは配列サイズの１
 	vertexResourceDesc.MipLevels = 1;			// ミップレベル
 	vertexResourceDesc.SampleDesc.Count = 1;	// サンプリング数
-	
+
 	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	//　バッファリソースの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, 
+	HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
 		&vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 	return vertexResource;
