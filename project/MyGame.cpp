@@ -63,8 +63,10 @@ void MyGame::Initialize()
 	// モデルをもう一つ読み込む
 	model2 = new Model();
 	model2->Initialize(modelCommon, "resources", "plane.obj");
+	
 	ModelManager::GetInstance()->LoadModel("plane.obj");
-	Object3D* object3D2 = new Object3D();
+	
+	object3D2 = new Object3D();
 	object3D2->Initialize(object3DCommon);
 	object3D2->SetModel("plane.obj");
 
@@ -133,6 +135,11 @@ void MyGame::Update()
 	camera->SetRotate(cameraRotate);
 	camera->Update();
 	imGui->End();
+	// ESCキーで終了
+	if (input->TriggerKey(DIK_ESCAPE)) {
+		isEndRequst = true;
+	}
+
 #endif
 }
 

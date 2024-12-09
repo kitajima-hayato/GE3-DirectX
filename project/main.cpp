@@ -49,14 +49,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 
 
-
-
-
-
 		// ウィンドウの×ボタンが押されたらループを抜ける
 		if (game.IsEndRequst()) {
 			break;
 		}
+
+
 		// ゲームの描画
 		game.Draw();
 	}
