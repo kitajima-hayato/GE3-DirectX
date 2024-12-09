@@ -355,11 +355,11 @@ void DirectXCommon::PreDraw()
 
 
 #pragma region ビューポート領域の設定
-	commandList->RSSetViewports(1, &viewport);   // Viewportを設定
+	commandList->RSSetViewports(1, &viewport);			// Viewportを設定
 #pragma endregion
 
 #pragma region シザー矩形の設定
-	commandList->RSSetScissorRects(1, &scissorRect);   // Scissorを設定
+	commandList->RSSetScissorRects(1, &scissorRect);	// Scissorを設定
 #pragma endregion
 }
 
