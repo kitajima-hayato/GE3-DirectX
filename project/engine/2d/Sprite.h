@@ -8,7 +8,7 @@ class Sprite
 {
 public:	// メンバ関数
 	// 初期化
-	void Initialize(SpriteCommon* spriteCommon,std::string textureFilePath);
+	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
 	void Update();
 	void Draw();
 
@@ -43,14 +43,14 @@ public:	// Getter/Setter
 	const Vector2& GetTextureSize()const { return textureSize; }
 	void SetTextureSize(const Vector2& textureSize) { this->textureSize = textureSize; }
 
-	
+
 private:	// メンバ関数
 	void CreateVertexResourceData();
 	void CreateMaterialResource();
 	void CreateTransformationMatrixData();
 	// テクスチャサイズをイメージに合わせる
 	void AdjustTextureSizee();
-	
+
 	//void DrawSetting();
 private:	// メンバ変数
 	std::string textureFilePath;
@@ -59,8 +59,8 @@ private:	// メンバ変数
 	// スプライトの設定用クラス
 	SpriteCommon* spriteCommon = nullptr;
 	// バッファリソース
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource;// = CreateBufferResource(device, sizeof(VertexData) * 6);
-	Microsoft::WRL::ComPtr <ID3D12Resource> indexResource;// = CreateBufferResource(device, sizeof(uint32_t) * 6);
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource;
+	Microsoft::WRL::ComPtr <ID3D12Resource> indexResource;
 	// バッファリソース内のデータを指すポインタ
 	VertexData* vertexData = nullptr;
 	uint32_t* indexData = nullptr;

@@ -108,6 +108,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\bace\DirectXCommon.cpp" />
     <ClCompile Include="engine\bace\Input.cpp" />
     <ClCompile Include="engine\bace\Logger.cpp" />
+    <ClCompile Include="Framework.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\math\MakeMatrix.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
@@ -141,6 +142,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\bace\StringUtility.h" />
     <ClInclude Include="engine\bace\TextureManager.h" />
     <ClInclude Include="engine\bace\WinAPI.h" />
+    <ClInclude Include="Framework.h" />
     <ClInclude Include="MyGame.h" />
     <ClInclude Include="SrvManager.h" />
   </ItemGroup>
