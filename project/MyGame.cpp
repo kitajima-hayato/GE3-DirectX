@@ -2,53 +2,7 @@
 
 void MyGame::Initialize()
 {
-	D3DResourceLeakChecker leakCheck;
-#pragma region 基盤システムの初期化
-	//WindowsAPIの初期化
-	winAPI = new WinAPI();
-	winAPI->Initialize();
-	// dxCommonの初期化
-	dxCommon = new DirectXCommon();
-	dxCommon->Initialize(winAPI);
-
-	// 入力処理のクラスポインタ
-	input = new Input();
-	input->Initialize(winAPI);
-
-	// オーディオの初期化
-
-
-	// SRVマネージャーの初期化
-	srvManager = new SrvManager();
-	srvManager->Initialize(dxCommon);
-	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
-
-	// スプライト共通部の初期化
-	spriteCommon = new SpriteCommon();
-	spriteCommon->Initialize(dxCommon);
-
-#ifdef _DEBUG
-	// ImGuiの初期化
-	imGui = new ImGuiManager();
-	imGui->Initialize(winAPI, dxCommon);
-#endif
-
-	// 3Dモデルマネージャの初期化
-	ModelManager::GetInstance()->Initialize(dxCommon);
-	// 3Dオブジェクト共通部の初期化
-	Object3DCommon* object3DCommon = new Object3DCommon();
-	object3DCommon->Initialize(dxCommon);
-
-	// モデル共通部の初期化
-	modelCommon = new ModelCommon();
-	modelCommon->Initialize(dxCommon);
-
-	// カメラ
-	camera = new Camera();
-	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
-	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
-	object3DCommon->SetDefaultCamera(camera);
+	Framework::Initialize();
 
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
@@ -84,17 +38,7 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
-#pragma region WindowsAPIのメッセージ処理
-	//Windowのメッセージ処理
-	if (winAPI->ProcessMessage()) {
-		//ゲームループを抜ける
-		return;
-	}
-#pragma endregion
-#pragma region 入力処理
-	input->Update();
-#pragma endregion
-	
+
 #pragma region ゲームの更新
 	// アクターの更新
 
@@ -135,10 +79,7 @@ void MyGame::Update()
 	camera->SetRotate(cameraRotate);
 	camera->Update();
 	imGui->End();
-	// ESCキーで終了
-	if (input->TriggerKey(DIK_ESCAPE)) {
-		isEndRequst = true;
-	}
+	
 
 #endif
 }
@@ -163,11 +104,12 @@ void MyGame::Draw()
 	// ImGuiの描画
 	imGui->Draw();
 #endif
+	dxCommon->PostDraw();
 }
 
 void MyGame::Finalize()
 {
-	dxCommon->PostDraw();
+	
 #pragma region  解放処理
 #ifdef _DEBUG
 	// ImGuiの終了処理
@@ -189,16 +131,7 @@ void MyGame::Finalize()
 	delete object3D2;
 	delete model;
 	delete object3D;
-	delete object3DCommon;
-	delete spriteCommon;
-	delete camera;
-	delete srvManager;
-#ifdef _DEBUG
-	delete imGui;
-#endif
-	delete dxCommon;
-	delete input;
-	delete winAPI;
+	Framework::Finalize();
 }
 
 

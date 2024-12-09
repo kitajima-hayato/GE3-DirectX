@@ -22,52 +22,28 @@
 #include "ModelCommon.h"
 #include "ModelManager.h"
 #include "srvManager.h"
+#include "Framework.h"
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
 
-// ゲーム全体
-class MyGame
+// ゲーム全体 : フレームワーククラス継承
+class MyGame :public Framework
 {
 public:
 	// 初期化　
-	void Initialize();
+	void Initialize() override;
 	// 更新
-	void Update();
+	void Update()override;
 	// 描画
-	void Draw();
+	void Draw()override;
 	// 終了処理
-	void Finalize();
+	void Finalize()override;
 
-	// 終了フラグのチェック
-	bool IsEndRequst() { return isEndRequst; }
+	
 
-private: // Initialize関連
-	// ウィンドウAPI
-	WinAPI* winAPI = nullptr;
-	// DirectX共通部
-	DirectXCommon* dxCommon = nullptr;
-	// 入力処理
-	Input* input = nullptr;
-	// ImGui
-#ifdef _DEBUG
-	ImGuiManager* imGui = nullptr;
-#endif
-	// SRVマネージャー
-	SrvManager* srvManager = nullptr;
-	// テクスチャマネージャー
-	TextureManager* textureManager = nullptr;
-	// 3Dモデルマネージャー
-	ModelManager* modelManager = nullptr;
-	// モデル共通部
-	ModelCommon* modelCommon = nullptr;
-	// スプライト共通部
-	SpriteCommon* spriteCommon = nullptr;
-	// 3Dオブジェクト共通部
-	Object3DCommon* object3DCommon = nullptr;
-	// カメラ
-	Camera* camera = nullptr;
-private: 
+
+private:
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
@@ -79,8 +55,7 @@ private:
 	// 3Dモデル
 	Model* model2 = nullptr;
 
-	// ゲーム終了フラグ
-	bool isEndRequst = false;
+
 
 };
 
