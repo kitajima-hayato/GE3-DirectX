@@ -42,7 +42,7 @@ public:
 	// 終了フラグのチェック
 	bool IsEndRequst() { return isEndRequst; }
 
-private:
+private: // Initialize関連
 	// ウィンドウAPI
 	WinAPI* winAPI = nullptr;
 	// DirectX共通部
@@ -59,12 +59,15 @@ private:
 	TextureManager* textureManager = nullptr;
 	// 3Dモデルマネージャー
 	ModelManager* modelManager = nullptr;
+	// モデル共通部
+	ModelCommon* modelCommon = nullptr;
 	// スプライト共通部
 	SpriteCommon* spriteCommon = nullptr;
 	// 3Dオブジェクト共通部
 	Object3DCommon* object3DCommon = nullptr;
 	// カメラ
 	Camera* camera = nullptr;
+private: 
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
