@@ -19,20 +19,7 @@
 #include<sstream>
 #include<wrl.h>
 #include "numbers"
-#include "Input.h"
-#include "WinAPI.h"
-#include "DirectXCommon.h"
-#include "Logger.h"
-#include "D3DResourceLeakChecker.h"
-#include "Sprite.h"
-#include "SpriteCommon.h"
-#include "TextureManager.h"
-#include "Object3D.h"
-#include "Object3DCommon.h"
-#include "Model.h"
-#include "ModelCommon.h"
-#include "ModelManager.h"
-#include "srvManager.h"
+
 #include "MyGame.h"
 #ifdef _DEBUG
 #include "ImGuiManager.h"
@@ -60,12 +47,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ゲームの更新
 		game.Update();
 		
-
-
-
-
-
-
 
 
 

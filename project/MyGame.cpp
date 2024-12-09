@@ -4,66 +4,64 @@ void MyGame::Initialize()
 {
 	D3DResourceLeakChecker leakCheck;
 #pragma region 基盤システムの初期化
-	//ポインタ
-	WinAPI* winAPI = nullptr;
 	//WindowsAPIの初期化
 	winAPI = new WinAPI();
 	winAPI->Initialize();
-
-	//入力処理のクラスポインタ
-	Input* input = nullptr;
-	input = new Input();
-	input->Initialize(winAPI);
-
-	//ポインタと初期化
-	DirectXCommon* dxCommon = nullptr;
+	// dxCommonの初期化
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winAPI);
 
-#ifdef _DEBUG
-	// ImGuiの初期化
-	ImGuiManager* imGui = new ImGuiManager();
-	imGui->Initialize(winAPI, dxCommon);
-#endif
+	// 入力処理のクラスポインタ
+	input = new Input();
+	input->Initialize(winAPI);
+
+	// オーディオの初期化
+
+
 	// SRVマネージャーの初期化
-	SrvManager* srvManager = nullptr;
 	srvManager = new SrvManager();
 	srvManager->Initialize(dxCommon);
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
-	// 3Dモデルマネージャの初期化
-	ModelManager::GetInstance()->Initialize(dxCommon);
 
 	// スプライト共通部の初期化
-	SpriteCommon* spriteCommon = new SpriteCommon();
+	spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 
+#ifdef _DEBUG
+	// ImGuiの初期化
+	imGui = new ImGuiManager();
+	imGui->Initialize(winAPI, dxCommon);
+#endif
+
+	// 3Dモデルマネージャの初期化
+	ModelManager::GetInstance()->Initialize(dxCommon);
 	// 3Dオブジェクト共通部の初期化
 	Object3DCommon* object3DCommon = new Object3DCommon();
 	object3DCommon->Initialize(dxCommon);
 
 	// モデル共通部の初期化
-	ModelCommon* modelCommon = new ModelCommon();
+	modelCommon = new ModelCommon();
 	modelCommon->Initialize(dxCommon);
 
 	// カメラ
-	Camera* camera = new Camera();
+	camera = new Camera();
 	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
 
 #pragma region 最初のシーンの初期化
-	// 
-	Object3D* object3D = new Object3D();
+	// 3Dオブジェクトの初期化
+	object3D = new Object3D();
 	object3D->Initialize(object3DCommon);
 
-	Model* model = new Model();
+	model = new Model();
 	model->Initialize(modelCommon, "resources", "axis.obj");
 	ModelManager::GetInstance()->LoadModel("axis.obj");
 	object3D->SetModel("axis.obj");
 
 	// モデルをもう一つ読み込む
-	Model* model2 = new Model();
+	model2 = new Model();
 	model2->Initialize(modelCommon, "resources", "plane.obj");
 	ModelManager::GetInstance()->LoadModel("plane.obj");
 	Object3D* object3D2 = new Object3D();
@@ -84,13 +82,24 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
+#pragma region WindowsAPIのメッセージ処理
 	//Windowのメッセージ処理
 	if (winAPI->ProcessMessage()) {
 		//ゲームループを抜ける
 		return;
 	}
+#pragma endregion
+#pragma region 入力処理
 	input->Update();
-#ifdef _DEBUG
+#pragma endregion
+	
+#pragma region ゲームの更新
+	// アクターの更新
+
+
+#pragma endregion
+
+#ifdef _DEBUG // デバッグ時のみ有効ImGuiの処理
 	// ImGuiの処理
 	imGui->Begin();
 #endif
