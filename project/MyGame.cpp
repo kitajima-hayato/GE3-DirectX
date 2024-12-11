@@ -17,9 +17,9 @@ void MyGame::Initialize()
 	// モデルをもう一つ読み込む
 	model2 = new Model();
 	model2->Initialize(modelCommon, "resources", "plane.obj");
-	
+
 	ModelManager::GetInstance()->LoadModel("plane.obj");
-	
+
 	object3D2 = new Object3D();
 	object3D2->Initialize(object3DCommon);
 	object3D2->SetModel("plane.obj");
@@ -38,6 +38,8 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
+	Framework::Update();
+
 
 #pragma region ゲームの更新
 	// アクターの更新
@@ -79,7 +81,7 @@ void MyGame::Update()
 	camera->SetRotate(cameraRotate);
 	camera->Update();
 	imGui->End();
-	
+
 
 #endif
 }
@@ -109,7 +111,6 @@ void MyGame::Draw()
 
 void MyGame::Finalize()
 {
-	
 #pragma region  解放処理
 #ifdef _DEBUG
 	// ImGuiの終了処理
