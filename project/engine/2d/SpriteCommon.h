@@ -2,6 +2,7 @@
 #include "DirectXCommon.h"
 class SpriteCommon
 {
+
 public:		// メンバ関数
 	/// <summary>
 	/// 初期化

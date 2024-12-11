@@ -11,10 +11,9 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	assert(srvManager);
 	this->srvManager = srvManager;
 
-	// ランダムエンジンの初期化
-	std::random_device seedGenaerator;
-	std::mt19937 randomEngine(seedGenaerator());
-
+	
+	
+	// インスタンシングデータのメモリ確保
 	CreateGraphicsPipeLine();
 	// 頂点データの初期化(座標等)
 	InitializeVertexData();
@@ -22,10 +21,132 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	CreateVertexResource();
 	// 頂点バッファの生成
 	CreateVertexBufferView();
-	// インデックスバッファの生成
-	CreateVertexBufferView();
 	// 頂点リソースに頂点データを書き込む
 	WriteVertexResource();
+}
+
+void ParticleManager::CreateParticleGroup(const std::string& name, const std::string textureFilePath)
+{
+	// すでに登録されているか確認
+	auto it = particleGroups.find(name);
+	if (it != particleGroups.end()) {
+		Logger::Log("このデータは登録済みです");
+		return;
+	}
+	// 新規登録
+	ParticleGroup particleGroup;
+	// マテリアルデータにテクスチャファイルパスを設定
+	particleGroup.materialData.textureFilePath = textureFilePath;
+	// テクスチャを読み込む
+	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+	// マテリアルデータにテクスチャのSRVインデックスを記録
+	particleGroup.materialData.textureIndex = TextureManager::GetInstance()->GetSrvIndex(textureFilePath);
+	// インスタンシング用リソースの生成
+	particleGroup.instancingResource = dxCommon->CreateBufferResource(sizeof(ParticleForGPU) * particleGroup.kNumMaxInstance);
+	// インスタンシング用にSRVを確保してSRVインデックスを記録
+	// エラー出たらここ怪しいかも問題なかったらこのコメントアウト消す
+	particleGroup.instancingDataSRVIndex = srvManager->IsAllocate();
+	// SRV生成(StructuredBuffer用設定)
+	srvManager->CreateSRVforStructuredBuffer(particleGroup.instancingDataSRVIndex, particleGroup.instancingResource.Get(), particleGroup.kNumMaxInstance, sizeof(ParticleForGPU));
+
+
+}
+
+void ParticleManager::Update(Camera* camera)
+{
+	Matrix4x4 cameraMatrix = camera->GetCameraMatrix();
+	// ビルボード行列の更新
+	Matrix4x4 backFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+	Matrix4x4 billboardMatrix = Multiply(backFrontMatrix, cameraMatrix);
+	// ビュー行列とプロジェクション行列をカメラから取得
+	Matrix4x4 viewMatrix = camera->GetViewMatrix();
+	Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
+	// 全てのパーティクルグループについて処理する
+
+	for (auto& [groupName, particleGroup] : particleGroups) {
+		for (auto particleIterater = particleGroup.particles.begin(); particleIterater != particleGroup.particles.end();) {
+			// 寿命に達していたらグループから外す
+			if ((*particleIterater).lifeTime <= (*particleIterater).currentTime) {
+				particleIterater = particleGroup.particles.erase(particleIterater);
+				continue;
+			}
+			// 移動処理(速度を座標に加算)
+			(*particleIterater).transform.translate.x += (*particleIterater).velocity.x * kDeltaTime;
+			(*particleIterater).transform.translate.y += (*particleIterater).velocity.y * kDeltaTime;
+			(*particleIterater).transform.translate.z += (*particleIterater).velocity.z * kDeltaTime;
+			// 経過時間を加算
+			(*particleIterater).currentTime += kDeltaTime;
+			// ワールド行列を計算
+			Matrix4x4 worldMatrix = MakeAffineMatrix((*particleIterater).transform.scale, (*particleIterater).transform.rotate, (*particleIterater).transform.translate);
+
+			// ワールドビュープロジェクション行列を合成
+			Matrix4x4 wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			float alphe = 1.0f - ((*particleIterater).currentTime / (*particleIterater).lifeTime);
+			// インスタンシング用データ１個分の書き込み
+			particleGroup.instancingData->WVP = wvpMatrix;
+			particleGroup.instancingData->World = worldMatrix;
+			particleGroup.instancingData->color = (*particleIterater).color;
+			particleGroup.instancingData->color.w = alphe;
+			++particleIterater;
+		}
+	}
+
+}
+
+void ParticleManager::Draw()
+{
+	// コマンド : ルートシグネチャを設定
+	dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	// コマンド : PSO(Pipeline State Object)を設定
+	dxCommon->GetCommandList()->SetPipelineState(pipelineState.Get());
+	// コマンド : プリミティブトポロジー(描画計上)を設定
+	dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// コマンド : VBV(Vertex Buffer View)を設定
+	dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	// 全てのパーティクルグループについて処理する
+	for (auto& [groupName, particleGroup] : particleGroups) {
+		// コマンド : テクスチャのSRVのDescriptorTableを設定
+		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(2, particleGroup.materialData.textureIndex);
+		// コマンド : インスタンシングデータのSRVのDescriptorTableを設定
+		dxCommon->GetCommandList()->SetGraphicsRoot32BitConstant(3, particleGroup.materialData.textureIndex, 0);
+		// DrawCall(インスタンシング描画) 
+		dxCommon->GetCommandList()->DrawInstanced(particleGroup.particles.size(), particleGroup.kNumMaxInstance, 0, 0);
+	}
+}
+
+void ParticleManager::Emit(const std::string& name, const Vector3& position, uint32_t count)
+{
+	// パーティクルグループを取得
+	auto it = particleGroups.find(name);
+	if (it == particleGroups.end()) {
+		Logger::Log("パーティクルグループが見つかりません");
+		return;
+	}
+
+	// パーティクルを生成
+	for (uint32_t i = 0; i < count; ++i) {
+		it->second.particles.push_back(MakeParticle(randomEngine, position));
+	}
+}
+
+Particle ParticleManager::MakeParticle(std::mt19937& randomEngine, const Vector3& position) {
+	std::uniform_real_distribution<float> distVelocity(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+
+	Particle particle;
+
+	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
+	particle.transform.rotate = { 0.0f, 3.3f, 0.0f };
+	// 位置を引数のpositionで設定
+	particle.transform.translate = position;
+	// 速度を[-1~1], 色は[0~1]の範囲でランダムに生成
+	particle.velocity = { distVelocity(randomEngine), distVelocity(randomEngine), distVelocity(randomEngine) };
+	particle.color = { distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f };
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0;
+
+	return particle;
 }
 
 
@@ -56,8 +177,8 @@ void ParticleManager::CreateGraphicsPipeLine()
 	particlePipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 
 	// PSOの生成
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> particlePipelineState = nullptr;
-	HRESULT hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&particlePipelineStateDesc, IID_PPV_ARGS(&particlePipelineState));
+	pipelineState = nullptr;
+	HRESULT hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&particlePipelineStateDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(hr));
 #pragma endregion
 }
@@ -101,7 +222,7 @@ void ParticleManager::CreateRootSignature()
 
 void ParticleManager::InitializeVertexData()
 {
-	
+
 
 
 }
@@ -109,7 +230,7 @@ void ParticleManager::InitializeVertexData()
 void ParticleManager::CreateVertexResource()
 {
 	// 頂点リソース生成
-	vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) *vertexData.size() );
+	vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * vertexData.size());
 
 	// 頂点バッファにデータを書き込む
 	void* pVertexDataBegin;
@@ -127,13 +248,12 @@ void ParticleManager::CreateVertexBufferView()
 	CreateVertexResource();
 
 	// 頂点バッファビューの作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6; // 頂点数に応じて変更
 
-	// コマンドリストに頂点バッファを設定
-	dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+
 }
 
 void ParticleManager::WriteVertexResource()
@@ -148,6 +268,7 @@ void ParticleManager::WriteVertexResource()
 
 
 }
+
 
 
 
