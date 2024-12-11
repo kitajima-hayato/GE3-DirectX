@@ -17,9 +17,9 @@ void SpriteCommon::CreateRootSignatrue()
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 #pragma region DescriptorRange
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-	descriptorRange[0].BaseShaderRegister = 0;//0から始まる
-	descriptorRange[0].NumDescriptors = 1;//数は１つ
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
+	descriptorRange[0].NumDescriptors = 1;//数は１つ
+	descriptorRange[0].BaseShaderRegister = 0;//0から始まる
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//offsetを自動計算
 #pragma endregion
 	
@@ -146,8 +146,6 @@ void SpriteCommon::CreateGraficsPipeLine()
 	//比較関数はLessEqual。つまり、近ければ描画される
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-
-	
 
 
 	// グラフィックスパイプラインのステートオブジェクトのデスクリプタを設定
