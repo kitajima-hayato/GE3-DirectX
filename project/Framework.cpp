@@ -2,8 +2,6 @@
 
 void Framework::Initialize()
 {
-	
-
 #pragma region 基盤システムの初期化
 	//WindowsAPIの初期化
 	winAPI = new WinAPI();
@@ -61,15 +59,13 @@ void Framework::Update()
 		return;
 	}
 #pragma endregion
+
 #pragma region 入力処理
 	input->Update();
 #pragma endregion
 
 
-	// ESCキーで終了
-	if (input->TriggerKey(DIK_ESCAPE)) {
-		isEndRequst = true;
-	}
+	
 }
 
 void Framework::Finalize()
@@ -94,9 +90,7 @@ void Framework::Run()
 	while (true) {
 		// ゲームの更新
 		Update();
-		if (IsEndRequst()) {
-			break;
-		}
+		
 		// ゲームの描画
 		Draw();
 	}

@@ -7,7 +7,7 @@
 #include <vector>
 #include <random>
 class ParticleManager
-{ 
+{
 public:
 	// 構造体
 	struct ParticleGroup {
@@ -29,16 +29,23 @@ public:	// メンバ関数
 	// 描画
 	void Draw();
 	// パーティクルの生成(Emit)
-	void Emit(const std::string& name, const Vector3& position,uint32_t count);
+	void Emit(const std::string& name, const Vector3& position, uint32_t count);
 	// パーティクルの生成
 	Particle MakeParticle(std::mt19937& randomEngine, const Vector3& position);
+
+public:	// シングルトン
+	static ParticleManager* instance;
+	// シングルトンインスタンスを取得
+	static ParticleManager* GetInstance();
+	// シングルトンインスタンスを解放
+	static void DeleteInstance();
+
+
 private:	// メンバ関数
 	// グラフィックスパイプラインの生成
 	void CreateGraphicsPipeLine();
 	// ルートシグネチャの作成
 	void CreateRootSignature();
-	// 頂点データの初期化(座標等)
-	void InitializeVertexData();
 	// 頂点リソース生成
 	void CreateVertexResource();
 	// 頂点バッファビューの(VBV)の作成
@@ -73,18 +80,19 @@ private:
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	// RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-	// 頂点データ
-	Microsoft::WRL::ComPtr<ID3D12Resource>vertexResource = nullptr;
-	// 頂点データの初期化(座標等)
-	std::vector<VertexData> vertexData = {};
-	// パーティクルグループコンテナ
-	std::unordered_map<std::string, ParticleGroup> particleGroups;
-	// Δtを定義６０fos固定
-	const float kDeltaTime = 1.0f / 60.0f;
 	// バーテックスバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	// ランダムエンジン
 	std::random_device seedGenaerator;
 	std::mt19937 randomEngine;
+	// 頂点データ
+	Microsoft::WRL::ComPtr<ID3D12Resource>vertexResource = nullptr;
+	// 頂点データの初期化(座標等)
+	std::vector<VertexData> vertexData = {};
+
+	// パーティクルグループコンテナ
+	std::unordered_map<std::string, ParticleGroup> particleGroups;
+	// Δtを定義６０fos固定
+	const float kDeltaTime = 1.0f / 60.0f;
 };
 

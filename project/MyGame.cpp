@@ -38,7 +38,7 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
-
+	Framework::Update();
 #pragma region ゲームの更新
 	// アクターの更新
 
@@ -62,7 +62,7 @@ void MyGame::Update()
 	}
 
 #ifdef _DEBUG
-	ImGui::SetWindowSize(ImVec2(500.0f, 2000.0f));
+	ImGui::SetWindowSize(ImVec2(500.0f, 200.0f));
 	// ImGuiのデモ
 	ImGui::ShowDemoWindow();
 	ImGui::Text("Hello, world %d", 123);

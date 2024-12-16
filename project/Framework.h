@@ -24,8 +24,9 @@
 class Framework
 {
 
-public:
-	virtual ~Framework() {}
+public:	// メンバ関数
+	~Framework()=default;
+	
 public:	// メンバ関数
 	// 初期化
 	virtual void Initialize();
@@ -37,12 +38,6 @@ public:	// メンバ関数
 	virtual void Finalize();
 	// 実行
 	void Run();
-	// 終了リクエスト
-	bool IsEndRequst() { return isEndRequst; }
-protected:
-	// 終了リクエスト
-	bool isEndRequst = false;
-
 private:
 	D3DResourceLeakChecker leakCheck;
 protected:// Initialize関連
@@ -59,10 +54,11 @@ protected:// Initialize関連
 	// SRVマネージャー
 	SrvManager* srvManager = nullptr;
 	// テクスチャマネージャー
-	TextureManager* textureManager = nullptr;
+	//TextureManager* textureManager = nullptr;
+	// //シングルトンでGetInstance済み
 	// 3Dモデルマネージャー
 	ModelManager* modelManager = nullptr;
-	// モデル共通部
+	// モデル共通部d
 	ModelCommon* modelCommon = nullptr;
 	// スプライト共通部
 	SpriteCommon* spriteCommon = nullptr;

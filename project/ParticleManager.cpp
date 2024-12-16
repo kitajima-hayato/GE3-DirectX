@@ -15,8 +15,6 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	
 	// インスタンシングデータのメモリ確保
 	CreateGraphicsPipeLine();
-	// 頂点データの初期化(座標等)
-	InitializeVertexData();
 	// 頂点リソース生成
 	CreateVertexResource();
 	// 頂点バッファの生成
@@ -110,7 +108,7 @@ void ParticleManager::Draw()
 		// コマンド : インスタンシングデータのSRVのDescriptorTableを設定
 		dxCommon->GetCommandList()->SetGraphicsRoot32BitConstant(3, particleGroup.materialData.textureIndex, 0);
 		// DrawCall(インスタンシング描画) 
-		dxCommon->GetCommandList()->DrawInstanced(particleGroup.particles.size(), particleGroup.kNumMaxInstance, 0, 0);
+		dxCommon->GetCommandList()->DrawInstanced(UINT(particleGroup.particles.size()), particleGroup.kNumMaxInstance, 0, 0);
 	}
 }
 
@@ -147,6 +145,20 @@ Particle ParticleManager::MakeParticle(std::mt19937& randomEngine, const Vector3
 	particle.currentTime = 0;
 
 	return particle;
+}
+
+ParticleManager* ParticleManager::GetInstance()
+{
+	return nullptr;
+}
+
+void ParticleManager::DeleteInstance()
+{
+	// インスタンスが存在していたら削除
+	if (instance != nullptr) {
+		delete instance;
+		instance = nullptr;
+	}
 }
 
 
@@ -220,12 +232,6 @@ void ParticleManager::CreateRootSignature()
 	descriptionRootSignatureParticle.NumParameters = _countof(rootParametersParticle);		//配列の長さ
 }
 
-void ParticleManager::InitializeVertexData()
-{
-
-
-
-}
 
 void ParticleManager::CreateVertexResource()
 {

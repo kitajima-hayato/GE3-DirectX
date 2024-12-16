@@ -40,8 +40,6 @@ public:
 	// 終了処理
 	void Finalize()override;
 
-	
-
 
 private:
 	// スプライト
