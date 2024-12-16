@@ -34,11 +34,14 @@ public:	// メンバ関数
 	Particle MakeParticle(std::mt19937& randomEngine, const Vector3& position);
 
 public:	// シングルトン
-	static ParticleManager* instance;
-	// シングルトンインスタンスを取得
+	// シングルトンインスタンスの取得
 	static ParticleManager* GetInstance();
-	// シングルトンインスタンスを解放
-	static void DeleteInstance();
+	// コピーコンストラクタと代入演算子を削除して、複製を防ぐ
+	// コンストラクタをプライベートにして、外部からの直接生成を防ぐ
+	ParticleManager() = default;
+	~ParticleManager() = default;
+	ParticleManager(const ParticleManager&) = delete;
+	ParticleManager& operator=(const ParticleManager&) = delete;
 
 
 private:	// メンバ関数

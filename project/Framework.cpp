@@ -2,7 +2,6 @@
 
 void Framework::Initialize()
 {
-#pragma region 基盤システムの初期化
 	//WindowsAPIの初期化
 	winAPI = new WinAPI();
 	winAPI->Initialize();
@@ -15,39 +14,8 @@ void Framework::Initialize()
 	input->Initialize(winAPI);
 
 	// オーディオの初期化
-
-
-	// SRVマネージャーの初期化
-	srvManager = new SrvManager();
-	srvManager->Initialize(dxCommon);
-	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
-
-	// スプライト共通部の初期化
-	spriteCommon = new SpriteCommon();
-	spriteCommon->Initialize(dxCommon);
-
-#ifdef _DEBUG
-	// ImGuiの初期化
-	imGui = new ImGuiManager();
-	imGui->Initialize(winAPI, dxCommon);
-#endif
-
-	// 3Dモデルマネージャの初期化
-	ModelManager::GetInstance()->Initialize(dxCommon);
-	// 3Dオブジェクト共通部の初期化
-	object3DCommon = new Object3DCommon();
-	object3DCommon->Initialize(dxCommon);
-
-	// モデル共通部の初期化
-	modelCommon = new ModelCommon();
-	modelCommon->Initialize(dxCommon);
-
-	// カメラ
-	camera = new Camera();
-	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
-	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
-	object3DCommon->SetDefaultCamera(camera);
+	// audio = new Audio();
+	// audio->Initialize();
 }
 
 void Framework::Update()
@@ -60,25 +28,16 @@ void Framework::Update()
 	}
 #pragma endregion
 
-#pragma region 入力処理
 	input->Update();
-#pragma endregion
 
-
-	
 }
 
 void Framework::Finalize()
 {
-	delete object3DCommon;
-	delete spriteCommon;
-	delete camera;
-	delete srvManager;
-#ifdef _DEBUG
-	delete imGui;
-#endif
-	delete dxCommon;
+	// delete audio;
 	delete input;
+	delete dxCommon;
+	winAPI->Finalize();
 	delete winAPI;
 }
 
@@ -90,10 +49,13 @@ void Framework::Run()
 	while (true) {
 		// ゲームの更新
 		Update();
-		
+		if (IsEndRequst()) {
+			break;
+		}
 		// ゲームの描画
 		Draw();
 	}
 	// ゲームの終了処理
 	Finalize();
 }
+

@@ -1,4 +1,7 @@
 #include "ParticleEmitter.h"
+#ifdef DEBUG
+#include <imgui.h>
+#endif // DEBUG
 
 
 

@@ -23,10 +23,13 @@
 
 class Framework
 {
+public:
+	// ゲームの実行
+	void Run();
 
 public:	// メンバ関数
-	~Framework()=default;
-	
+	virtual ~Framework() = default;
+
 public:	// メンバ関数
 	// 初期化
 	virtual void Initialize();
@@ -36,35 +39,21 @@ public:	// メンバ関数
 	virtual void Draw() = 0;
 	// 終了処理
 	virtual void Finalize();
-	// 実行
-	void Run();
-private:
-	D3DResourceLeakChecker leakCheck;
+	// 終了リクエスト
+	virtual bool IsEndRequst() { return endRequest; }
+
 protected:// Initialize関連
 	// ウィンドウAPI
 	WinAPI* winAPI = nullptr;
-	// DirectX共通部
-	DirectXCommon* dxCommon = nullptr;
 	// 入力処理
 	Input* input = nullptr;
-	// ImGui
-#ifdef _DEBUG
-	ImGuiManager* imGui = nullptr;
-#endif
-	// SRVマネージャー
-	SrvManager* srvManager = nullptr;
-	// テクスチャマネージャー
-	//TextureManager* textureManager = nullptr;
-	// //シングルトンでGetInstance済み
-	// 3Dモデルマネージャー
-	ModelManager* modelManager = nullptr;
-	// モデル共通部d
-	ModelCommon* modelCommon = nullptr;
-	// スプライト共通部
-	SpriteCommon* spriteCommon = nullptr;
-	// 3Dオブジェクト共通部
-	Object3DCommon* object3DCommon = nullptr;
-	// カメラ
-	Camera* camera = nullptr;
+	// DirectX共通部
+	DirectXCommon* dxCommon = nullptr;
+	// 音声処理
+	//Audio* audio = nullptr;
+
+	// ゲーム終了フラグ
+	bool endRequest = false;
+
 };
 

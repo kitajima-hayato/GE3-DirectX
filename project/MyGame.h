@@ -30,8 +30,8 @@
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
 {
-public:
-	// 初期化　
+public:	// メンバ関数
+	// 初期化
 	void Initialize() override;
 	// 更新
 	void Update()override;
@@ -41,17 +41,31 @@ public:
 	void Finalize()override;
 
 
-private:
+private:	// メンバ変数
+	// SRVマネージャー
+	SrvManager* srvManager = nullptr;
+	// スプライト共通部
+	SpriteCommon* spriteCommon = nullptr;
+	// 3Dモデルマネージャー
+	ModelManager* modelManager = nullptr;
+	// 3Dオブジェクト共通部
+	Object3DCommon* object3DCommon = nullptr;
+	// カメラ
+	Camera* camera = nullptr;
+	// ImGui
+#ifdef _DEBUG
+	//ImGuiManager* imGui = nullptr;
+#endif
+
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
 	Object3D* object3D = nullptr;
 	// 3Dモデル
 	Model* model = nullptr;
-	// 3Dオブジェクト
-	Object3D* object3D2 = nullptr;
-	// 3Dモデル
-	Model* model2 = nullptr;
+	// modelCommon
+	ModelCommon* modelCommon = nullptr;
+
 
 
 

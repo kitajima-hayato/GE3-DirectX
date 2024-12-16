@@ -1,8 +1,7 @@
 #include "ParticleManager.h"
 #include <Logger.h>
 #include <MyMath.h>
-#include <Framework.cpp>
-
+#include <numbers>
 void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 {
 	// NULL検出 // メンバ変数に代入
@@ -149,21 +148,9 @@ Particle ParticleManager::MakeParticle(std::mt19937& randomEngine, const Vector3
 
 ParticleManager* ParticleManager::GetInstance()
 {
-	return nullptr;
+	static ParticleManager instance;
+	return &instance;
 }
-
-void ParticleManager::DeleteInstance()
-{
-	// インスタンスが存在していたら削除
-	if (instance != nullptr) {
-		delete instance;
-		instance = nullptr;
-	}
-}
-
-
-
-
 
 void ParticleManager::CreateGraphicsPipeLine()
 {
@@ -231,7 +218,6 @@ void ParticleManager::CreateRootSignature()
 	descriptionRootSignatureParticle.pParameters = rootParametersParticle;					//ルートパラメータ配列へのポインタ
 	descriptionRootSignatureParticle.NumParameters = _countof(rootParametersParticle);		//配列の長さ
 }
-
 
 void ParticleManager::CreateVertexResource()
 {
