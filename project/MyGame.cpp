@@ -6,31 +6,35 @@ void MyGame::Initialize()
 
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
-	object3D = new Object3D();
-	object3D->Initialize(object3DCommon);
-
+	for (Object3D* object3D : object3Ds) {
+		object3D = new Object3D();
+		object3D->Initialize(object3DCommon);
+	}
 	model = new Model();
-	model->Initialize(modelCommon, "resources", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
-	object3D->SetModel("axis.obj");
+	model->Initialize(modelCommon, "resources", "cube.obj");
+	ModelManager::GetInstance()->LoadModel("cube.obj");
+	for (Object3D* object3D : object3Ds) {
+		object3D->SetModel("cube.obj");
+		object3Ds.push_back(object3D);
+	}
 
-	// モデルをもう一つ読み込む
-	model2 = new Model();
-	model2->Initialize(modelCommon, "resources", "plane.obj");
+	//// モデルをもう一つ読み込む
+	//model2 = new Model();
+	//model2->Initialize(modelCommon, "resources", "plane.obj");
 
-	ModelManager::GetInstance()->LoadModel("plane.obj");
+	//ModelManager::GetInstance()->LoadModel("plane.obj");
 
-	object3D2 = new Object3D();
-	object3D2->Initialize(object3DCommon);
-	object3D2->SetModel("plane.obj");
+	//object3D2 = new Object3D();
+	//object3D2->Initialize(object3DCommon);
+	//object3D2->SetModel("plane.obj");
 
-	std::vector<Sprite*> sprites;
+	/*std::vector<Sprite*> sprites;
 	sprites.clear();
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
 	Vector2 pos = { 100.0f, 100.0f };
 	sprite->SetPosition(pos);
-	sprites.push_back(sprite);
+	sprites.push_back(sprite);*/
 
 #pragma endregion
 
@@ -53,18 +57,20 @@ void MyGame::Update()
 #endif
 
 	// ゲームの処理
-	object3D->Update();
-	object3D2->Update();
+	for (Object3D* object3D : object3Ds) {
+		object3D->Update();
+	}
+	/*object3D2->Update();*/
 	if (input->TriggerKey(DIK_1)) {
 		OutputDebugStringA("Hit_1\n");
 	}
 
-	for (Sprite* sprite : sprites) {
+	/*for (Sprite* sprite : sprites) {
 		sprite->Update();
-	}
+	}*/
 
 #ifdef _DEBUG
-	ImGui::SetWindowSize(ImVec2(500.0f, 2000.0f));
+	ImGui::SetWindowSize(ImVec2(500.0f, 200.0f));
 	// ImGuiのデモ
 	ImGui::ShowDemoWindow();
 	ImGui::Text("Hello, world %d", 123);
@@ -80,6 +86,10 @@ void MyGame::Update()
 	camera->SetTranslate(cameraPos);
 	camera->SetRotate(cameraRotate);
 	camera->Update();
+
+	
+
+
 	imGui->End();
 
 
@@ -93,14 +103,16 @@ void MyGame::Draw()
 	srvManager->PreDraw();
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3DCommon->DrawSettingCommon();
-	object3D->Draw();
-	object3D2->Draw();
+	for (Object3D* object3D : object3Ds) {
+		object3D->Draw();
+	}
+	/*object3D2->Draw();*/
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
 
-	for (Sprite* sprite : sprites) {
+	/*for (Sprite* sprite : sprites) {
 		sprite->Draw();
-	}
+	}*/
 
 #ifdef _DEBUG
 	// ImGuiの描画
@@ -125,13 +137,15 @@ void MyGame::Finalize()
 #pragma endregion
 
 	//解放
-	for (Sprite* sprite : sprites) {
+	/*for (Sprite* sprite : sprites) {
 		delete sprite;
-	}
-	delete model2;
-	delete object3D2;
+	}*/
+	/*delete model2;
+	delete object3D2;*/
 	delete model;
-	delete object3D;
+	for (Object3D* object3D : object3Ds) {
+		delete object3D;
+	}
 	Framework::Finalize();
 }
 

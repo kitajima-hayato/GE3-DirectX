@@ -47,13 +47,15 @@ private:
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
-	Object3D* object3D = nullptr;
+	
+	std::vector<Object3D*> object3Ds;
 	// 3Dモデル
+	std::vector<Model*> models;
 	Model* model = nullptr;
 	// 3Dオブジェクト
-	Object3D* object3D2 = nullptr;
-	// 3Dモデル
-	Model* model2 = nullptr;
+	//Object3D* object3D2 = nullptr;
+	//// 3Dモデル
+	//Model* model2 = nullptr;
 
 
 
