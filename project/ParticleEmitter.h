@@ -5,14 +5,15 @@ class ParticleEmitter
 {
 public:
 	// 既定のコンストラクタ
-	ParticleEmitter() = default;
+	
 	~ParticleEmitter();
+	ParticleEmitter(const std::string& name, const Vector3& transform, uint32_t count);
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager, Camera* camera);
 	void Update();
 	// パーティクルの生成(Emit)
 	void Emit();
-
+	void ShowImGui();
 private:
 	DirectXCommon* dxCommon = nullptr;
 	SrvManager* srvManager = nullptr;

@@ -1,5 +1,5 @@
 #include "MyGame.h"
-
+#include "ParticleEmitter.h"
 void MyGame::Initialize()
 {
 	// 基底クラスの初期化
@@ -53,6 +53,10 @@ void MyGame::Initialize()
 	sprite->SetPosition(pos);
 	sprites.push_back(sprite);
 
+	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager);
+	particleEmitter = new ParticleEmitter("test", { 0.0f, 0.0f, 0.0f }, 100);
+	particleEmitter->Initialize(dxCommon, srvManager, camera);
+
 #pragma endregion
 
 }
@@ -81,6 +85,7 @@ void MyGame::Update()
 	for (Sprite* sprite : sprites) {
 		sprite->Update();
 	}
+	particleEmitter->Update();
 
 #ifdef _DEBUG
 	//ImGui::SetWindowSize(ImVec2(500.0f, 200.0f));
@@ -130,6 +135,7 @@ void MyGame::Draw()
 
 void MyGame::Finalize()
 {
+	delete particleEmitter;
 	
 #pragma region  解放処理
 #ifdef _DEBUG

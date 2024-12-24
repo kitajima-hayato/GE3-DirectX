@@ -97,5 +97,8 @@ private:
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
 	// Δtを定義６０fos固定
 	const float kDeltaTime = 1.0f / 60.0f;
+
+	
+
 };
 

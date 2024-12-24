@@ -27,6 +27,7 @@
 #include "ImGuiManager.h"
 #endif
 
+class ParticleEmitter;
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
 {
@@ -65,6 +66,8 @@ private:	// メンバ変数
 	Model* model = nullptr;
 	// modelCommon
 	ModelCommon* modelCommon = nullptr;
+	// パーティクルエミッター
+	ParticleEmitter* particleEmitter = nullptr;
 
 
 
