@@ -1,22 +1,39 @@
 #include "MyGame.h"
 
+MyGame::MyGame()
+{
+}
+
+MyGame::~MyGame()
+{
+}
+
 void MyGame::Initialize()
 {
 	Framework::Initialize();
 
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
-	for (Object3D* object3D : object3Ds) {
-		object3D = new Object3D();
-		object3D->Initialize(object3DCommon);
-	}
+
+	
+
+	/*block = new Object3D();
+	block->Initialize(object3DCommon);
+
 	model = new Model();
 	model->Initialize(modelCommon, "resources", "cube.obj");
 	ModelManager::GetInstance()->LoadModel("cube.obj");
-	for (Object3D* object3D : object3Ds) {
-		object3D->SetModel("cube.obj");
-		object3Ds.push_back(object3D);
-	}
+	block->SetModel("cube.obj");*/
+
+
+	// Setterとgetterをつくりなさい
+	
+
+
+	/* block->SetTranslate(blockInfo.position);
+	 block->SetScale(blockInfo.scale);
+	 block->SetRotate(blockInfo.rotation);*/
+
 
 	//// モデルをもう一つ読み込む
 	//model2 = new Model();
@@ -57,10 +74,19 @@ void MyGame::Update()
 #endif
 
 	// ゲームの処理
-	for (Object3D* object3D : object3Ds) {
-		object3D->Update();
+	// 床の生成
+	cycleCount += 1.0f;
+	if (cycleCount > popCycle) {
+		cycleCount = 0.0f;
+		CreateFloor();
 	}
-	/*object3D2->Update();*/
+
+	// ブロックの更新
+	for (Blocks* block : blocks) {
+		block->Update();
+	}
+	
+	
 	if (input->TriggerKey(DIK_1)) {
 		OutputDebugStringA("Hit_1\n");
 	}
@@ -87,7 +113,18 @@ void MyGame::Update()
 	camera->SetRotate(cameraRotate);
 	camera->Update();
 
-	
+	// ブロックの情報を表示
+	/*Vector3 blockPos = block->GetTranslate();
+	Vector3 blockScale = block->GetScale();
+	Vector3 blockRotate = block->GetRotate();
+	ImGui::DragFloat3("blockPosition", &blockPos.x, 0.1f);
+	ImGui::DragFloat3("blockScale", &blockScale.x, 0.1f);
+	ImGui::DragFloat3("blockRotate", &blockRotate.x, 0.1f);
+	block->SetTranslate(blockPos);
+	block->SetScale(blockScale);
+	block->SetRotate(blockRotate);*/
+
+
 
 
 	imGui->End();
@@ -103,9 +140,13 @@ void MyGame::Draw()
 	srvManager->PreDraw();
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3DCommon->DrawSettingCommon();
-	for (Object3D* object3D : object3Ds) {
-		object3D->Draw();
+
+	// 床のブロックの描画
+	for (Blocks* block : blocks) {
+		block->Draw();
 	}
+
+	
 	/*object3D2->Draw();*/
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
@@ -143,11 +184,37 @@ void MyGame::Finalize()
 	/*delete model2;
 	delete object3D2;*/
 	delete model;
-	for (Object3D* object3D : object3Ds) {
-		delete object3D;
-	}
+	
+
 	Framework::Finalize();
 }
+
+void MyGame::CreateFloor()
+{
+	// ブロックモデルを一定間隔で並べる
+	// 並べる数
+	const int num = 22;
+	// 並べる間隔
+	const float interval = 10.0f;
+	// 並べる開始位置 // 右の画面外からスタート
+	Vector3 pos = { -100.0f, 0.0f, 0.0f };
+
+	// ブロックの生成
+	Blocks* newBlock = new Blocks();
+	newBlock->Initialize(object3DCommon, modelCommon);
+	// ブロックの位置を設定
+	newBlock->PoPBlock();
+	// ブロックをリストに追加
+	blocks.push_back(newBlock);
+
+	// 左の画面外に出たらデリート
+	if (blocks.size() > num) {
+		Blocks* oldBlock = blocks.front();
+		delete oldBlock;
+		blocks.pop_front();
+	}
+}
+
 
 
 

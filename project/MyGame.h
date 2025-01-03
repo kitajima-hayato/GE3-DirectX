@@ -23,6 +23,7 @@
 #include "ModelManager.h"
 #include "srvManager.h"
 #include "Framework.h"
+#include "Blocks.h"
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
@@ -31,6 +32,10 @@
 class MyGame :public Framework
 {
 public:
+	// コンストラクタ
+	MyGame();
+	// デストラクタ
+	~MyGame();
 	// 初期化　
 	void Initialize() override;
 	// 更新
@@ -39,16 +44,23 @@ public:
 	void Draw()override;
 	// 終了処理
 	void Finalize()override;
-
-	
-
+	// 床生成関数
+	void CreateFloor();
+private:
+	struct BlockInfo {
+		Vector3 position;
+		Vector3 scale;
+		Vector3 rotation;
+	};
 
 private:
+	// ブロック
+	std::list<Blocks*>blocks;
+	
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
 	
-	std::vector<Object3D*> object3Ds;
 	// 3Dモデル
 	std::vector<Model*> models;
 	Model* model = nullptr;
@@ -57,7 +69,13 @@ private:
 	//// 3Dモデル
 	//Model* model2 = nullptr;
 
+	BlockInfo blockInfo;
+
+private:	// ゲーム類の初期化
+	const float popCycle = 11.0f;
+	float cycleCount = 0.0f;
 
 
+	
 };
 
