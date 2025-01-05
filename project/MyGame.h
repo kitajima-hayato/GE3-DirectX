@@ -24,9 +24,13 @@
 #include "srvManager.h"
 #include "Framework.h"
 #include "Blocks.h"
+#include "Player.h"
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
@@ -46,6 +50,10 @@ public:
 	void Finalize()override;
 	// 床生成関数
 	void CreateFloor();
+	// ブロック生成関数
+	void CreateHandrance();
+	// ランダム
+	int GetRandom(int min, int max);
 private:
 	struct BlockInfo {
 		Vector3 position;
@@ -56,7 +64,11 @@ private:
 private:
 	// ブロック
 	std::list<Blocks*>blocks;
-	
+	// 障害ブロック
+	std::list<Blocks*>hindranceBlocks;
+
+	// プレイヤー
+	Player* player = nullptr;
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
@@ -72,9 +84,11 @@ private:
 	BlockInfo blockInfo;
 
 private:	// ゲーム類の初期化
+	const int num = 100;
 	const float popCycle = 11.0f;
 	float cycleCount = 0.0f;
-
+	// 並べる間隔
+	const float interval = 10.0f;
 
 	
 };

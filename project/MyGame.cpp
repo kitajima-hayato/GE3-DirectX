@@ -15,7 +15,10 @@ void MyGame::Initialize()
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
 
-	
+	// プレイヤーの初期化
+	player = new Player();
+	player->Initialize(object3DCommon, modelCommon, input);
+
 
 	/*block = new Object3D();
 	block->Initialize(object3DCommon);
@@ -26,32 +29,29 @@ void MyGame::Initialize()
 	block->SetModel("cube.obj");*/
 
 
-	// Setterとgetterをつくりなさい
-	
-
 
 	/* block->SetTranslate(blockInfo.position);
 	 block->SetScale(blockInfo.scale);
 	 block->SetRotate(blockInfo.rotation);*/
 
 
-	//// モデルをもう一つ読み込む
-	//model2 = new Model();
-	//model2->Initialize(modelCommon, "resources", "plane.obj");
+	 //// モデルをもう一つ読み込む
+	 //model2 = new Model();
+	 //model2->Initialize(modelCommon, "resources", "plane.obj");
 
-	//ModelManager::GetInstance()->LoadModel("plane.obj");
+	 //ModelManager::GetInstance()->LoadModel("plane.obj");
 
-	//object3D2 = new Object3D();
-	//object3D2->Initialize(object3DCommon);
-	//object3D2->SetModel("plane.obj");
+	 //object3D2 = new Object3D();
+	 //object3D2->Initialize(object3DCommon);
+	 //object3D2->SetModel("plane.obj");
 
-	/*std::vector<Sprite*> sprites;
-	sprites.clear();
-	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon, "resources/uvChecker.png");
-	Vector2 pos = { 100.0f, 100.0f };
-	sprite->SetPosition(pos);
-	sprites.push_back(sprite);*/
+	 /*std::vector<Sprite*> sprites;
+	 sprites.clear();
+	 Sprite* sprite = new Sprite();
+	 sprite->Initialize(spriteCommon, "resources/uvChecker.png");
+	 Vector2 pos = { 100.0f, 100.0f };
+	 sprite->SetPosition(pos);
+	 sprites.push_back(sprite);*/
 
 #pragma endregion
 
@@ -79,14 +79,17 @@ void MyGame::Update()
 	if (cycleCount > popCycle) {
 		cycleCount = 0.0f;
 		CreateFloor();
+		CreateHandrance();
 	}
 
 	// ブロックの更新
 	for (Blocks* block : blocks) {
 		block->Update();
 	}
-	
-	
+
+	// プレイヤーの更新
+	player->Update();
+
 	if (input->TriggerKey(DIK_1)) {
 		OutputDebugStringA("Hit_1\n");
 	}
@@ -96,13 +99,17 @@ void MyGame::Update()
 	}*/
 
 #ifdef _DEBUG
-	ImGui::SetWindowSize(ImVec2(500.0f, 200.0f));
+	//ImGui::SetWindowSize(ImVec2(500.0f, 200.0f));
 	// ImGuiのデモ
 	ImGui::ShowDemoWindow();
 	ImGui::Text("Hello, world %d", 123);
 	if (ImGui::Button("Save")) {
 		OutputDebugStringA("Save\n");
 	}
+	// ブロックの総数
+	// ブロックの総数を表示
+	ImGui::Text("Number of blocks: %d", static_cast<int>(blocks.size()));
+
 
 
 	Vector3 cameraPos = camera->GetTranslate();
@@ -146,7 +153,9 @@ void MyGame::Draw()
 		block->Draw();
 	}
 
-	
+	// プレイヤーの描画
+	player->Draw();
+
 	/*object3D2->Draw();*/
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
@@ -184,7 +193,7 @@ void MyGame::Finalize()
 	/*delete model2;
 	delete object3D2;*/
 	delete model;
-	
+	delete player;
 
 	Framework::Finalize();
 }
@@ -192,18 +201,15 @@ void MyGame::Finalize()
 void MyGame::CreateFloor()
 {
 	// ブロックモデルを一定間隔で並べる
-	// 並べる数
-	const int num = 22;
-	// 並べる間隔
-	const float interval = 10.0f;
-	// 並べる開始位置 // 右の画面外からスタート
-	Vector3 pos = { -100.0f, 0.0f, 0.0f };
+
+
 
 	// ブロックの生成
 	Blocks* newBlock = new Blocks();
 	newBlock->Initialize(object3DCommon, modelCommon);
-	// ブロックの位置を設定
-	newBlock->PoPBlock();
+	// ブロックの発生位置を設定
+	Vector3 floarBlockPos = { 6.5f, -3.0f, 10.0f };
+	newBlock->PoPBlock(floarBlockPos);
 	// ブロックをリストに追加
 	blocks.push_back(newBlock);
 
@@ -213,6 +219,38 @@ void MyGame::CreateFloor()
 		delete oldBlock;
 		blocks.pop_front();
 	}
+}
+
+void MyGame::CreateHandrance()
+{
+	// ブロックモデルを一定間隔で並べる
+	int val = GetRandom(0, 1);
+	if (val == 0) {
+	}
+	if (val == 1) {
+
+		// ブロックの生成
+		Blocks* newBlock = new Blocks();
+		newBlock->Initialize(object3DCommon, modelCommon);
+		// ブロックの発生位置を設定
+		Vector3 HadranceBlockPos = { 6.5f, -2.4f, 10.0f };
+		newBlock->PoPBlock(HadranceBlockPos);
+		// ブロックをリストに追加
+		blocks.push_back(newBlock);
+		// 左の画面外に出たらデリート
+	}
+	if (blocks.size() > num) {
+		Blocks* oldBlock = blocks.front();
+		delete oldBlock;
+		blocks.pop_front();
+	}
+		
+}
+
+int MyGame::GetRandom(int min, int max)
+{
+	srand(static_cast<unsigned int>(std::time(nullptr)));
+	return min + rand() % (max - min + 1);
 }
 
 

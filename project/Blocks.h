@@ -3,6 +3,7 @@
 #include "Object3D.h"
 #include "Model.h"
 #include "ModelManager.h"
+
 class Blocks
 {
 
@@ -14,7 +15,10 @@ public:
 	void Draw();
 	void Finalize();
 
-	void PoPBlock();
+	void PoPBlock(Vector3 position);
+
+	//void Hindrance();
+
 
 	//void PoPBlock(Vector3 position, Vector3 scale, Vector3 rotation);
 
@@ -31,6 +35,6 @@ private:
 	Model* model = nullptr;
 
 private:
-
+	
 };
 
