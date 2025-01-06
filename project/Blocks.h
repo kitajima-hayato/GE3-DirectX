@@ -19,6 +19,9 @@ public:
 
 	//void Hindrance();
 
+	Vector3 GetTranslate() { return block->GetTranslate(); }
+	Vector3 GetScale() { return block->GetScale(); }
+	//void GetRotate() { block->GetRotate(); }
 
 	//void PoPBlock(Vector3 position, Vector3 scale, Vector3 rotation);
 

@@ -57,6 +57,7 @@ void Player::Draw()
 
 void Player::Finalize()
 {
+
 }
 
 void Player::Jump()

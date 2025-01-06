@@ -19,6 +19,8 @@ void MyGame::Initialize()
 	player = new Player();
 	player->Initialize(object3DCommon, modelCommon, input);
 
+	// 乱数生成器のシードを設定
+	srand(static_cast<unsigned int>(std::time(nullptr)));
 
 	/*block = new Object3D();
 	block->Initialize(object3DCommon);
@@ -89,7 +91,7 @@ void MyGame::Update()
 
 	// プレイヤーの更新
 	player->Update();
-
+	HitCheckAll();
 	if (input->TriggerKey(DIK_1)) {
 		OutputDebugStringA("Hit_1\n");
 	}
@@ -224,7 +226,7 @@ void MyGame::CreateFloor()
 void MyGame::CreateHandrance()
 {
 	// ブロックモデルを一定間隔で並べる
-	int val = GetRandom(0, 1);
+	int val = GetRandom(0, 2);
 	if (val == 0) {
 	}
 	if (val == 1) {
@@ -237,20 +239,73 @@ void MyGame::CreateHandrance()
 		newBlock->PoPBlock(HadranceBlockPos);
 		// ブロックをリストに追加
 		blocks.push_back(newBlock);
-		// 左の画面外に出たらデリート
+		val = GetRandom(1, 2);
+		if (val == 2) {
+			// ブロックの生成
+			Blocks* newBlock = new Blocks();
+			newBlock->Initialize(object3DCommon, modelCommon);
+			// ブロックの発生位置を設定
+			Vector3 HadranceBlockPos = { 6.5f, -1.8f, 10.0f };
+			newBlock->PoPBlock(HadranceBlockPos);
+			// ブロックをリストに追加
+			blocks.push_back(newBlock);
+		}
 	}
-	if (blocks.size() > num) {
+	if (blocks.size() >= num) {
 		Blocks* oldBlock = blocks.front();
 		delete oldBlock;
 		blocks.pop_front();
 	}
-		
+
 }
 
 int MyGame::GetRandom(int min, int max)
 {
-	srand(static_cast<unsigned int>(std::time(nullptr)));
 	return min + rand() % (max - min + 1);
+}
+
+bool MyGame::HitCheck(Vector3 pos1, Vector3 pos2, Vector3 scale1, Vector3 scale2)
+{
+	// ブロックの当たり判定
+	if (pos1.x - scale1.x < pos2.x + scale2.x &&
+		pos1.x + scale1.x > pos2.x - scale2.x &&
+		pos1.y - scale1.y < pos2.y + scale2.y &&
+		pos1.y + scale1.y > pos2.y - scale2.y &&
+		pos1.z - scale1.z < pos2.z + scale2.z &&
+		pos1.z + scale1.z > pos2.z - scale2.z) {
+		return true;
+	}
+	return false;
+}
+
+void MyGame::HitCheckAll()
+{
+	// プレイヤーとブロックの当たり判定
+	Vector3 playerPos = player->GetTranslate();
+	Vector3 playerScale = player->GetScale();
+	for (Blocks* block : blocks) {
+		Vector3 blockPos = block->GetTranslate();
+		Vector3 blockScale = block->GetScale();
+		if (HitCheck({ playerPos.x - playerScale.x / 2.0f 
+			,playerPos.y - playerScale.y / 2.0f
+			,playerPos.z - playerScale.z / 2.0f }, { blockPos.x-blockScale.x/2,
+			blockPos.y - blockScale.y / 2,
+			blockPos.z - blockScale.z / 2 }, playerScale, blockScale)) {
+
+			hitBlockPos = blockPos;
+			player->SetTranslate({
+						blockPos.x - blockScale.x / 2 + 0.001f,
+						blockPos.y - blockScale.y / 2,
+						playerPos.z
+				});
+			/*blockPos.y + playerScale.y,
+			blockPos.z + playerScale.z */
+
+		break;
+
+		}
+
+	}
 }
 
 

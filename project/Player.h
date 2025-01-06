@@ -20,6 +20,14 @@ public:
 
 	// ジャンプ
 	void Jump();
+
+	// プレイヤーの情報
+	Vector3 GetTranslate() { return playerInfo.position; }
+	Vector3 GetScale() { return playerInfo.scale; }
+	Vector3 GetRotate() { return playerInfo.rotation; }
+	// Setter
+	void SetTranslate(Vector3 pos) { playerInfo.position = pos; }
+
 private:
 	struct PlayerInfo {
 		Vector3 position;
@@ -35,5 +43,6 @@ private:
 	Input* input;
 	bool isJump = false;
 	float jumpSpe = 0.1f;
+	
 };
 
