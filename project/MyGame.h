@@ -58,6 +58,7 @@ public:
 	bool HitCheck(Vector3 pos1, Vector3 pos2, Vector3 scale1, Vector3 scale2);
 	// 当たり判定統括
 	void HitCheckAll();
+	void HandleGameOver();
 private:
 	struct BlockInfo {
 		Vector3 position;
@@ -95,5 +96,9 @@ private:	// ゲーム類の初期化
 	const float interval = 10.0f;
 
 	Vector3 hitBlockPos;
+
+	bool isJump = false;
+	bool isGameOver = false;
+	float jumpSpe = 0.1f;
 };
 

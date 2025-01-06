@@ -22,7 +22,7 @@ public:
 	Vector3 GetTranslate() { return block->GetTranslate(); }
 	Vector3 GetScale() { return block->GetScale(); }
 	//void GetRotate() { block->GetRotate(); }
-
+	Vector3 GetPreviousTranslate(){return previousPosition;}
 	//void PoPBlock(Vector3 position, Vector3 scale, Vector3 rotation);
 
 private:
@@ -38,6 +38,6 @@ private:
 	Model* model = nullptr;
 
 private:
-	
+	Vector3 previousPosition;
 };
 

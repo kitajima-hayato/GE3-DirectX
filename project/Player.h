@@ -4,6 +4,7 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "Input.h"
+#include "Blocks.h"
 class Player
 {
 public:
@@ -44,5 +45,13 @@ private:
 	bool isJump = false;
 	float jumpSpe = 0.1f;
 	
+
+	float jumpVelocity = 0.0f; // ジャンプの速度
+	const float gravity = 0.1f; // 重力加速度
+	const float jumpPower = 1.0f; // ジャンプの初速度
+	bool isGrounded = true; // 地面にいるかどうか
+	int jumpCount = 0; // ジャンプ回数
+	const int maxJumpCount = 2; // 最大ジャンプ回数（二段ジャンプ）
+
 };
 

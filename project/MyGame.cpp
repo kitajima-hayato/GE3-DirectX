@@ -61,7 +61,13 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
+
 	Framework::Update();
+	if (isGameOver) {
+		// ゲームオーバー処理
+		HandleGameOver();
+		return;
+	}
 
 
 #pragma region ゲームの更新
@@ -88,10 +94,13 @@ void MyGame::Update()
 	for (Blocks* block : blocks) {
 		block->Update();
 	}
-
+	for (Blocks* block : hindranceBlocks) {
+		block->Update();
+	}
+	HitCheckAll();
 	// プレイヤーの更新
 	player->Update();
-	HitCheckAll();
+
 	if (input->TriggerKey(DIK_1)) {
 		OutputDebugStringA("Hit_1\n");
 	}
@@ -154,10 +163,12 @@ void MyGame::Draw()
 	for (Blocks* block : blocks) {
 		block->Draw();
 	}
+	for (Blocks* block : hindranceBlocks) {
+		block->Draw();
+	}
 
 	// プレイヤーの描画
 	player->Draw();
-
 	/*object3D2->Draw();*/
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
@@ -188,12 +199,7 @@ void MyGame::Finalize()
 
 #pragma endregion
 
-	//解放
-	/*for (Sprite* sprite : sprites) {
-		delete sprite;
-	}*/
-	/*delete model2;
-	delete object3D2;*/
+
 	delete model;
 	delete player;
 
@@ -203,8 +209,6 @@ void MyGame::Finalize()
 void MyGame::CreateFloor()
 {
 	// ブロックモデルを一定間隔で並べる
-
-
 
 	// ブロックの生成
 	Blocks* newBlock = new Blocks();
@@ -238,7 +242,7 @@ void MyGame::CreateHandrance()
 		Vector3 HadranceBlockPos = { 6.5f, -2.4f, 10.0f };
 		newBlock->PoPBlock(HadranceBlockPos);
 		// ブロックをリストに追加
-		blocks.push_back(newBlock);
+		hindranceBlocks.push_back(newBlock);
 		val = GetRandom(1, 2);
 		if (val == 2) {
 			// ブロックの生成
@@ -248,13 +252,13 @@ void MyGame::CreateHandrance()
 			Vector3 HadranceBlockPos = { 6.5f, -1.8f, 10.0f };
 			newBlock->PoPBlock(HadranceBlockPos);
 			// ブロックをリストに追加
-			blocks.push_back(newBlock);
+			hindranceBlocks.push_back(newBlock);
 		}
 	}
-	if (blocks.size() >= num) {
-		Blocks* oldBlock = blocks.front();
+	if (hindranceBlocks.size() >= num) {
+		Blocks* oldBlock = hindranceBlocks.front();
 		delete oldBlock;
-		blocks.pop_front();
+		hindranceBlocks.pop_front();
 	}
 
 }
@@ -266,16 +270,13 @@ int MyGame::GetRandom(int min, int max)
 
 bool MyGame::HitCheck(Vector3 pos1, Vector3 pos2, Vector3 scale1, Vector3 scale2)
 {
-	// ブロックの当たり判定
-	if (pos1.x - scale1.x < pos2.x + scale2.x &&
-		pos1.x + scale1.x > pos2.x - scale2.x &&
-		pos1.y - scale1.y < pos2.y + scale2.y &&
-		pos1.y + scale1.y > pos2.y - scale2.y &&
-		pos1.z - scale1.z < pos2.z + scale2.z &&
-		pos1.z + scale1.z > pos2.z - scale2.z) {
-		return true;
-	}
-	return false;
+	// 3Dモデルの中心を基準にした当たり判定
+	return (pos1.x - scale1.x / 2 < pos2.x + scale2.x / 2 &&
+		pos1.x + scale1.x / 2 > pos2.x - scale2.x / 2 &&
+		pos1.y - scale1.y / 2 < pos2.y + scale2.y / 2 &&
+		pos1.y + scale1.y / 2 > pos2.y - scale2.y / 2 &&
+		pos1.z - scale1.z / 2 < pos2.z + scale2.z / 2 &&
+		pos1.z + scale1.z / 2 > pos2.z - scale2.z / 2);
 }
 
 void MyGame::HitCheckAll()
@@ -283,31 +284,27 @@ void MyGame::HitCheckAll()
 	// プレイヤーとブロックの当たり判定
 	Vector3 playerPos = player->GetTranslate();
 	Vector3 playerScale = player->GetScale();
-	for (Blocks* block : blocks) {
+	bool isColliding = false;
+
+	for (Blocks* block : hindranceBlocks) {
 		Vector3 blockPos = block->GetTranslate();
 		Vector3 blockScale = block->GetScale();
-		if (HitCheck({ playerPos.x - playerScale.x / 2.0f 
-			,playerPos.y - playerScale.y / 2.0f
-			,playerPos.z - playerScale.z / 2.0f }, { blockPos.x-blockScale.x/2,
-			blockPos.y - blockScale.y / 2,
-			blockPos.z - blockScale.z / 2 }, playerScale, blockScale)) {
-
-			hitBlockPos = blockPos;
-			player->SetTranslate({
-						blockPos.x - blockScale.x / 2 + 0.001f,
-						blockPos.y - blockScale.y / 2,
-						playerPos.z
-				});
-			/*blockPos.y + playerScale.y,
-			blockPos.z + playerScale.z */
-
-		break;
-
+		if (HitCheck(playerPos, blockPos, playerScale, blockScale)) {
+			// プレイヤーがブロックに当たったらゲームオーバー
+			isGameOver = true;
+			break;
 		}
+	}
 
+	// プレイヤーがブロックに当たっていない場合、プレイヤーの位置をリセット
+	if (!isColliding) {
+		player->SetTranslate(playerPos);
 	}
 }
-
-
-
-
+void MyGame::HandleGameOver()
+{
+	// ゲームオーバー時の処理を実装
+	// 例: メッセージを表示、リスタート、メニューに戻るなど
+	OutputDebugStringA("Game Over\n");
+	// 必要に応じて他の処理を追加
+}

@@ -1,7 +1,8 @@
 #include "Blocks.h"
 
-Blocks::Blocks()
+Blocks::Blocks():previousPosition({ 0.0f, 0.0f, 0.0f })
 {
+	
 }
 
 Blocks::~Blocks()
@@ -26,6 +27,7 @@ void Blocks::Initialize(Object3DCommon* object3DCommon, ModelCommon* modelCommon
 
 void Blocks::Update()
 {
+	previousPosition = blockInfo.position;
 	block->Update();
 	Vector3 blockPos = block->GetTranslate();
 	blockPos.x -= 0.05f;
@@ -48,6 +50,8 @@ void Blocks::PoPBlock(Vector3 position){
 	block->SetTranslate(blockInfo.position);
 	block->SetScale(blockInfo.scale);
 }
+
+
 
 //void Blocks::Hindrance()
 //{
