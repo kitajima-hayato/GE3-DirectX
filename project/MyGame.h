@@ -62,20 +62,7 @@ public:
 
 
 	// シーンごとの関数
-	void InitializeTitle();
-	void UpdateTitle();
-	void DrawTitle();
-	void FinalizeTitle();
-
-	void InitializeGame();
-	void UpdateGame();
-	void DrawGame();
-	void FinalizeGame();
-
-	void InitializeGameOver();
-	void UpdateGameOver();
-	void DrawGameOver();
-	void FinalizeGameOver();
+	
 
 
 

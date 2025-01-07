@@ -61,11 +61,11 @@ void Player::Update()
 	Jump();
 	player->Update();
 #ifdef _DEBUG
-	ImGui::DragFloat3("PlayerPos", &playerInfo.position.x, 0.1f);
-	ImGui::DragFloat3("PlayerScale", &playerInfo.scale.x, 0.1f);
-	ImGui::DragFloat3("PlayerRotate", &playerInfo.rotation.x, 0.1f);
-	// フラグの状態を表示
-	ImGui::Checkbox("IsJumping", &isJump);
+	//ImGui::DragFloat3("PlayerPos", &playerInfo.position.x, 0.1f);
+	//ImGui::DragFloat3("PlayerScale", &playerInfo.scale.x, 0.1f);
+	//ImGui::DragFloat3("PlayerRotate", &playerInfo.rotation.x, 0.1f);
+	//// フラグの状態を表示
+	//ImGui::Checkbox("IsJumping", &isJump);
 #endif
 
 	//Vector3 playerPos = player->GetTranslate();

@@ -36,6 +36,11 @@ void MyGame::Initialize()
 	sprites.push_back(sprite);
 #pragma endregion
 
+	Vector3 cameraPos = camera->GetTranslate();
+	Vector3 cameraRotate = camera->GetRotate();
+	camera->SetTranslate(cameraPos);
+	camera->SetRotate(cameraRotate);
+
 }
 
 void MyGame::Update()
@@ -81,30 +86,21 @@ void MyGame::Update()
 	// プレイヤーの更新
 	player->Update();
 
-	
-
 	for (Sprite* sprite : sprites) {
 		sprite->Update();
 	}
-
 #ifdef _DEBUG
 	
-	ImGui::Text("Hello, world %d", 123);
-	if (ImGui::Button("Save")) {
-		OutputDebugStringA("Save\n");
-	}
-	// ブロックの総数
-	// ブロックの総数を表示
-	ImGui::Text("Number of blocks: %d", static_cast<int>(blocks.size()));
+	//ImGui::Text("Hello, world %d", 123);
+	//if (ImGui::Button("Save")) {
+	//	OutputDebugStringA("Save\n");
+	//}
+	//// ブロックの総数
+	//// ブロックの総数を表示
+	//ImGui::Text("Number of blocks: %d", static_cast<int>(blocks.size()));
 
 
 
-	Vector3 cameraPos = camera->GetTranslate();
-	Vector3 cameraRotate = camera->GetRotate();
-	ImGui::DragFloat3("cameraPosition", &cameraPos.x, 0.1f);
-	ImGui::DragFloat3("cameraRotate", &cameraRotate.x, 0.1f);
-	camera->SetTranslate(cameraPos);
-	camera->SetRotate(cameraRotate);
 	camera->Update();
 
 
