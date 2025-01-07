@@ -31,7 +31,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
+#include "SkyDome.h"
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
 {
@@ -59,12 +59,42 @@ public:
 	// 当たり判定統括
 	void HitCheckAll();
 	void HandleGameOver();
+
+
+	// シーンごとの関数
+	void InitializeTitle();
+	void UpdateTitle();
+	void DrawTitle();
+	void FinalizeTitle();
+
+	void InitializeGame();
+	void UpdateGame();
+	void DrawGame();
+	void FinalizeGame();
+
+	void InitializeGameOver();
+	void UpdateGameOver();
+	void DrawGameOver();
+	void FinalizeGameOver();
+
+
+
 private:
 	struct BlockInfo {
 		Vector3 position;
 		Vector3 scale;
 		Vector3 rotation;
 	};
+
+	// シーンの状態を表す列挙型
+	enum class SceneState {
+		Title,
+		Game,
+		GameOver
+	};
+
+	// 現在のシーン
+	SceneState currentScene = SceneState::Title;
 
 private:
 	// ブロック
@@ -87,6 +117,8 @@ private:
 	//Model* model2 = nullptr;
 
 	BlockInfo blockInfo;
+	// 天球
+	SkyDome* skyDome = nullptr;
 
 private:	// ゲーム類の初期化
 	const int num = 100;

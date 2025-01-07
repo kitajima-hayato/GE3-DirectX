@@ -12,8 +12,16 @@ void MyGame::Initialize()
 {
 	Framework::Initialize();
 
+
+
+
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
+
+	// モデルの初期化
+	skyDome = new SkyDome();
+	skyDome->Initialize(object3DCommon, modelCommon);
+
 
 	// プレイヤーの初期化
 	player = new Player();
@@ -22,39 +30,8 @@ void MyGame::Initialize()
 	// 乱数生成器のシードを設定
 	srand(static_cast<unsigned int>(std::time(nullptr)));
 
-	/*block = new Object3D();
-	block->Initialize(object3DCommon);
 
-	model = new Model();
-	model->Initialize(modelCommon, "resources", "cube.obj");
-	ModelManager::GetInstance()->LoadModel("cube.obj");
-	block->SetModel("cube.obj");*/
-
-
-
-	/* block->SetTranslate(blockInfo.position);
-	 block->SetScale(blockInfo.scale);
-	 block->SetRotate(blockInfo.rotation);*/
-
-
-	 //// モデルをもう一つ読み込む
-	 //model2 = new Model();
-	 //model2->Initialize(modelCommon, "resources", "plane.obj");
-
-	 //ModelManager::GetInstance()->LoadModel("plane.obj");
-
-	 //object3D2 = new Object3D();
-	 //object3D2->Initialize(object3DCommon);
-	 //object3D2->SetModel("plane.obj");
-
-	 /*std::vector<Sprite*> sprites;
-	 sprites.clear();
-	 Sprite* sprite = new Sprite();
-	 sprite->Initialize(spriteCommon, "resources/uvChecker.png");
-	 Vector2 pos = { 100.0f, 100.0f };
-	 sprite->SetPosition(pos);
-	 sprites.push_back(sprite);*/
-
+	
 #pragma endregion
 
 }
@@ -72,7 +49,7 @@ void MyGame::Update()
 
 #pragma region ゲームの更新
 	// アクターの更新
-
+	skyDome->Update();
 
 #pragma endregion
 
@@ -110,9 +87,8 @@ void MyGame::Update()
 	}*/
 
 #ifdef _DEBUG
-	//ImGui::SetWindowSize(ImVec2(500.0f, 200.0f));
 	// ImGuiのデモ
-	ImGui::ShowDemoWindow();
+	
 	ImGui::Text("Hello, world %d", 123);
 	if (ImGui::Button("Save")) {
 		OutputDebugStringA("Save\n");
@@ -131,23 +107,8 @@ void MyGame::Update()
 	camera->SetRotate(cameraRotate);
 	camera->Update();
 
-	// ブロックの情報を表示
-	/*Vector3 blockPos = block->GetTranslate();
-	Vector3 blockScale = block->GetScale();
-	Vector3 blockRotate = block->GetRotate();
-	ImGui::DragFloat3("blockPosition", &blockPos.x, 0.1f);
-	ImGui::DragFloat3("blockScale", &blockScale.x, 0.1f);
-	ImGui::DragFloat3("blockRotate", &blockRotate.x, 0.1f);
-	block->SetTranslate(blockPos);
-	block->SetScale(blockScale);
-	block->SetRotate(blockRotate);*/
-
-
-
 
 	imGui->End();
-
-
 #endif
 }
 
@@ -159,6 +120,8 @@ void MyGame::Draw()
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3DCommon->DrawSettingCommon();
 
+	skyDome->Draw();
+
 	// 床のブロックの描画
 	for (Blocks* block : blocks) {
 		block->Draw();
@@ -169,7 +132,6 @@ void MyGame::Draw()
 
 	// プレイヤーの描画
 	player->Draw();
-	/*object3D2->Draw();*/
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
 
@@ -199,9 +161,11 @@ void MyGame::Finalize()
 
 #pragma endregion
 
-
 	delete model;
 	delete player;
+	delete skyDome;
+
+	skyDome->Finalize();
 
 	Framework::Finalize();
 }
@@ -230,29 +194,57 @@ void MyGame::CreateFloor()
 void MyGame::CreateHandrance()
 {
 	// ブロックモデルを一定間隔で並べる
-	int val = GetRandom(0, 2);
+	int val = GetRandom(0, 8);
 	if (val == 0) {
+		// ブロックの生成
+		Blocks* newBlock1 = new Blocks();
+		newBlock1->Initialize(object3DCommon, modelCommon);
+		// ブロックの発生位置を設定
+		Vector3 HadranceBlockPos1 = { 6.5f, -2.4f, 10.0f };
+		newBlock1->PoPBlock(HadranceBlockPos1);
+		// ブロックをリストに追加
+		hindranceBlocks.push_back(newBlock1);
+
+		// ブロックの生成
+		Blocks* newBlock2 = new Blocks();
+		newBlock2->Initialize(object3DCommon, modelCommon);
+		// ブロックの発生位置を設定
+		Vector3 HadranceBlockPos2 = { 6.5f, -1.8f, 10.0f };
+		newBlock2->PoPBlock(HadranceBlockPos2);
+		// ブロックをリストに追加
+		hindranceBlocks.push_back(newBlock2);
+
+		Blocks* newBlock3 = new Blocks();
+		newBlock3->Initialize(object3DCommon, modelCommon);
+		// ブロックの発生位置を設定
+		Vector3 HadranceBlockPos3 = { 6.5f, -1.2f, 10.0f };
+		newBlock3->PoPBlock(HadranceBlockPos3);
+		// ブロックをリストに追加
+		hindranceBlocks.push_back(newBlock3);
+		
+
 	}
 	if (val == 1) {
 
 		// ブロックの生成
-		Blocks* newBlock = new Blocks();
-		newBlock->Initialize(object3DCommon, modelCommon);
+		Blocks* newBlock1 = new Blocks();
+		newBlock1->Initialize(object3DCommon, modelCommon);
 		// ブロックの発生位置を設定
-		Vector3 HadranceBlockPos = { 6.5f, -2.4f, 10.0f };
-		newBlock->PoPBlock(HadranceBlockPos);
+		Vector3 HadranceBlockPos1 = { 6.5f, -2.4f, 10.0f };
+		newBlock1->PoPBlock(HadranceBlockPos1);
 		// ブロックをリストに追加
-		hindranceBlocks.push_back(newBlock);
-		val = GetRandom(1, 2);
+		hindranceBlocks.push_back(newBlock1);
+
+		// ブロックの生成
+		Blocks* newBlock2 = new Blocks();
+		newBlock2->Initialize(object3DCommon, modelCommon);
+		// ブロックの発生位置を設定
+		Vector3 HadranceBlockPos2 = { 6.5f, -1.8f, 10.0f };
+		newBlock2->PoPBlock(HadranceBlockPos2);
+		// ブロックをリストに追加
+		hindranceBlocks.push_back(newBlock2);
+
 		if (val == 2) {
-			// ブロックの生成
-			Blocks* newBlock = new Blocks();
-			newBlock->Initialize(object3DCommon, modelCommon);
-			// ブロックの発生位置を設定
-			Vector3 HadranceBlockPos = { 6.5f, -1.8f, 10.0f };
-			newBlock->PoPBlock(HadranceBlockPos);
-			// ブロックをリストに追加
-			hindranceBlocks.push_back(newBlock);
 		}
 	}
 	if (hindranceBlocks.size() >= num) {
@@ -289,7 +281,15 @@ void MyGame::HitCheckAll()
 	for (Blocks* block : hindranceBlocks) {
 		Vector3 blockPos = block->GetTranslate();
 		Vector3 blockScale = block->GetScale();
-		if (HitCheck(playerPos, blockPos, playerScale, blockScale)) {
+		if (HitCheck({ 
+			playerPos.x-0.71f,
+			playerPos.y - 0.71f,
+			playerPos.z - 0.71f
+			}, { 
+			blockPos.x - 0.71f,
+			blockPos.y - 0.71f,
+			blockPos.z - 0.71f
+			}, { 0.71f ,1.001f ,0.71f }, { 0.71f ,1.001f ,0.71f })) {
 			// プレイヤーがブロックに当たったらゲームオーバー
 			isGameOver = true;
 			break;
@@ -307,4 +307,5 @@ void MyGame::HandleGameOver()
 	// 例: メッセージを表示、リスタート、メニューに戻るなど
 	OutputDebugStringA("Game Over\n");
 	// 必要に応じて他の処理を追加
+
 }
