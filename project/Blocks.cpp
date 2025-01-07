@@ -21,6 +21,16 @@ void Blocks::Initialize(Object3DCommon* object3DCommon, ModelCommon* modelCommon
 	ModelManager::GetInstance()->LoadModel("cube.obj");
 	block->SetModel("cube.obj");
 	
+
+	nedle = new Object3D();
+	nedle->Initialize(object3DCommon);
+
+	nedleModel = new Model();
+	nedleModel->Initialize(modelCommon, "resources", "Nedle.obj");
+	ModelManager::GetInstance()->LoadModel("Nedle.obj");
+	nedle->SetModel("Nedle.obj");
+
+
 	/*block->SetScale(blockInfo.scale);
 	block->SetRotate(blockInfo.rotation);*/
 }
@@ -49,6 +59,15 @@ void Blocks::PoPBlock(Vector3 position){
 	blockInfo.scale = { 0.3f,0.3f,1.0f };
 	block->SetTranslate(blockInfo.position);
 	block->SetScale(blockInfo.scale);
+}
+
+void Blocks::PoPNedle(Vector3 position)
+{
+	nedleInfo.position = { position };
+	nedleInfo.scale = { 0.3f,0.3f,1.0f };
+	nedle->SetTranslate(nedleInfo.position);
+	nedle->SetScale(nedleInfo.scale);
+
 }
 
 

@@ -17,6 +17,7 @@ public:
 
 	void PoPBlock(Vector3 position);
 
+	void PoPNedle(Vector3 position);
 	//void Hindrance();
 
 	Vector3 GetTranslate() { return block->GetTranslate(); }
@@ -37,6 +38,9 @@ private:
 	BlockInfo blockInfo;
 	Model* model = nullptr;
 
+	Object3D* nedle;
+	BlockInfo nedleInfo;
+	Model* nedleModel = nullptr;
 private:
 	Vector3 previousPosition;
 };

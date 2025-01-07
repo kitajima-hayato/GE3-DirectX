@@ -21,6 +21,17 @@ void Player::Initialize(Object3DCommon* object3DCommon, ModelCommon* modelCommon
 	player->SetModel("Player.obj");
 	this->input = input;
 
+	/*title = new Object3D();
+	title->Initialize(object3DCommon);
+
+	titleModel = new Model();
+	titleModel->Initialize(modelCommon, "resources", "Title.obj");
+	ModelManager::GetInstance()->LoadModel("Title.obj");
+	title->SetModel("Title.obj");*/
+
+
+
+
 	playerInfo.position = { -3.0f,-2.2f,10.0f };
 	playerInfo.scale = { 0.5f,0.5f,1.0f };
 	playerInfo.rotation = { player->GetRotate() };
@@ -59,6 +70,8 @@ void Player::Update()
 
 	//Vector3 playerPos = player->GetTranslate();
 
+
+
 	player->SetTranslate(playerInfo.position);
 	player->SetScale(playerInfo.scale);
 	player->SetRotate(playerInfo.rotation);
@@ -67,10 +80,13 @@ void Player::Update()
 void Player::Draw()
 {
 	player->Draw();
+	
 }
 
 void Player::Finalize()
 {
+	delete model;
+	delete player;
 
 }
 
@@ -82,40 +98,5 @@ void Player::Jump()
 		jumpCount++;
 	}
 }
-//void Player::Jump()
-//{
-//	if (isGrounded) {
-//		jumpVelocity = jumpPower;
-//		isGrounded = false;
-//	}
-//	Vector3 playerPos = player->GetTranslate();
-//	// Spaceキーが押されたらジャンプ
-//	if (input->TriggerKey(DIK_SPACE)) {
-//		isJump = true;
-//	}
-//
-//	// ジャンプ中
-//	if (isJump) {
-//		jumpSpe += 0.1f;
-//		if (jumpSpe >= 0.5f)jumpSpe = 0.5f;
-//		playerInfo.position.y += jumpSpe;
-//	}
-//
-//	// 一定の高さまで行ったら降りる
-//	if (player->GetTranslate().y >= 0.0f) {
-//		isJump = false;
-//	}
-//	// 落下中 // 着地中
-//	if (!isJump) {
-//
-//		if (playerInfo.position.y <= -2.2f)jumpSpe = 0.0f;
-//		else {
-//			jumpSpe = 0.1f;
-//			if (jumpSpe <= 0.1f)jumpSpe += 0.1f;
-//		}
-//		playerInfo.position.y -= jumpSpe;
-//	}
-//
-//	player->SetTranslate(playerInfo.position);
-//}
+
 

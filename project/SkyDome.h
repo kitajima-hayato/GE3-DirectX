@@ -16,5 +16,7 @@ public:
 private:
 	Object3D* skyDome;
 	Model* model = nullptr;
+
+	
 };
 

@@ -52,6 +52,9 @@ private:
 	bool isGrounded = true; // 地面にいるかどうか
 	int jumpCount = 0; // ジャンプ回数
 	const int maxJumpCount = 2; // 最大ジャンプ回数（二段ジャンプ）
+private:
+	//Object3D* title;
+	//Model* titleModel = nullptr;
 
 };
 

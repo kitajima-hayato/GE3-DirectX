@@ -94,7 +94,7 @@ private:
 	};
 
 	// 現在のシーン
-	SceneState currentScene = SceneState::Title;
+	//SceneState sceneState = SceneState::Title;
 
 private:
 	// ブロック
@@ -102,8 +102,7 @@ private:
 	// 障害ブロック
 	std::list<Blocks*>hindranceBlocks;
 
-	// プレイヤー
-	Player* player = nullptr;
+	
 	// スプライト
 	std::vector<Sprite*> sprites;
 	// 3Dオブジェクト
@@ -111,12 +110,10 @@ private:
 	// 3Dモデル
 	std::vector<Model*> models;
 	Model* model = nullptr;
-	// 3Dオブジェクト
-	//Object3D* object3D2 = nullptr;
-	//// 3Dモデル
-	//Model* model2 = nullptr;
 
 	BlockInfo blockInfo;
+	// プレイヤー
+	Player* player = nullptr;
 	// 天球
 	SkyDome* skyDome = nullptr;
 
@@ -132,5 +129,7 @@ private:	// ゲーム類の初期化
 	bool isJump = false;
 	bool isGameOver = false;
 	float jumpSpe = 0.1f;
+
+	bool gameflag = false;
 };
 

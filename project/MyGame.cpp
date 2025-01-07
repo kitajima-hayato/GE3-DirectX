@@ -11,17 +11,12 @@ MyGame::~MyGame()
 void MyGame::Initialize()
 {
 	Framework::Initialize();
-
-
-
-
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
 
 	// モデルの初期化
 	skyDome = new SkyDome();
 	skyDome->Initialize(object3DCommon, modelCommon);
-
 
 	// プレイヤーの初期化
 	player = new Player();
@@ -30,8 +25,15 @@ void MyGame::Initialize()
 	// 乱数生成器のシードを設定
 	srand(static_cast<unsigned int>(std::time(nullptr)));
 
-
-	
+	// スプライトの初期化
+	std::vector<Sprite*> sprites;
+	sprites.clear();
+	Sprite* sprite = new Sprite();
+	sprite->Initialize(spriteCommon, "resources/colerJump.png");
+	Vector2 pos = { 0,0 };
+	sprite->SetSize({ 1.0f,1.0f });
+	sprite->SetPosition(pos);
+	sprites.push_back(sprite);
 #pragma endregion
 
 }
@@ -40,6 +42,7 @@ void MyGame::Update()
 {
 
 	Framework::Update();
+
 	if (isGameOver) {
 		// ゲームオーバー処理
 		HandleGameOver();
@@ -78,16 +81,13 @@ void MyGame::Update()
 	// プレイヤーの更新
 	player->Update();
 
-	if (input->TriggerKey(DIK_1)) {
-		OutputDebugStringA("Hit_1\n");
+	
+
+	for (Sprite* sprite : sprites) {
+		sprite->Update();
 	}
 
-	/*for (Sprite* sprite : sprites) {
-		sprite->Update();
-	}*/
-
 #ifdef _DEBUG
-	// ImGuiのデモ
 	
 	ImGui::Text("Hello, world %d", 123);
 	if (ImGui::Button("Save")) {
@@ -135,9 +135,9 @@ void MyGame::Draw()
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
 
-	/*for (Sprite* sprite : sprites) {
+	for (Sprite* sprite : sprites) {
 		sprite->Draw();
-	}*/
+	}
 
 #ifdef _DEBUG
 	// ImGuiの描画
@@ -164,7 +164,6 @@ void MyGame::Finalize()
 	delete model;
 	delete player;
 	delete skyDome;
-
 	skyDome->Finalize();
 
 	Framework::Finalize();
