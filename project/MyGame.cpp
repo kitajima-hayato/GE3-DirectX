@@ -189,7 +189,7 @@ void MyGame::CreateFloor()
 void MyGame::CreateHandrance()
 {
 	// ブロックモデルを一定間隔で並べる
-	int val = GetRandom(0, 8);
+	int val = GetRandom(0, 20);
 	if (val == 0) {
 		// ブロックの生成
 		Blocks* newBlock1 = new Blocks();
