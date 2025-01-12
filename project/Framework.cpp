@@ -58,6 +58,7 @@ void Framework::Update()
 	//Windowのメッセージ処理
 	if (winAPI->ProcessMessage()) {
 		//ゲームループを抜ける
+		isEndRequst = true;
 		return;
 	}
 #pragma endregion
