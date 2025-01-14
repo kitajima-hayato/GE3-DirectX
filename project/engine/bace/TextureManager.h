@@ -53,7 +53,6 @@ private: // メンバ関数/構造体
 		uint32_t srvIndex;	// SRVのインデックス
 		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;	// シェーダリソースビューのCPUハンドル
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;	// 描画コマンドに必要なGPUハンドル
-
 	};
 
 private:	// シングルトン 

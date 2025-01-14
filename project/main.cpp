@@ -17,15 +17,7 @@
 //ウィンドウズアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
-	// フレームワークのインスタンスを生成
-	Framework* game = new MyGame();
-	
-	// ゲームの実行
-	game->Run();
-	
-	// フレームワークのインスタンスを解放
-	delete game;
-
-	// プログラムの終了
+	MyGame game;
+	game.Run();
 	return 0;
 }

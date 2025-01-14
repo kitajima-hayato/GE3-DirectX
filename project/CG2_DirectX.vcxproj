@@ -103,6 +103,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="engine\bace\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engine\bace\DirectXCommon.cpp" />
@@ -127,6 +128,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Audio.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="engine\bace\D3DResourceLeakChecker.h" />
     <ClInclude Include="engine\bace\DirectXCommon.h" />
