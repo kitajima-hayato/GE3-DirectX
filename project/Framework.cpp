@@ -50,6 +50,14 @@ void Framework::Initialize()
 	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
+
+	// オーディオの初期化
+	audio = new Audio();
+	audio->Initialize();
+	soundData = audio->LoadWave("resources/mokugyo.wav");
+	audio->SoundPlayWave(audio->GetXAudio2(), soundData);
+#pragma endregion
+
 }
 
 void Framework::Update()
@@ -71,6 +79,8 @@ void Framework::Update()
 	if (input->TriggerKey(DIK_ESCAPE)) {
 		isEndRequst = true;
 	}
+	
+	
 }
 
 void Framework::Finalize()
@@ -85,6 +95,9 @@ void Framework::Finalize()
 	delete dxCommon;
 	delete input;
 	delete winAPI;
+	audio->SoundUnload(&soundData);
+	audio->Finalize();
+	delete audio;
 }
 
 void Framework::Run()

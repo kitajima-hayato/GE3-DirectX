@@ -26,6 +26,7 @@
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
+#include "Audio.h"
 
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
@@ -54,7 +55,6 @@ private:
 	Object3D* object3D2 = nullptr;
 	// 3Dモデル
 	Model* model2 = nullptr;
-
 
 
 };

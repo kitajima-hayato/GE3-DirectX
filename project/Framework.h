@@ -20,6 +20,7 @@
 #include "Object3DCommon.h"
 #include "ModelManager.h"
 #include "ImGuiManager.h"
+#include "Audio.h"
 
 class Framework
 {
@@ -71,5 +72,8 @@ protected:// Initialize関連
 	Object3DCommon* object3DCommon = nullptr;
 	// カメラ
 	Camera* camera = nullptr;
+	// オーディオ
+	Audio* audio = nullptr;
+	SoundData soundData;
 };
 

@@ -6,7 +6,6 @@ void MyGame::Initialize()
 
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
-	
 
 #pragma endregion
 
@@ -18,7 +17,7 @@ void MyGame::Update()
 #pragma region ゲームの更新
 	// アクターの更新
 
-
+	
 #pragma endregion
 
 #ifdef _DEBUG // デバッグ時のみ有効ImGuiの処理
