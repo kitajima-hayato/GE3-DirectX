@@ -83,6 +83,3 @@ void MyGame::Finalize()
 	
 	Framework::Finalize();
 }
-
-
-

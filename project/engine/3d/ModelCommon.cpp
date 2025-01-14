@@ -1,6 +1,12 @@
 #include "ModelCommon.h"
 
+
+
 ModelCommon::ModelCommon()
+{
+}
+
+ModelCommon::~ModelCommon()
 {
 }
 

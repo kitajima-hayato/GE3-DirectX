@@ -2,9 +2,6 @@
 
 void Framework::Initialize()
 {
-	
-
-#pragma region 基盤システムの初期化
 	//WindowsAPIの初期化
 	winAPI = new WinAPI();
 	winAPI->Initialize();
@@ -17,6 +14,7 @@ void Framework::Initialize()
 	input->Initialize(winAPI);
 
 	// オーディオの初期化
+
 
 
 	// SRVマネージャーの初期化
@@ -58,6 +56,7 @@ void Framework::Initialize()
 	audio->SoundPlayWave(audio->GetXAudio2(), soundData);
 #pragma endregion
 
+
 }
 
 void Framework::Update()
@@ -70,9 +69,8 @@ void Framework::Update()
 		return;
 	}
 #pragma endregion
-#pragma region 入力処理
+
 	input->Update();
-#pragma endregion
 
 
 	// ESCキーで終了
@@ -80,20 +78,15 @@ void Framework::Update()
 		isEndRequst = true;
 	}
 	
-	
-}
+
+
 
 void Framework::Finalize()
 {
-	delete object3DCommon;
-	delete spriteCommon;
-	delete camera;
-	delete srvManager;
-#ifdef _DEBUG
-	delete imGui;
-#endif
-	delete dxCommon;
+	// delete audio;
 	delete input;
+	delete dxCommon;
+	winAPI->Finalize();
 	delete winAPI;
 	audio->SoundUnload(&soundData);
 	audio->Finalize();
@@ -117,3 +110,4 @@ void Framework::Run()
 	// ゲームの終了処理
 	Finalize();
 }
+

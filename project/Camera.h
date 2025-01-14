@@ -22,7 +22,7 @@ public:
 	void SetNearClip(float nearClip) { this->nearClip = nearClip; }
 	void SetFarClip(float farClip) { this->farClip = farClip; }
 	// getter
-	const Matrix4x4& GetWorldMatrix()const { return worldMatrix; }
+	const Matrix4x4& GetCameraMatrix()const { return worldMatrix; }
 	const Matrix4x4& GetViewMatrix()const { return viewMatrix; }
 	const Matrix4x4& GetProjectionMatrix()const { return projectionMatrix; }
 	const Matrix4x4& GetViewProjectionMatrix()const { return viewProjectionMatrix; }
