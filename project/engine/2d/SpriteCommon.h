@@ -1,7 +1,13 @@
 #pragma once
 #include "DirectXCommon.h"
+// スプライト共通クラス
+// シングルトンクラス
 class SpriteCommon
 {
+public:	
+	static SpriteCommon* GetInstance();
+	static void Deletenstance();
+
 
 public:		// メンバ関数
 	/// <summary>
@@ -35,6 +41,13 @@ private:	// メンバ関数
 	/// </summary>
 	void InitializePixelShaderOutput();
 	
+
+private:
+	static SpriteCommon* instance;
+	SpriteCommon() = default;
+	~SpriteCommon() = default;
+	SpriteCommon(SpriteCommon&) = delete;
+	SpriteCommon& operator=(SpriteCommon&) = delete;
 
 private:	// メンバ変数
 	// 絶対にnew,deleteしない

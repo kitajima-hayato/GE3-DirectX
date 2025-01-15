@@ -13,19 +13,14 @@ void Framework::Initialize()
 	input = new Input();
 	input->Initialize(winAPI);
 
-	// オーディオの初期化
-
-
-
 	// SRVマネージャーの初期化
 	srvManager = new SrvManager();
 	srvManager->Initialize(dxCommon);
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
-	// スプライト共通部の初期化
-	spriteCommon = new SpriteCommon();
-	spriteCommon->Initialize(dxCommon);
+	
+	
 
 #ifdef _DEBUG
 	// ImGuiの初期化
@@ -49,11 +44,7 @@ void Framework::Initialize()
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
 
-	// オーディオの初期化
-	audio = new Audio();
-	audio->Initialize();
-	soundData = audio->LoadWave("resources/mokugyo.wav");
-	audio->SoundPlayWave(audio->GetXAudio2(), soundData);
+
 #pragma endregion
 
 
@@ -89,18 +80,16 @@ void Framework::Finalize()
 	winAPI->Finalize();
 	delete srvManager;
 	TextureManager::GetInstance()->Finalize();
-	delete spriteCommon;
 	delete modelCommon;
 	delete object3DCommon;
 	delete camera;
+
 	ModelManager::GetInstance()->Finalize();
 #ifdef _DEBUG
 		delete	imGui;
 #endif
 	delete winAPI;
-	audio->SoundUnload(&soundData);
-	audio->Finalize();
-	delete audio;
+	
 }
 
 void Framework::Run()

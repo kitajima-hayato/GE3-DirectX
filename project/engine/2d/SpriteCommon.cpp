@@ -1,6 +1,22 @@
 #include "SpriteCommon.h"
 #include "Logger.h"
 #include "MyMath.h"
+SpriteCommon* SpriteCommon::instance = nullptr;
+SpriteCommon* SpriteCommon::GetInstance()
+{
+	if (instance == nullptr) {
+		instance = new SpriteCommon();
+	}
+	return instance;
+}
+
+void SpriteCommon::Deletenstance()
+{
+	if (instance != nullptr) {
+		delete instance;
+		instance = nullptr;
+	}
+}
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
