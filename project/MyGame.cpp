@@ -3,7 +3,9 @@
 void MyGame::Initialize()
 {
 	Framework::Initialize();
-
+	// ゲームプレイシーンの初期化
+	scene_ = new GamePlayScene();
+	scene_->Initialize(dxCommon);
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化
 
@@ -14,9 +16,12 @@ void MyGame::Initialize()
 void MyGame::Update()
 {
 	Framework::Update();
+
 #pragma region ゲームの更新
 	// アクターの更新
 
+	// ゲームプレイシーンの更新
+	scene_->Update();
 	
 #pragma endregion
 
@@ -27,9 +32,7 @@ void MyGame::Update()
 
 	
 #ifdef _DEBUG
-	ImGui::SetWindowSize(ImVec2(500.0f, 2000.0f));
-	// ImGuiのデモ
-	ImGui::ShowDemoWindow();
+	
 	ImGui::Text("Hello, world %d", 123);
 	if (ImGui::Button("Save")) {
 		OutputDebugStringA("Save\n");
@@ -48,11 +51,12 @@ void MyGame::Draw()
 	// DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
 	dxCommon->PreDraw();
 	srvManager->PreDraw();
+	// ゲームプレイシーンの描画
+	scene_->Draw();
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3DCommon->DrawSettingCommon();
 	
-	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
-	spriteCommon->DrawSettingCommon();
+	
 
 	
 #ifdef _DEBUG
@@ -76,10 +80,11 @@ void MyGame::Finalize()
 	ModelManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
+	// ゲームプレイシーンの終了処理
+	scene_->Finalize();
+	delete scene_;
+
 #pragma endregion
 
-	//解放
-	
-	
 	Framework::Finalize();
 }

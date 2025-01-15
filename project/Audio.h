@@ -3,6 +3,7 @@
 #pragma comment(lib, "xaudio2.lib")
 #include <fstream>
 #include <wrl.h>
+// シングルトンクラス
 struct ChunkHeader
 {
 	char chunkID[4];
@@ -28,15 +29,22 @@ struct SoundData {
 class Audio
 {
 public:
-	Audio();
-	~Audio();
+	static Audio* GetInstance();
+	static void DeleteInstance();
+	
+private:
+	static Audio* instance;
+	Audio() = default;
+	~Audio() = default;
+	Audio(Audio&) = delete;
+	Audio& operator=(Audio&) = delete;
+
+
+public:
 	void Initialize();
 	SoundData LoadWave(const char* filename);
 	void SoundUnload(SoundData* soundData);
 	void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData);
-	void Play();
-	void Stop();
-	void Finalize();
 
 public:
 	IXAudio2* GetXAudio2() const { return xaudio2_.Get(); }

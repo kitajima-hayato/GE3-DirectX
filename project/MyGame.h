@@ -26,7 +26,7 @@
 #ifdef _DEBUG
 #include "ImGuiManager.h"
 #endif
-#include "Audio.h"
+#include "GamePlayScene.h"
 
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
@@ -43,7 +43,8 @@ public:	// メンバ関数
 
 
 private:	// メンバ変数
-	
+	// ゲームプレイシーンクラス
+	GamePlayScene* scene_ = nullptr;
 
 };
 

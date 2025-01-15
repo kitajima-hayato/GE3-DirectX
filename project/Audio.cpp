@@ -1,13 +1,23 @@
 #include "Audio.h"
-#include <xaudio2.h> // Add this include for XAudio2
+#include <xaudio2.h> 
 #include <cassert>
-
-Audio::Audio()
+Audio* Audio::instance = nullptr;
+Audio* Audio::GetInstance()
 {
+	if (instance == nullptr)
+	{
+		instance = new Audio();
+	}
+	return instance;
 }
 
-Audio::~Audio()
+void Audio::DeleteInstance()
 {
+	if (instance != nullptr)
+	{
+		delete instance;
+		instance = nullptr;
+	}
 }
 
 void Audio::Initialize()
@@ -86,7 +96,7 @@ void Audio::SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData)
 	IXAudio2SourceVoice* sourceVoice = nullptr;
 	hr = xAudio2->CreateSourceVoice(&sourceVoice, reinterpret_cast<const WAVEFORMATEX*>(&soundData.wfex));
 	assert(SUCCEEDED(hr));
-	assert(SUCCEEDED(hr));
+	
 
 	// 再生するデータの設定
 	XAUDIO2_BUFFER buffer = {};
@@ -99,14 +109,3 @@ void Audio::SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData)
 	hr = sourceVoice->Start();
 }
 
-void Audio::Play()
-{
-}
-
-void Audio::Stop()
-{
-}
-
-void Audio::Finalize()
-{
-}
