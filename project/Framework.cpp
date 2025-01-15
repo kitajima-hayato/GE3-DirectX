@@ -77,16 +77,26 @@ void Framework::Update()
 	if (input->TriggerKey(DIK_ESCAPE)) {
 		isEndRequst = true;
 	}
-	
 
+}
 
 
 void Framework::Finalize()
 {
-	// delete audio;
+
 	delete input;
 	delete dxCommon;
 	winAPI->Finalize();
+	delete srvManager;
+	TextureManager::GetInstance()->Finalize();
+	delete spriteCommon;
+	delete modelCommon;
+	delete object3DCommon;
+	delete camera;
+	ModelManager::GetInstance()->Finalize();
+#ifdef _DEBUG
+		delete	imGui;
+#endif
 	delete winAPI;
 	audio->SoundUnload(&soundData);
 	audio->Finalize();
