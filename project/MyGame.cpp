@@ -4,7 +4,7 @@ void MyGame::Initialize()
 {
 	Framework::Initialize();
 	// ゲームプレイシーンの初期化
-	scene_ = new GamePlayScene();
+	scene_ = new TitleScene();
 	scene_->Initialize(dxCommon);
 #pragma region 最初のシーンの初期化
 	// 3Dオブジェクトの初期化

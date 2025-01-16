@@ -2,11 +2,11 @@
 #include "Audio.h"
 #include "SpriteCommon.h"
 #include "BaseScene.h"
-class GamePlayScene :public BaseScene
+class TitleScene :public BaseScene
 {
 public:
-	GamePlayScene();
-	~GamePlayScene();
+	TitleScene();
+	~TitleScene();
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon)override;
 	// 更新
