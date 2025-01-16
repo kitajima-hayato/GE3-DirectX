@@ -27,6 +27,7 @@
 #include "ImGuiManager.h"
 #endif
 #include "GamePlayScene.h"
+#include "TitleScene.h"
 
 // ゲーム全体 : フレームワーククラス継承
 class MyGame :public Framework
@@ -44,7 +45,8 @@ public:	// メンバ関数
 
 private:	// メンバ変数
 	// ゲームプレイシーンクラス
-	GamePlayScene* scene_ = nullptr;
-
+	TitleScene* scene_ = nullptr;
+	// タイトルシーンクラス
+	//TitleScene* titleScene_ = nullptr;
 };
 
