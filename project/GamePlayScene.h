@@ -1,19 +1,20 @@
 #pragma once
 #include "Audio.h"
 #include "SpriteCommon.h"
-class GamePlayScene
+#include "BaseScene.h"
+class GamePlayScene :public BaseScene
 {
 public:
 	GamePlayScene();
 	~GamePlayScene();
 	// 初期化
-	void Initialize(DirectXCommon*dxCommon);
+	void Initialize(DirectXCommon* dxCommon)override;
 	// 更新
-	void Update();
+	void Update()override;
 	// 描画
-	void Draw();
+	void Draw()override;
 	// 終了処理
-	void Finalize();
+	void Finalize()override;
 
 private:
 	// ゲームオブジェクト
