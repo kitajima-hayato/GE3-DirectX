@@ -12,7 +12,7 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 {
 	// オーディオの初期化
 	Audio::GetInstance()->Initialize();
-	soundData = Audio::GetInstance()->LoadWave("resources/fanfare.wav");
+	soundData = Audio::GetInstance()->LoadWave("resources/mokugyo.wav");
 	xaudio2_ = Audio::GetInstance()->GetXAudio2();
 	Audio::GetInstance()->SoundPlayWave(xaudio2_, soundData);
 

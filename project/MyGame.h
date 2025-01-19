@@ -44,9 +44,7 @@ public:	// メンバ関数
 
 
 private:	// メンバ変数
-	// ゲームプレイシーンクラス
-	TitleScene* scene_ = nullptr;
-	// タイトルシーンクラス
-	//TitleScene* titleScene_ = nullptr;
+	
+
 };
 

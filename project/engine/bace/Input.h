@@ -6,11 +6,20 @@
 #include <wrl.h>
 #include "WinAPI.h"
 
-//LPDIRECTINPUT8 g_pDirectInput = nullptr;			//DirectInputオブジェクト
-//LPDIRECTINPUTDEVICE8 g_pKeyboarDevice = nullptr;	//キーボードデバイス
 class Input
 {
 public:
+	static Input* GetInstance();
+	static void DeleteInstance();
+private:
+	static Input* instance;
+	Input() = default;
+	~Input() = default;
+	Input(Input&) = delete;
+	Input& operator=(Input&) = delete;
+
+public:
+
 	//初期化 
 	void Initialize(WinAPI*winAPI);
 	//更新
@@ -33,5 +42,7 @@ private:
 
 	//WindowsAPI
 	WinAPI* winAPI = nullptr;
+
+	
 };
 
