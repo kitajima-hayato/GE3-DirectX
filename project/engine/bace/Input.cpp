@@ -3,6 +3,25 @@
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 
+Input* Input::instance = nullptr;
+Input* Input::GetInstance()
+{
+	if (instance == nullptr)
+	{
+		instance = new Input();
+	}
+	return instance;
+}
+
+void Input::DeleteInstance()
+{
+	if (instance != nullptr)
+	{
+		delete instance;
+		instance = nullptr;
+	}
+}
+
 void Input::Initialize(WinAPI *winAPI)
 {
 	//借りてきたWinAPIのインスタンスを記録

@@ -10,8 +10,8 @@ void Framework::Initialize()
 	dxCommon->Initialize(winAPI);
 
 	// 入力処理のクラスポインタ
-	input = new Input();
-	input->Initialize(winAPI);
+	
+	Input::GetInstance()->Initialize(winAPI);
 
 	// SRVマネージャーの初期化
 	srvManager = new SrvManager();
@@ -47,6 +47,7 @@ void Framework::Initialize()
 
 #pragma endregion
 
+	
 
 }
 
@@ -60,12 +61,14 @@ void Framework::Update()
 		return;
 	}
 #pragma endregion
+	SceneManager::GetInstance()->Update(dxCommon);
 
-	input->Update();
+	Input::GetInstance()->Update();
 
 
 	// ESCキーで終了
-	if (input->TriggerKey(DIK_ESCAPE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_ESCAPE))
+	{
 		isEndRequst = true;
 	}
 
@@ -74,10 +77,11 @@ void Framework::Update()
 
 void Framework::Finalize()
 {
-
-	delete input;
+	delete sceneFactory_;
+	SceneManager::GetInstance()->Finalize();
 	delete dxCommon;
 	winAPI->Finalize();
+	Input::GetInstance()->DeleteInstance();
 	delete srvManager;
 	TextureManager::GetInstance()->Finalize();
 	delete modelCommon;

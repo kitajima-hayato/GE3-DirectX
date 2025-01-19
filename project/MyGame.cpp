@@ -1,16 +1,15 @@
 #include "MyGame.h"
-
+#include "SceneFactory.h"
 void MyGame::Initialize()
 {
 	Framework::Initialize();
-	// ゲームプレイシーンの初期化
-	scene_ = new TitleScene();
-	scene_->Initialize(dxCommon);
-#pragma region 最初のシーンの初期化
-	// 3Dオブジェクトの初期化
 
-#pragma endregion
-
+	// シーンファクトリーの生成
+	sceneFactory_ = new SceneFactory();
+	SceneManager::GetInstance()->SetSceneFactory(sceneFactory_);
+	// シーンmanagerに最初のシーンをセット
+	SceneManager::GetInstance()->ChangeScene("TITLE");
+	
 }
 
 void MyGame::Update()
@@ -18,31 +17,19 @@ void MyGame::Update()
 	Framework::Update();
 
 #pragma region ゲームの更新
-	// アクターの更新
-
-	// ゲームプレイシーンの更新
-	scene_->Update();
 	
+
 #pragma endregion
 
 #ifdef _DEBUG // デバッグ時のみ有効ImGuiの処理
 	// ImGuiの処理
 	imGui->Begin();
-#endif
 
-	
-#ifdef _DEBUG
-	
 	ImGui::Text("Hello, world %d", 123);
 	if (ImGui::Button("Save")) {
 		OutputDebugStringA("Save\n");
 	}
-
-
-	
 	imGui->End();
-	
-
 #endif
 }
 
@@ -51,14 +38,14 @@ void MyGame::Draw()
 	// DirectXの描画準備。全ての描画に共通のグラフィックスコマンドを積む
 	dxCommon->PreDraw();
 	srvManager->PreDraw();
-	// ゲームプレイシーンの描画
-	scene_->Draw();
+	
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	object3DCommon->DrawSettingCommon();
-	
-	
 
-	
+
+	// シーンマネージャーの描画	
+	SceneManager::GetInstance()->Draw();
+	// 3Dオブジェクトの描画
 #ifdef _DEBUG
 	// ImGuiの描画
 	imGui->Draw();
@@ -80,9 +67,7 @@ void MyGame::Finalize()
 	ModelManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
-	// ゲームプレイシーンの終了処理
-	scene_->Finalize();
-	delete scene_;
+	
 
 #pragma endregion
 

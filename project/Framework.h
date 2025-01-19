@@ -21,7 +21,8 @@
 #include "ModelManager.h"
 #include "ImGuiManager.h"
 #include "Audio.h"
-
+#include "SceneManager.h"
+#include "AbstractSceneFactory.h"
 class Framework
 {
 
@@ -45,15 +46,11 @@ protected:
 	// 終了リクエスト
 	bool isEndRequst = false;
 
-private:
-	D3DResourceLeakChecker leakCheck;
 protected:// Initialize関連
 	// ウィンドウAPI
 	WinAPI* winAPI = nullptr;
 	// DirectX共通部
 	DirectXCommon* dxCommon = nullptr;
-	// 入力処理
-	Input* input = nullptr;
 	// ImGui
 #ifdef _DEBUG
 	ImGuiManager* imGui = nullptr;
@@ -72,6 +69,14 @@ protected:// Initialize関連
 	Object3DCommon* object3DCommon = nullptr;
 	// カメラ
 	Camera* camera = nullptr;
+public:
+	// シーンファクトリー
+	AbstractSceneFactory* sceneFactory_ = nullptr;
+private:
+	// リークチェッカー
+	D3DResourceLeakChecker leakCheck;
+	
+
 	
 };
 
