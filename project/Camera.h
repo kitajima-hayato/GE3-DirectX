@@ -26,8 +26,9 @@ public:
 	const Matrix4x4& GetViewMatrix()const { return viewMatrix; }
 	const Matrix4x4& GetProjectionMatrix()const { return projectionMatrix; }
 	const Matrix4x4& GetViewProjectionMatrix()const { return viewProjectionMatrix; }
-	Vector3& GetRotate() { return transform.rotate; }
-	Vector3& GetTranslate() { return transform.translate; }
+	const Vector3& GetScale()const { return transform.scale; }
+	const Vector3& GetRotate()const { return transform.rotate; }
+	const Vector3& GetTranslate()const { return transform.translate; }
 
 
 private:
