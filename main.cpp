@@ -20,6 +20,7 @@
 #include <wrl.h>
 #include "numbers"
 #include <random>
+
 #pragma comment(lib,"dxcompiler.lib")
 #pragma  comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
@@ -55,6 +56,9 @@ struct AABB {
 struct AccelerationField {
 	Vector3 acceleration;
 	AABB area;
+};
+struct CameraForGPU {
+	Vector3 worldPosition;
 };
 using namespace std;
 
@@ -853,8 +857,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	descriptionRootSignature.Flags =
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	//RootParameter作成。複数設定できるので配列。今回は結果１つだけなので長さ１の配列
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	//RootParameter作成。複数設定できるので配列
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;		//PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0;						//レジスタ番号０とバインド
@@ -873,6 +877,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[3].Descriptor.RegisterSpace = 0;
 	rootParameters[3].Descriptor.ShaderRegister = 1;
+
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[4].Descriptor.RegisterSpace = 0;
+	rootParameters[4].Descriptor.ShaderRegister = 2;
 
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//
@@ -1092,7 +1101,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ModelData modelData = LoadObjFile("resources", "Sphere.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -1148,73 +1157,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-#pragma region	旧Particle
-
-	//Particle
-	//Particle用のPSOを生成する
-	//D3D12_GRAPHICS_PIPELINE_STATE_DESC particlePipelineStateDesc{};
-	//particlePipelineStateDesc.pRootSignature = rootSignature.Get();
-	//particlePipelineStateDesc.InputLayout = inputLayoutDescs;
-	//particlePipelineStateDesc.VS = { particleVertexShaderBlob->GetBufferPointer(),particleVertexShaderBlob->GetBufferSize() };
-	//particlePipelineStateDesc.PS = { particlePixelShaderBlob ->GetBufferPointer(),particlePixelShaderBlob ->GetBufferSize() };
-	//particlePipelineStateDesc.BlendState = blendDesc;
-	//particlePipelineStateDesc.RasterizerState = rasterizerDesc;
-	////DepthStencilの設定 
-	//particlePipelineStateDesc.DepthStencilState = depthStencilDesc;
-	//particlePipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	////書き込むRTVの情報 
-	//particlePipelineStateDesc.NumRenderTargets = 1;
-	//particlePipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	////利用する形状のタイプ 
-	//particlePipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	////どのように画面に色を打ち込むかの設定（気にせんでいい）
-	//particlePipelineStateDesc.SampleDesc.Count = 1;
-	//particlePipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	////生成
-	///*Microsoft::WRL::ComPtr<ID3D12PipelineState> particlePipelineState = nullptr;
-	//hr = device->CreateGraphicsPipelineState(&particlePipelineStateDesc, IID_PPV_ARGS(&particlePipelineState));
-	//assert(SUCCEEDED(hr));*/
 
 
-	////マテリアル用のリソースをつくる今回はcolor1つ分のサイズを用意する
-	//Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = CreateBufferResource(device, sizeof(Material));
-	////マテリアルデータに書き込む
-	//Material* materialDate = nullptr;
-	////書き込むためのアドレスを取得
-	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDate));
-	////今回は赤を書き込む
-	//materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	//materialDate->enableLighting = 0;
-	//materialDate->uvTransform = MakeIdentity4x4();
-#pragma endregion
 
-
-	////PSOを生成する
-	//D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	//graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
-	//graphicsPipelineStateDesc.InputLayout = inputLayoutDescs;
-	//graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() };
-	//graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() };
-	//graphicsPipelineStateDesc.BlendState = blendDesc;
-	//graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-	////DepthStencilの設定 
-	//graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-	//graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	////書き込むRTVの情報 
-	//graphicsPipelineStateDesc.NumRenderTargets = 1;
-	//graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	////利用する形状のタイプ 
-	//graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	////どのように画面に色を打ち込むかの設定（気にせんでいい）
-	//graphicsPipelineStateDesc.SampleDesc.Count = 1;
-	//graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	////生成
-	//Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
-	//hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
-	//assert(SUCCEEDED(hr));
-
+	
 #pragma region スフィア用の新規作成
 
 	// スフィア用の新規作成
@@ -1673,70 +1619,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-			// 通常のパーティクル設定
-			ImGui::Begin("Particle Settings");
-
-			// パーティクルの発生
-			ImGui::Checkbox("StartParticle", &startParticle);
-			// ビルボードの有無
-			ImGui::Checkbox("UseBillboard", &useBillboard);
-			
-			ImGui::DragFloat3("Acceleration", &accelerationField.acceleration.x, 0.01f, -100.0f, 100.0f);
-
-			// エミッターの設定
-			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat3("EmitterRotate", &emitter.transform.rotate.x, 0.01f, -3.14f, 3.14f);
-			ImGui::DragFloat3("EmitterScale", &emitter.transform.scale.x, 0.01f, 0.1f, 10.0f);
-			ImGui::DragFloat("EmitterFrequency", &emitter.frequency, 0.01f, 0.01f, 10.0f);
-			ImGui::DragInt("EmitterCount", reinterpret_cast<int*>(&emitter.count), 1, 1, 1000);
-
-			if (ImGui::Button("Particle Add")) {
-				particles.splice(particles.end(), Emit(emitter, randomEngine));
-			}// 加速度場の設定
-			ImGui::Checkbox("DetailedPreference", &windDirection);
-			if (windDirection) {
-				if (ImGui::Button("UP")) {
-					accelerationField.acceleration = { 0.0f, 30.0f, 0.0f };
-				}
-				if (ImGui::Button("DOWN")) {
-					accelerationField.acceleration = { 0.0f, -30.0f, 0.0f };
-				}
-				if (ImGui::Button("RIGHT")) {
-					accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
-				}
-				if (ImGui::Button("LEFT")) {
-					accelerationField.acceleration = { -15.0f, 0.0f, 0.0f };
-				}
-			}
-
-			
-
-			ImGui::End();
-
-			// エナジーパーティクル設定
-			ImGui::Begin("Energy Particle Settings");
-
-			if (ImGui::Button("Energy Particle Add")) {
-				energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));
-			}
-			// エナジーパーティクルのビルボードの有無
-			ImGui::Checkbox("UseEnergyBillboard", &useEnergyBillboard);
-
-			// エミッターの設定
-			ImGui::DragFloat3("Energy EmitterTranslate", &emitterEnergy.transform.translate.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat3("Energy EmitterRotate", &emitterEnergy.transform.rotate.x, 0.01f, -3.14f, 3.14f);
-			ImGui::DragFloat3("Energy EmitterScale", &emitterEnergy.transform.scale.x, 0.01f, 0.1f, 10.0f);
-			ImGui::DragFloat("Energy EmitterFrequency", &emitterEnergy.frequency, 0.01f, 0.01f, 10.0f);
-			ImGui::DragInt("Energy EmitterCount", reinterpret_cast<int*>(&emitterEnergy.count), 1, 1, 1000);
-
-			
+		
+			ImGui::Begin("po");
 
 			
 			ImGui::End();
 			ImGui::Render();
 
 
-			// 描画すべきインスタンス数
+			/*// 描画すべきインスタンス数
 			uint32_t numInstance = 0;
 			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
 
@@ -1746,7 +1637,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					particleIterator = particles.erase(particleIterator);
 					continue;
 				}
-
 				Matrix4x4 worldMatrixParticle = MakeAffineMatrix((*particleIterator).transform.scale, (*particleIterator).transform.rotate, (*particleIterator).transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
 				// インスタンス数が上限を超えていないならインスタンスデータを書き込む
@@ -1756,7 +1646,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					
 					++numInstance;
 				}
-
 				instancingData[particles.size()].World = worldMatrixParticle;
 				instancingData[particles.size()].color = (*particleIterator).color;
 
@@ -1766,9 +1655,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					(*particleIterator).velocity.y += accelerationField.acceleration.y * kDeltaTime;
 					(*particleIterator).velocity.z += accelerationField.acceleration.z * kDeltaTime;
 				}
-
-
-
 				(*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
 				(*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
 				(*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;
@@ -1782,9 +1668,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				billboardMatrix.m[3][1] = 0.0f;
 				billboardMatrix.m[3][2] = 0.0f;
 				
-				
-
-
 				// ビルボードを使うかどうかでワールド行列を変える
 				if (useBillboard) {
 				worldMatrixParticle = Multiply( Multiply(scaleMatrix, billboardMatrix),translateMatrix);
@@ -1792,8 +1675,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				else {
 					worldMatrixParticle = Multiply(scaleMatrix, translateMatrix);
 				}
-				
-
 				
 				Matrix4x4 WVPMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
 
@@ -1804,13 +1685,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				instancingData[numInstance].color = (*particleIterator).color;
 				instancingData[numInstance].color.w = alpha;
 
-
 				// 次のパーティクルに進める
 				++particleIterator;
 
 			}
-
-			
 			// エネルギーパーティクルの処理
 			for (std::list<Particle>::iterator particleIterator = energyParticles.begin(); particleIterator != energyParticles.end();) {
 				if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
@@ -1880,9 +1758,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				++particleIterator;
 			}
 
-			
-
-
 			if (startParticle) {
 				// 時刻を進める
 				emitter.frequencyTime += kDeltaTime;
@@ -1900,7 +1775,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					emitterEnergy.frequencyTime -= emitterEnergy.frequency;  // 余計に過ぎた時間も加味して頻度計算する
 				}
 			}
-
+			*/
 
 			// ここから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
@@ -1944,14 +1819,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			//// スフィア用の設定
+			// スフィア用の設定
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);  // VBVを設定
 			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());
 			//commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
 			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-			////commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-
+			//commandList->DrawInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0);
 
 			// モデル用の設定 (インスタンシング)
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);  // VBVを設定
@@ -1959,11 +1833,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 			// シェーダーでインスタンスごとの変換行列にアクセスできるようにSRVを設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 
 			//// 10個のインスタンスを描画
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
 			//// スプライト用の設定
 			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); // スプライト用のテクスチャSRVを設定
