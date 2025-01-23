@@ -4,6 +4,7 @@
 #include "MyMath.h"
 #include <random>
 #include "Camera.h"
+
 // パーティクルマネージャークラス
 // シングルトンクラス
 class ParticleManager
@@ -28,7 +29,7 @@ public:
 	// トランスフォーム
 	struct Transform
 	{
-		Vector3 position;
+		Vector3 translate;
 		Vector3 scale;
 		Vector3 rotation;
 	};
@@ -82,29 +83,43 @@ private:
 public:
 	// パーティクルの初期化
 	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager);
-	// ランダムエンジンの初期化
+	// ランダムエンジンの初期化 / 初期化処理内部
 	void InitializeRandomEngine();
-	// パイプラインの生成
+	// パイプラインの生成 / 初期化処理内部
 	void CreatePipeline();
-	// ルートシグネチャの作成
+	// ルートシグネチャの作成 / パイプライン生成内部
 	void CreateRootSignature();
-	// グラフィックスパイプラインの設定
+	// グラフィックスパイプラインの設定 / パイプライン生成内部
 	void SetGraphicsPipeline();
-	// ブレンドモードの設定
+	// ブレンドモードの設定 / パイプライン生成内部
 	void SetBlendMode(D3D12_BLEND_DESC& desc, BlendMode mode);
-	// 頂点データの初期化(座標)
+	// 頂点データの初期化(座標) / 初期化処理内部
 	void InitializeVertexData();
-	// バッファービューの作成
+	// バッファービューの作成 / 初期化処理内部
 	void CreateVertexBufferView();
-	// マテリアルの初期化
+	// マテリアルの初期化 / 初期化処理内部
 	void InitializeMaterial();
 
 	// パーティクルグループの作成
 	void CreateParticleGroup(const std::string& name, const std::string textureFilrPath);
+
 	// 更新処理
 	void Update();
-	// 行列更新
+	// 行列更新 / 更新処理内部
 	void UpdateMatrix();
+	//  パーティクル更新 / 更新処理内部
+	void UpdateParticle();
+	// 当たり判定 / 更新処理内部 / パーティクル更新
+	bool IsCollision(const AABB& aabb, const Vector3& point);
+
+	// 描画処理
+	void Draw();
+
+	// パーティクルの発生
+	void Emit(const std::string& name, const Vector3& position, const Vector3& velocity, uint32_t count);
+	// 通常パーティクル
+	Particle MakeParticle(std::mt19937& randomEngine);
+
 
 private:
 	DirectXCommon* dxCommon;
@@ -125,7 +140,7 @@ private:
 	// ルートシグネチャ
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
 	// インプットレイアウト
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3];
 	// パイプラインステート
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
@@ -134,12 +149,13 @@ private:
 
 	// ブレンド
 	BlendMode blendMode;
-	BlendMode currentBlendMode ;
+	BlendMode currentBlendMode;
 	D3D12_BLEND_DESC blendDesc{};
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	D3D12_RASTERIZER_DESC rasterrizerDesc{};
 	// グラフィックスパイプライン
 	ID3D12PipelineState* graphicsPipelineState = nullptr;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc;
 	// シェーダーバイナリ
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
@@ -167,8 +183,24 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
 	D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 
+	// カメラ行列
+	Matrix4x4 cameraMatrix;
+	// ワールドビュープロジェクション行列
+	Matrix4x4 viewMatrix;
+	// プロジェクション行列
+	Matrix4x4 projectionMatrix;
+	// ビューポート行列
+	Matrix4x4 backToFrontMatrix;
 	// ビルボード行列
 	Matrix4x4 billboardMatrix;
+	bool useBillboard = false;
+
+	// パーティクルのリスト
+	std::list<Particle>particles;
+	// 加速度フィールド
+	AccelerationField accelerationField;
+	// Δtを定義６０fos固定
+	const float kDeltaTime = 1.0f / 60.0f;
 
 };
 

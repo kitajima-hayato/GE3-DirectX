@@ -19,8 +19,6 @@ void Framework::Initialize()
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
-	
-	
 
 #ifdef _DEBUG
 	// ImGuiの初期化
@@ -44,11 +42,7 @@ void Framework::Initialize()
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
 
-
 #pragma endregion
-
-	
-
 }
 
 void Framework::Update()

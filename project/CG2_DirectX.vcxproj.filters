@@ -208,9 +208,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Object3d.hlsli" />
+    <None Include="resources\shaders\Particle.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d.PS.hlsl" />
     <FxCompile Include="resources\shaders\Object3d.VS.hlsl" />
+    <FxCompile Include="resources\shaders\Particle.VS.hlsl" />
+    <FxCompile Include="resources\shaders\Particle.PS.hlsl" />
   </ItemGroup>
 </Project>

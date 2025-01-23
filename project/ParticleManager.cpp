@@ -163,10 +163,10 @@ void ParticleManager::CreateRootSignature()
 	// 塗りつぶしモード
 	rasterrizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	// 4. Shaderをコンパイルする
-	vertexShaderBlob = dxCommon->CompileShader(L"Resources/shaders/Particle.VS.hlsl",
+	vertexShaderBlob = dxCommon->CompileShader(L"resources/shaders/Particle.VS.hlsl",
 		L"vs_6_0");
 	assert(vertexShaderBlob != nullptr);
-	pixelShaderBlob = dxCommon->CompileShader(L"Resources/shaders/Particle.PS.hlsl",
+	pixelShaderBlob = dxCommon->CompileShader(L"resources/shaders/Particle.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
@@ -181,7 +181,6 @@ void ParticleManager::CreateRootSignature()
 
 void ParticleManager::SetGraphicsPipeline()
 {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();				
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;					
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
@@ -344,19 +343,20 @@ void ParticleManager::Update()
 	// 行列の更新
 	UpdateMatrix();
 	// 全てのパーティクルグループの処理
+	UpdateParticle();
 
 }
 
 void ParticleManager::UpdateMatrix()
 {
 	// カメラ行列の取得
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(camera->GetScale(), camera->GetRotate(), camera->GetTranslate());
+	cameraMatrix = MakeAffineMatrix(camera->GetScale(), camera->GetRotate(), camera->GetTranslate());
 	// ビュー行列の取得
-	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+	viewMatrix = Inverse(cameraMatrix);
 	// プロジェクション行列の取得
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, WinAPI::kClientWidth / WinAPI::kClientWidth, 0.1f, 100.0f);
+	projectionMatrix = MakePerspectiveFovMatrix(0.45f, WinAPI::kClientWidth / WinAPI::kClientWidth, 0.1f, 100.0f);
 	// ワールド行列の取得
-	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+	backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
 
 	// ビルボード用の行列
 	billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
@@ -366,4 +366,149 @@ void ParticleManager::UpdateMatrix()
 
 	// ビュー・プロジェクション行列を生成
 	projectionMatrix = Multiply(viewMatrix, projectionMatrix);
+}
+
+void ParticleManager::UpdateParticle()
+{
+	
+
+	for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end(); ++particleIterator) {
+		// particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+	}
+	uint32_t numInstance = 0;
+	for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
+
+		// 生存時間を過ぎていたら更新せず描画対象にしない
+		if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) {
+			// 消す
+			particleIterator = particles.erase(particleIterator);
+			continue;
+		}
+
+		Matrix4x4 worldMatrixParticle = MakeAffineMatrix((*particleIterator).transform.scale, (*particleIterator).transform.rotation, (*particleIterator).transform.translate);
+		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
+		// インスタンス数が上限を超えていないならインスタンスデータを書き込む
+		if (numInstance < kMaxParticle)
+		{
+			instancingData[particles.size()].WVP = worldViewProjectionMatrix;
+
+			++numInstance;
+		}
+		instancingData[particles.size()].World = worldMatrixParticle;
+		instancingData[particles.size()].color = (*particleIterator).color;
+
+		accelerationField.acceleration = { 0.0f,0.0f,0.0f };
+		accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+		accelerationField.area.max = { 1.0f,1.0f,1.0f };
+
+		if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+
+			(*particleIterator).velocity.x += accelerationField.acceleration.x * kDeltaTime;
+			(*particleIterator).velocity.y += accelerationField.acceleration.y * kDeltaTime;
+			(*particleIterator).velocity.z += accelerationField.acceleration.z * kDeltaTime;
+		}
+
+
+
+		(*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
+		(*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
+		(*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;
+		(*particleIterator).currentTime += kDeltaTime;
+
+		Matrix4x4 scaleMatrix = MakeScaleMatrix((*particleIterator).transform.scale);
+		Matrix4x4 translateMatrix = MakeTranslateMatrix((*particleIterator).transform.translate);
+
+		Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+		billboardMatrix.m[3][0] = 0.0f;
+		billboardMatrix.m[3][1] = 0.0f;
+		billboardMatrix.m[3][2] = 0.0f;
+
+		// ビルボードを使うかどうかでワールド行列を変える
+		if (useBillboard) {
+			worldMatrixParticle = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
+		}
+		else {
+			worldMatrixParticle = Multiply(scaleMatrix, translateMatrix);
+		}
+		Matrix4x4 WVPMatrix = Multiply(worldMatrixParticle, Multiply(viewMatrix, projectionMatrix));
+
+		float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifeTime);
+
+		instancingData[numInstance].WVP = WVPMatrix;
+		instancingData[numInstance].World = worldMatrixParticle;
+		instancingData[numInstance].color = (*particleIterator).color;
+		instancingData[numInstance].color.w = alpha;
+
+		// 次のパーティクルに進める
+		++particleIterator;
+
+	}
+
+}
+
+bool ParticleManager::IsCollision(const AABB& aabb, const Vector3& point)
+{
+	if (aabb.min.x <= point.x && point.x <= aabb.max.x &&
+		aabb.min.y <= point.y && point.y <= aabb.max.y &&
+		aabb.min.z <= point.z && point.z <= aabb.max.z) {
+		return true;
+	}
+	return false;
+}
+
+void ParticleManager::Draw()
+{
+	// コマンド : ルートシグネチャを設定
+	dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+	// コマンド : パイプラインステートオブジェクトを設定
+	dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState);
+	// コマンド : プリミティブトロポジ(描画形状)を設定
+	dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// コマンド : VertexBufferViewを設定
+	dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	// 全てのパーティクルグループについて処理
+	for (auto& [name, particleGroup] : particleGroups)
+	{
+		// マテリアルデータの更新
+		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, materialResource->GetGPUVirtualAddress());
+		// インスタンシングデータの更新
+		dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, particleGroup.instancingResource->GetGPUVirtualAddress());
+		// シェーダリソースビューの設定
+		D3D12_GPU_DESCRIPTOR_HANDLE textureHandle = srvManager->GetGPUDescriptorHandle(particleGroup.materialData.textureIndex);
+		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureHandle);
+		// 描画
+		dxCommon->GetCommandList()->DrawInstanced(6, particleGroup.kNumInstance, 0, 0);
+	}
+}
+
+void ParticleManager::Emit(const std::string& name, const Vector3& position, const Vector3& velocity, uint32_t count)
+{
+	// 登録済みのパーティクルグループ名かチェック
+	auto it = particleGroups.find(name);
+	assert(it != particleGroups.end());
+	// 指定されたパーティクルグループにパーティクルを追加
+	ParticleGroup& group = it->second;
+	// 各パーティクルを生成し追加
+	for (uint32_t i = 0; i < count; ++i) {
+		Particle newParticle = MakeParticle(randomEngine);
+		group.particles.push_back(newParticle);
+	}
+};
+
+ParticleManager::Particle ParticleManager::MakeParticle(std::mt19937& randomEngine) {
+	Particle particle;
+	std::uniform_real_distribution<float> distPosition(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distVelocity(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+
+	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
+	particle.transform.rotation = { 0.0f, 3.3f, 0.0f };
+	particle.transform.translate = { distPosition(randomEngine), distPosition(randomEngine), distPosition(randomEngine) };
+	particle.velocity = { distVelocity(randomEngine), distVelocity(randomEngine), distVelocity(randomEngine) };
+	particle.color = { distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f };
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0;
+
+	return particle;
 }
