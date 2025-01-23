@@ -75,3 +75,6 @@ struct AccelerationField {
 	Vector3 acceleration;
 	AABB area;
 };
+struct CameraForGPU {
+	Vector3 worldPosition;
+};

@@ -16,18 +16,22 @@ struct DirectionalLight
     float32_t3 direction; //ライトの向き
     float intensity; //輝度
 };
+struct Camera
+{
+    float32_t3 worldPosition;
+};
 ConstantBuffer<Material> gMaterial : register(b0);
 Texture2D<float32_t4> gTexture : register(t0); //SRVのregisterはt
 SamplerState gSampler : register(s0); //Samplerのregisterはs
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
-    
+ConstantBuffer<Camera> gCamera : register(b2);
 
 PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
- 
+    float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
     if (gMaterial.enableLighting != 0)
     {
         if (gMaterial.enableLighting == 1)
