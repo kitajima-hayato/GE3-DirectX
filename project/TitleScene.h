@@ -29,8 +29,7 @@ private:
 	SoundData soundData;
 	IXAudio2* xaudio2_;
 
-	// スプライト
-	Sprite* sprite_ = nullptr;
+	
 
 	
 
