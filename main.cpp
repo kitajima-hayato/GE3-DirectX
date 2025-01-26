@@ -1040,11 +1040,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Microsoft::WRL::ComPtr<IDxcBlob> particleVertexShaderBlob = nullptr;
-	particleVertexShaderBlob = CompileShader(L"resources/shaders/Particle.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	particleVertexShaderBlob = CompileShader(L"resources/shaders/Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(particleVertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr<IDxcBlob> particlePixelShaderBlob = nullptr;
-	particlePixelShaderBlob = CompileShader(L"resources/shaders/Particle.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	particlePixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(particlePixelShaderBlob != nullptr);
 
 
@@ -1092,7 +1092,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ModelData modelData = LoadObjFile("resources", "sphere.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -1673,69 +1673,69 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-			// 通常のパーティクル設定
-			ImGui::Begin("Particle Settings");
+			//// 通常のパーティクル設定
+			//ImGui::Begin("Particle Settings");
 
-			// パーティクルの発生
-			ImGui::Checkbox("StartParticle", &startParticle);
-			// ビルボードの有無
-			ImGui::Checkbox("UseBillboard", &useBillboard);
+			//// パーティクルの発生
+			//ImGui::Checkbox("StartParticle", &startParticle);
+			//// ビルボードの有無
+			//ImGui::Checkbox("UseBillboard", &useBillboard);
+			//
+			//ImGui::DragFloat3("Acceleration", &accelerationField.acceleration.x, 0.01f, -100.0f, 100.0f);
+
+			//// エミッターの設定
+			//ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+			//ImGui::DragFloat3("EmitterRotate", &emitter.transform.rotate.x, 0.01f, -3.14f, 3.14f);
+			//ImGui::DragFloat3("EmitterScale", &emitter.transform.scale.x, 0.01f, 0.1f, 10.0f);
+			//ImGui::DragFloat("EmitterFrequency", &emitter.frequency, 0.01f, 0.01f, 10.0f);
+			//ImGui::DragInt("EmitterCount", reinterpret_cast<int*>(&emitter.count), 1, 1, 1000);
+
+			//if (ImGui::Button("Particle Add")) {
+			//	particles.splice(particles.end(), Emit(emitter, randomEngine));
+			//}// 加速度場の設定
+			//ImGui::Checkbox("DetailedPreference", &windDirection);
+			//if (windDirection) {
+			//	if (ImGui::Button("UP")) {
+			//		accelerationField.acceleration = { 0.0f, 30.0f, 0.0f };
+			//	}
+			//	if (ImGui::Button("DOWN")) {
+			//		accelerationField.acceleration = { 0.0f, -30.0f, 0.0f };
+			//	}
+			//	if (ImGui::Button("RIGHT")) {
+			//		accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
+			//	}
+			//	if (ImGui::Button("LEFT")) {
+			//		accelerationField.acceleration = { -15.0f, 0.0f, 0.0f };
+			//	}
+			//}
+
+			//
+
+			//ImGui::End();
+
+			//// エナジーパーティクル設定
+			//ImGui::Begin("Energy Particle Settings");
+
+			//if (ImGui::Button("Energy Particle Add")) {
+			//	energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));
+			//}
+			//// エナジーパーティクルのビルボードの有無
+			//ImGui::Checkbox("UseEnergyBillboard", &useEnergyBillboard);
+
+			//// エミッターの設定
+			//ImGui::DragFloat3("Energy EmitterTranslate", &emitterEnergy.transform.translate.x, 0.01f, -100.0f, 100.0f);
+			//ImGui::DragFloat3("Energy EmitterRotate", &emitterEnergy.transform.rotate.x, 0.01f, -3.14f, 3.14f);
+			//ImGui::DragFloat3("Energy EmitterScale", &emitterEnergy.transform.scale.x, 0.01f, 0.1f, 10.0f);
+			//ImGui::DragFloat("Energy EmitterFrequency", &emitterEnergy.frequency, 0.01f, 0.01f, 10.0f);
+			//ImGui::DragInt("Energy EmitterCount", reinterpret_cast<int*>(&emitterEnergy.count), 1, 1, 1000);
+
+			//
+
 			
-			ImGui::DragFloat3("Acceleration", &accelerationField.acceleration.x, 0.01f, -100.0f, 100.0f);
+		/*	ImGui::End();
+			ImGui::Render();*/
 
-			// エミッターの設定
-			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat3("EmitterRotate", &emitter.transform.rotate.x, 0.01f, -3.14f, 3.14f);
-			ImGui::DragFloat3("EmitterScale", &emitter.transform.scale.x, 0.01f, 0.1f, 10.0f);
-			ImGui::DragFloat("EmitterFrequency", &emitter.frequency, 0.01f, 0.01f, 10.0f);
-			ImGui::DragInt("EmitterCount", reinterpret_cast<int*>(&emitter.count), 1, 1, 1000);
-
-			if (ImGui::Button("Particle Add")) {
-				particles.splice(particles.end(), Emit(emitter, randomEngine));
-			}// 加速度場の設定
-			ImGui::Checkbox("DetailedPreference", &windDirection);
-			if (windDirection) {
-				if (ImGui::Button("UP")) {
-					accelerationField.acceleration = { 0.0f, 30.0f, 0.0f };
-				}
-				if (ImGui::Button("DOWN")) {
-					accelerationField.acceleration = { 0.0f, -30.0f, 0.0f };
-				}
-				if (ImGui::Button("RIGHT")) {
-					accelerationField.acceleration = { 15.0f, 0.0f, 0.0f };
-				}
-				if (ImGui::Button("LEFT")) {
-					accelerationField.acceleration = { -15.0f, 0.0f, 0.0f };
-				}
-			}
-
-			
-
-			ImGui::End();
-
-			// エナジーパーティクル設定
-			ImGui::Begin("Energy Particle Settings");
-
-			if (ImGui::Button("Energy Particle Add")) {
-				energyParticles.splice(energyParticles.end(), EmitEnergyParticles(emitterEnergy, randomEngine, center));
-			}
-			// エナジーパーティクルのビルボードの有無
-			ImGui::Checkbox("UseEnergyBillboard", &useEnergyBillboard);
-
-			// エミッターの設定
-			ImGui::DragFloat3("Energy EmitterTranslate", &emitterEnergy.transform.translate.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat3("Energy EmitterRotate", &emitterEnergy.transform.rotate.x, 0.01f, -3.14f, 3.14f);
-			ImGui::DragFloat3("Energy EmitterScale", &emitterEnergy.transform.scale.x, 0.01f, 0.1f, 10.0f);
-			ImGui::DragFloat("Energy EmitterFrequency", &emitterEnergy.frequency, 0.01f, 0.01f, 10.0f);
-			ImGui::DragInt("Energy EmitterCount", reinterpret_cast<int*>(&emitterEnergy.count), 1, 1, 1000);
-
-			
-
-			
-			ImGui::End();
-			ImGui::Render();
-
-
+			/*
 			// 描画すべきインスタンス数
 			uint32_t numInstance = 0;
 			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
@@ -1900,7 +1900,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					emitterEnergy.frequencyTime -= emitterEnergy.frequency;  // 余計に過ぎた時間も加味して頻度計算する
 				}
 			}
-
+			*/
 
 			// ここから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
@@ -1959,11 +1959,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 			// シェーダーでインスタンスごとの変換行列にアクセスできるようにSRVを設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+
 			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 
 			//// 10個のインスタンスを描画
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
 			//// スプライト用の設定
 			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU); // スプライト用のテクスチャSRVを設定
