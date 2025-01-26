@@ -4,6 +4,8 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include "SceneManager.h"
+#include <Model.h>
+#include <Object3D.h>
 
 class TitleScene :public BaseScene
 {
@@ -23,6 +25,8 @@ private:
 	// ゲームオブジェクト
 	// 3Dオブジェクト
 	// シーン遷移
+
+	ModelCommon* modelCommon = nullptr;
 	
 	// オーディオ
 	// サウンドデータ
@@ -32,7 +36,8 @@ private:
 	// スプライト
 	Sprite* sprite_ = nullptr;
 
-	
+	Model* model_ = nullptr;
+	Object3D* object3D_ = nullptr;
 
 };
 

@@ -31,9 +31,8 @@ void Framework::Initialize()
 	// 3Dモデルマネージャの初期化
 	ModelManager::GetInstance()->Initialize(dxCommon);
 	// 3Dオブジェクト共通部の初期化
-	object3DCommon = new Object3DCommon();
-	object3DCommon->Initialize(dxCommon);
-
+	Object3DCommon::GetInstance()->Initialize(dxCommon);
+	
 	// モデル共通部の初期化
 	modelCommon = new ModelCommon();
 	modelCommon->Initialize(dxCommon);
@@ -42,7 +41,7 @@ void Framework::Initialize()
 	camera = new Camera();
 	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
-	object3DCommon->SetDefaultCamera(camera);
+	Object3DCommon::GetInstance()->SetDefaultCamera(camera);
 
 
 #pragma endregion
@@ -85,7 +84,6 @@ void Framework::Finalize()
 	delete srvManager;
 	TextureManager::GetInstance()->Finalize();
 	delete modelCommon;
-	delete object3DCommon;
 	delete camera;
 
 	ModelManager::GetInstance()->Finalize();

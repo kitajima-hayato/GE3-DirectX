@@ -65,8 +65,6 @@ protected:// Initialize関連
 	ModelCommon* modelCommon = nullptr;
 	// スプライト共通部
 	SpriteCommon* spriteCommon = nullptr;
-	// 3Dオブジェクト共通部
-	Object3DCommon* object3DCommon = nullptr;
 	// カメラ
 	Camera* camera = nullptr;
 public:

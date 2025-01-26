@@ -40,7 +40,7 @@ void MyGame::Draw()
 	srvManager->PreDraw();
 	
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
-	object3DCommon->DrawSettingCommon();
+	Object3DCommon::GetInstance()->DrawSettingCommon();
 
 
 	// シーンマネージャーの描画	
@@ -66,8 +66,6 @@ void MyGame::Finalize()
 	// モデルマネージャの終了処理
 	ModelManager::GetInstance()->Finalize();
 	winAPI->Finalize();
-
-	
 
 #pragma endregion
 

@@ -1,6 +1,6 @@
 #include "Object3DCommon.h"
 #include "Logger.h"
-
+Object3DCommon* Object3DCommon::instance = nullptr;
 void Object3DCommon::Initialize(DirectXCommon* dxCommon)
 {
 	dxCommon_ = dxCommon;
@@ -15,6 +15,23 @@ void Object3DCommon::DrawSettingCommon()
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
 	// プリミティブトポロジーのセット
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+Object3DCommon* Object3DCommon::GetInstance()
+{
+	if (instance == nullptr)
+	{
+		instance = new Object3DCommon();
+	}
+	return instance;
+}
+
+void Object3DCommon::Deletenstance()
+{
+	if (instance != nullptr) {
+		delete instance;
+		instance = nullptr;
+	}
 }
 
 
