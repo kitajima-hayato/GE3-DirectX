@@ -880,6 +880,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//今回は赤を書き込む
 	materialDate->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialDate->enableLighting = 0;
+	materialDate->shininess = 32.0f; // 鏡面反射の強さ
 	materialDate->uvTransform = MakeIdentity4x4();
 
 
@@ -892,11 +893,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDataSprite->enableLighting = 0;
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
+
+
 	DirectionalLight* directionalLightData = nullptr;
 	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightData->intensity = 1.0f;
+
+
+	
 
 
 	//モデル読み込み
@@ -926,7 +932,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Material* materialDataSphere = nullptr;
 	materialResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
 	materialDataSphere->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialDataSphere->enableLighting = 0;
+	materialDataSphere->enableLighting = 1; // ライティングを有効にする
+	materialDataSphere->shininess = 32.0f; // 鏡面反射の強さ
 	materialDataSphere->uvTransform = MakeIdentity4x4();
 
 	// 頂点バッファービューを作成
@@ -949,9 +956,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceSphere = CreateBufferResource(device, sizeof(DirectionalLight));
 	DirectionalLight* directionalLightDataSphere = nullptr;
 	directionalLightResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataSphere));
-	directionalLightDataSphere->color = { 1.0f,1.0f,1.0f,1.0f };
-	directionalLightDataSphere->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightDataSphere->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	directionalLightDataSphere->direction = { 0.0f, -1.0f, 0.0f };
 	directionalLightDataSphere->intensity = 1.0f;
+
 
 #pragma endregion
 
@@ -991,7 +999,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region エラーが出たらこいつに要注意
 	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = LoadTexture("resources/Monsterball.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
 	Microsoft::WRL::ComPtr < ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
