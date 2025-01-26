@@ -1348,7 +1348,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							materialDataSphere->enableLighting = 1;
 						}
 					}
-					if (ImGui::Button("*HalfLambert")) {
+					if (ImGui::Button("*specular")) {
 						if (materialDataSphere->enableLighting) {
 							materialDataSphere->enableLighting = 2;
 						}
