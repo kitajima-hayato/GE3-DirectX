@@ -701,7 +701,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//RootParamater作成。複数設定できるので配列。今回は結果が１つだけなので長さ１の配列
 	//2-2-6
-	D3D12_ROOT_PARAMETER rootParamaters[4] = {};
+	D3D12_ROOT_PARAMETER rootParamaters[5] = {};
 	rootParamaters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
 	rootParamaters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParamaters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
@@ -715,6 +715,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParamaters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//CBVで使う
 	rootParamaters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//PixelShaderで使う
 	rootParamaters[3].Descriptor.ShaderRegister = 1;//レジスタ番号１を使う
+	//
+	rootParamaters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParamaters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParamaters[4].Descriptor.ShaderRegister = 2;
+
 	descriptionRootSignature.pParameters = rootParamaters;//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParamaters);//
 #pragma endregion
@@ -816,11 +821,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
-	vertexShaderBlob = CompileShader(L"resources/shaders/Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	vertexShaderBlob = CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
-	pixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	pixelShaderBlob = CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
 
@@ -895,7 +900,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "Bunny.obj");
+	ModelData modelData = LoadObjFile("resources", "sphere.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファービューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -1223,7 +1228,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useMonsterBall = false;
 
 
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;
+	CameraForGPU* cameraData = nullptr;
 
+	// カメラリソースを作成
+	cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
+	// 書き込むためのアドレスを取得
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
+	// デフォルト値を設定
+	cameraData->worldPosition = cameraTransform.translate;
 
 
 	MSG msg{};
@@ -1278,38 +1291,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (ImGui::BeginTabBar("OBJ"))
 			{
 				// Objの値変更
-				if (ImGui::BeginTabItem("OBJ"))
-				{
-					ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
-					ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
-					ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
-					ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
-					ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-					if (ImGui::Button("*Lighting")) {
-						if (materialDate->enableLighting) {
-							materialDate->enableLighting = 0;
-						}
-						else if (!materialDate->enableLighting) {
-							materialDate->enableLighting = 1;
-						}
-					}if (ImGui::Button("*HalfLambert")) {
-						if (materialDate->enableLighting) {
-							materialDate->enableLighting = 2;
-						}
-					}
-					ImGui::EndTabItem();
-				}
-				//UVの値変更
-				if (ImGui::BeginTabItem("UV"))
-				{
-					ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
-					ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
-					ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-					ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-					ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
-					ImGui::EndTabItem();
-				}
+				//if (ImGui::BeginTabItem("OBJ"))
+				//{
+				//	ImGui::ColorEdit4("*ObjColor", &materialDate->color.x);
+				//	ImGui::DragFloat3("*ObjScale", &transform.scale.x, 0.01f);//InputFloatだと直入力のみ有効
+				//	ImGui::DragFloat3("*ObjRotate", &transform.rotate.x, 0.01f);//DragFloatにすればカーソルでも値を変更できる
+				//	ImGui::DragFloat3("*ObjTranslate", &transform.translate.x, 0.01f);
+				//	ImGui::DragFloat3("*shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
+				//	if (ImGui::Button("*Lighting")) {
+				//		if (materialDate->enableLighting) {
+				//			materialDate->enableLighting = 0;
+				//		}
+				//		else if (!materialDate->enableLighting) {
+				//			materialDate->enableLighting = 1;
+				//		}
+				//	}if (ImGui::Button("*HalfLambert")) {
+				//		if (materialDate->enableLighting) {
+				//			materialDate->enableLighting = 2;
+				//		}
+				//	}
+				//	ImGui::EndTabItem();
+				//}
+				////UVの値変更
+				//if (ImGui::BeginTabItem("UV"))
+				//{
+				//	ImGui::DragFloat2("*UVPositionScale", &transformSprite.scale.x, 0.1f);
+				//	ImGui::DragFloat2("*UVPositionRotate", &transformSprite.rotate.x, 0.1f);
+				//	ImGui::DragFloat2("*UVPositionTranslate", &transformSprite.translate.x, 0.5f);
+				//	ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+				//	ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+				//	ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z, 0.01f);
+				//	ImGui::EndTabItem();
+				//}
 				//Sphereの値変更
 				if (ImGui::BeginTabItem("Sphere"))
 				{
@@ -1392,6 +1405,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 
 
@@ -1400,7 +1414,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 
 			// スプライト用の設定
@@ -1409,8 +1424,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			commandList->DrawInstanced(6, 1, 0, 0);
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			// 実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
@@ -1429,7 +1444,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			assert(SUCCEEDED(hr));
 
 			//GPUにコマンドリストの実行を行わせる
-			Microsoft::WRL::ComPtr < ID3D12CommandList> commandLists[] = { commandList };
+			Microsoft::WRL::ComPtr <ID3D12CommandList> commandLists[] = { commandList };
 			commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
 			//GPUとOSに画面の交渉を行うように通知する
 			swapChain->Present(1, 0);
