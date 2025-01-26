@@ -36,13 +36,11 @@ PixelShaderOutput main(VertexShaderOutput input)
     float specularPow = pow(saturate(RdotE), gMaterial.shininess);
     
     float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
-  
+    
     // 拡散反射
-    float32_t3 diffuse =
-    gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
+    float32_t3 diffuse = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
     // 鏡面反射
-    float32_t3 specular =
-    gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
+    float32_t3 specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
     // 拡散反射 + 鏡面反射
     output.color.rgb = diffuse + specular;
     // 透明度
@@ -52,18 +50,17 @@ PixelShaderOutput main(VertexShaderOutput input)
     {
         if (gMaterial.enableLighting == 1)
         {
-            //通常
-           // cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+            // 通常
             output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
             output.color.a = gMaterial.color.a * textureColor.a;
         }
-        //if (gMaterial.enableLighting == 2)
-        //{
-        //    //HalfLambert
-        //    float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        //    cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-        //    output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
-        //}
+        // if (gMaterial.enableLighting == 2)
+        // {
+        //     // HalfLambert
+        //     float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+        //     cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        //     output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        // }
     }
     else
     {
