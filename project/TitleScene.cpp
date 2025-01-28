@@ -18,7 +18,7 @@ void TitleScene::Initialize(DirectXCommon* dxCommon)
 	Audio::GetInstance()->Initialize();
 	soundData = Audio::GetInstance()->LoadWave("resources/fanfare.wav");
 	xaudio2_ = Audio::GetInstance()->GetXAudio2();
-	Audio::GetInstance()->SoundPlayWave(xaudio2_, soundData);
+	// Audio::GetInstance()->SoundPlayWave(xaudio2_, soundData);
 
 	// スプライトの初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);
@@ -28,12 +28,17 @@ void TitleScene::Initialize(DirectXCommon* dxCommon)
 	sprite_->SetPosition({ 0.0f,0.0f });
 	sprite_->SetRotation(0.0f);
 
+	// パーティクルエミッターの初期化
+	particleEmitter = new ParticleEmitter();
+	particleEmitter->SetTransform({ {0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},{1.0f,1.0f,1.0f} });
+
+
 }
 
 void TitleScene::Update()
 {
 	sprite_->Update();
-
+	particleEmitter->Update();
 	// ENTERキーが押されたら
 	if(Input::GetInstance()->TriggerKey(DIK_RETURN))
 	{
@@ -46,11 +51,16 @@ void TitleScene::Draw()
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->DrawSettingCommon();
 
-	sprite_->Draw();
+	//sprite_->Draw();
+
+	ParticleManager::GetInstance()->Draw();
+	// パーティクルの描画
+	particleEmitter->Emit();
 }
 
 void TitleScene::Finalize()
 {
+	delete particleEmitter;
 	delete sprite_;
 
 	// オーディオの終了処理

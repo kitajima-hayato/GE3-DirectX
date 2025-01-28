@@ -1,4 +1,4 @@
-#include "Object3d.hlsli"
+#include "Particle.hlsli"
 
 struct Material
 {
@@ -39,26 +39,16 @@ PixelShaderOutput main(VertexShaderOutput input)
 
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
-
-    if (gMaterial.enableLighting != 0)
+    output.color = gMaterial.color * textureColor * input.color;
+    
+   
+    if (output.color.a == 0.0f)
     {
-        if (gMaterial.enableLighting == 1)
-        {
-            // 通常
-            float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
-            output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
-        }
-        if (gMaterial.enableLighting == 2)
-        {
-            // HalfLambert
-            float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-            float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-            output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
-        }
+        discard;
     }
-    else
-    {
-        output.color = gMaterial.color * textureColor;
-    }
+    //else
+    //{
+    //    output.color = gMaterial.color * textureColor;
+    //}
     return output;
 }

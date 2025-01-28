@@ -23,6 +23,7 @@
 #include "Audio.h"
 #include "SceneManager.h"
 #include "AbstractSceneFactory.h"
+#include "ParticleManager.h"
 class Framework
 {
 

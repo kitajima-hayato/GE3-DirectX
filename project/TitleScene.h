@@ -4,7 +4,8 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include "SceneManager.h"
-
+#include "ParticleManager.h"
+#include "ParticleEmitter.h"
 class TitleScene :public BaseScene
 {
 public:
@@ -32,7 +33,8 @@ private:
 	// スプライト
 	Sprite* sprite_ = nullptr;
 
-	
+	// パーティクルエミッター
+	ParticleEmitter* particleEmitter;
 
 };
 

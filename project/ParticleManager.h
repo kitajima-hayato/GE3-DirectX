@@ -26,48 +26,14 @@ public:
 		//!< 利用してはいけない
 		kCountOfBlendMode,
 	};
-	// トランスフォーム
-	struct Transform
-	{
-		Vector3 translate;
-		Vector3 scale;
-		Vector3 rotation;
-	};
-
 	// パーティクル構造体
-	struct Particle
-	{
-		Transform transform;
-		Vector3 velocity;
-		Vector4 color;
-		float lifeTime;
-		float currentTime;
-	};
-	struct ParticleForGPU
-	{
-		Matrix4x4 WVP;
-		Matrix4x4 World;
-		Vector4 color;
-	};
-	struct ModelData
-	{
-		std::vector<VertexData>vertices;
-		MaterialData material;
-	};
-	struct Material
-	{
-		Vector4 color;
-		int32_t enableLighting;
-		float padding[3];
-		Matrix4x4 uvTransform;
-	};
 	struct ParticleGroup {		// パーティクルグループ // 使用するテクスチャごとにパーティクルグループとしてまとめる
 		MaterialData materialData;			// マテリアルデータ					
 		std::list<Particle> particles;		// パーティクルのリスト		
 		uint32_t srvIndex;					// インスタンシングデータ用のSRVインデックス	
 		Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;	// インスタンシングデータ用のリソース
 		UINT kNumInstance;					// インスタンス数
-		ParticleForGPU* instancingData;		// インスタンシングデータを書き込むためのポインタ		
+		ParticleForGPU* instancingData;		// インスタンシングデータを書き込むためのポインタ
 	};
 
 	// インスタンスの取得
@@ -82,7 +48,7 @@ private:
 
 public:
 	// パーティクルの初期化
-	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager);
+	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager, Camera* camera);
 	// ランダムエンジンの初期化 / 初期化処理内部
 	void InitializeRandomEngine();
 	// パイプラインの生成 / 初期化処理内部
@@ -116,11 +82,11 @@ public:
 	void Draw();
 
 	// パーティクルの発生
-	void Emit(const std::string& name, const Vector3& position, const Vector3& velocity, uint32_t count);
+	void Emit(const std::string& name, const Vector3& position, uint32_t count);
 	// 通常パーティクル
 	Particle MakeParticle(std::mt19937& randomEngine);
 
-
+	
 private:
 	DirectXCommon* dxCommon;
 	SrvManager* srvManager;
@@ -201,6 +167,7 @@ private:
 	AccelerationField accelerationField;
 	// Δtを定義６０fos固定
 	const float kDeltaTime = 1.0f / 60.0f;
+	uint32_t numInstance = 0;
 
 };
 
