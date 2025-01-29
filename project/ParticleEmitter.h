@@ -15,6 +15,8 @@ public:
     void SetTransform(const Transform& transform) { emitter.transform = transform; }
 	Transform GetTransform()const { return emitter.transform; }
 
+	void SetParticleName(const string& name) { particleName = name; }
+
 private:
     // パーティクル構造体
     struct Emitter {
@@ -37,4 +39,7 @@ private:
 	std::list<Particle> particles;
 	// Emitter
 	Emitter emitter;
+
+    // パーティクルネーム
+    string particleName;
 };

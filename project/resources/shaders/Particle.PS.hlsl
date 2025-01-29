@@ -12,12 +12,6 @@ struct PixelShaderOutput
     float4 color : SV_TARGET0;
 };
 
-struct DirectionalLight
-{
-    float4 color; // ライトの色
-    float3 direction; // ライトの向き
-    float intensity; // 輝度
-};
 
 cbuffer MaterialBuffer : register(b0)
 {
@@ -27,10 +21,7 @@ cbuffer MaterialBuffer : register(b0)
 Texture2D<float4> gTexture : register(t0); // SRVのregisterはt
 SamplerState gSampler : register(s0); // Samplerのregisterはs
 
-cbuffer DirectionalLightBuffer : register(b1)
-{
-    DirectionalLight gDirectionalLight;
-}
+
 
 PixelShaderOutput main(VertexShaderOutput input)
 {

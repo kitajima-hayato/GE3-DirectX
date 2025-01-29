@@ -27,11 +27,13 @@ void TitleScene::Initialize(DirectXCommon* dxCommon)
 	sprite_->Initialize(SpriteCommon::GetInstance(), "resources/monsterball.png");
 	sprite_->SetPosition({ 0.0f,0.0f });
 	sprite_->SetRotation(0.0f);
+	// パーティクルグループを作成
+	ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/checkerBoard.png");
 
 	// パーティクルエミッターの初期化
 	particleEmitter = new ParticleEmitter();
 	particleEmitter->SetTransform({ {0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},{1.0f,1.0f,1.0f} });
-
+	particleEmitter->SetParticleName("Particle");
 
 }
 
@@ -53,9 +55,8 @@ void TitleScene::Draw()
 
 	//sprite_->Draw();
 
-	ParticleManager::GetInstance()->Draw();
 	// パーティクルの描画
-	particleEmitter->Emit();
+	ParticleManager::GetInstance()->Draw();
 }
 
 void TitleScene::Finalize()

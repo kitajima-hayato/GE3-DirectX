@@ -8,10 +8,73 @@ struct Vector2 {
 	float y;
 };
 struct Vector3 {
-	float x;
-	float y;
-	float z;
+    float x;
+    float y;
+    float z;
+
+    // 加算演算子
+    Vector3 operator+(const Vector3& other) const {
+        return { x + other.x, y + other.y, z + other.z };
+    }
+
+    // 減算演算子
+    Vector3 operator-(const Vector3& other) const {
+        return { x - other.x, y - other.y, z - other.z };
+    }
+
+    // スカラー乗算演算子
+    Vector3 operator*(float scalar) const {
+        return { x * scalar, y * scalar, z * scalar };
+    }
+
+    // スカラー除算演算子
+    Vector3 operator/(float scalar) const {
+        return { x / scalar, y / scalar, z / scalar };
+    }
+
+    // 加算代入演算子
+    Vector3& operator+=(const Vector3& other) {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+
+    // 減算代入演算子
+    Vector3& operator-=(const Vector3& other) {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
+    }
+
+    // スカラー乗算代入演算子
+    Vector3& operator*=(float scalar) {
+        x *= scalar;
+        y *= scalar;
+        z *= scalar;
+        return *this;
+    }
+
+    // スカラー除算代入演算子
+    Vector3& operator/=(float scalar) {
+        x /= scalar;
+        y /= scalar;
+        z /= scalar;
+        return *this;
+    }
+
+    // 等価演算子
+    bool operator==(const Vector3& other) const {
+        return x == other.x && y == other.y && z == other.z;
+    }
+
+    // 不等価演算子
+    bool operator!=(const Vector3& other) const {
+        return !(*this == other);
+    }
 };
+
 struct Vector4 {
 	float x;
 	float y;

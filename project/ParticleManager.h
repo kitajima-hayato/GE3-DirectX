@@ -84,9 +84,9 @@ public:
 	// パーティクルの発生
 	void Emit(const std::string& name, const Vector3& position, uint32_t count);
 	// 通常パーティクル
-	Particle MakeParticle(std::mt19937& randomEngine);
+	Particle MakeParticle(std::mt19937& randomEngine, const Vector3& position);
 
-	
+
 private:
 	DirectXCommon* dxCommon;
 	SrvManager* srvManager;
@@ -130,11 +130,11 @@ private:
 	static const int kMaxParticle = 1000;
 
 	// 頂点バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> instanceingResource = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D12Resource> instanceingResource = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
 
 	// パーティクルデータ
-	ParticleForGPU* instancingData = nullptr;
+	//ParticleForGPU* instancingData = nullptr;
 	// パーティクルのモデルデータ
 	ModelData modelData;
 	// バッファービュー
@@ -167,7 +167,7 @@ private:
 	AccelerationField accelerationField;
 	// Δtを定義６０fos固定
 	const float kDeltaTime = 1.0f / 60.0f;
-	uint32_t numInstance = 0;
+	
 
 };
 

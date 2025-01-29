@@ -23,18 +23,14 @@ void ParticleEmitter::Update()
     // 発生頻度より大きいなら発生
     if (currentTime >= emitter.frequency)
     {
-		// パーティクルを発生させる
-        ParticleManager::GetInstance()->Emit("Particle", emitter.transform.translate, emitter.count);
+        Emit();
         // カレントタイムをリセット
         currentTime = 0.0f;
-
     }
 }
 
 void ParticleEmitter::Emit()
 {
-    // パーティクルグループを作成
-	ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/checkerBoard.png");
     // パーティクルを発生させる
-    ParticleManager::GetInstance()->Emit("Particle", emitter.transform.translate, emitter.count);
+    ParticleManager::GetInstance()->Emit(particleName, emitter.transform.translate, emitter.count);
 }
