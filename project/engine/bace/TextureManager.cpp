@@ -133,7 +133,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()) + kSRVIndexTop;
 
 	// SRV確保
-	textureData.srvIndex = srvManager->Allocater();
+	textureData.srvIndex = srvManager->Allocate();
 	textureData.srvHandleCPU = srvManager->GetCPUDescriptorHandle(textureData.srvIndex);
 	textureData.srvHandleGPU = srvManager->GetGPUDescriptorHandle(textureData.srvIndex);
 

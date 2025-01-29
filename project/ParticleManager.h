@@ -1,101 +1,173 @@
 #pragma once
-#include "SrvManager.h"
 #include "DirectXCommon.h"
+#include "SrvManager.h"
 #include "MyMath.h"
-#include "TextureManager.h"
-#include "Camera.h"
-#include <vector>
 #include <random>
+#include "Camera.h"
+
+// パーティクルマネージャークラス
+// シングルトンクラス
 class ParticleManager
 {
 public:
-	// 構造体
-	struct ParticleGroup {
-		MaterialData materialData;		// マテリアルデータMaterialData
-		std::list<Particle> particles;	// パーティクルのリスト
-		uint32_t instancingDataSRVIndex;			// インスタンシングデータのSRVインデックス
-		Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource;	// インスタンシングデータのリソース
-		const uint32_t kNumMaxInstance = 100;	// 最大インスタンス数
-		ParticleForGPU* instancingData;	// インスタンシングデータを書き込むためのポインタ
-
+	enum BlendMode {
+		//!< ブレンド無し
+		kBlendModeNone,
+		//!< 通常αブレンド デフォルト src * srcA + Dest * ( 1 - srcA )
+		kBelendModeNormal,
+		//!< 加算 src * srcA + Dest * 1;
+		kBlendModeAdd,
+		//!< 減算 Dest * 1 - src * srcA 
+		kBlendModeSubtract,
+		//!< 乗算 src * 0 + Dest * src
+		kBlendModeMultiply,
+		//!< スクリーン src * ( 1 - Dest )+ Dest * 1
+		kBlendModeScreen,
+		//!< 利用してはいけない
+		kCountOfBlendMode,
 	};
-public:	// メンバ関数
-	// パーティクルの初期化
-	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager);
-	// パーティクルグループの生成
-	void CreateParticleGroup(const std::string& name, const std::string textureFilePath);
-	// 更新
-	void Update(Camera* camera);
-	// 描画
-	void Draw();
-	// パーティクルの生成(Emit)
-	void Emit(const std::string& name, const Vector3& position, uint32_t count);
-	// パーティクルの生成
-	Particle MakeParticle(std::mt19937& randomEngine, const Vector3& position);
+	// パーティクル構造体
+	struct ParticleGroup {		// パーティクルグループ // 使用するテクスチャごとにパーティクルグループとしてまとめる
+		MaterialData materialData;			// マテリアルデータ					
+		std::list<Particle> particles;		// パーティクルのリスト		
+		uint32_t srvIndex;					// インスタンシングデータ用のSRVインデックス	
+		Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;	// インスタンシングデータ用のリソース
+		UINT kNumInstance;					// インスタンス数
+		ParticleForGPU* instancingData;		// インスタンシングデータを書き込むためのポインタ
+	};
 
-public:	// シングルトン
-	// シングルトンインスタンスの取得
+	// インスタンスの取得
 	static ParticleManager* GetInstance();
-	// コピーコンストラクタと代入演算子を削除して、複製を防ぐ
-	// コンストラクタをプライベートにして、外部からの直接生成を防ぐ
+	static void DeleteInstance();
+private:
+	static ParticleManager* instance;
 	ParticleManager() = default;
 	~ParticleManager() = default;
-	ParticleManager(const ParticleManager&) = delete;
-	ParticleManager& operator=(const ParticleManager&) = delete;
+	ParticleManager(ParticleManager&) = delete;
+	ParticleManager& operator=(ParticleManager&) = delete;
 
-
-private:	// メンバ関数
-	// グラフィックスパイプラインの生成
-	void CreateGraphicsPipeLine();
-	// ルートシグネチャの作成
+public:
+	// パーティクルの初期化
+	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager, Camera* camera);
+	// ランダムエンジンの初期化 / 初期化処理内部
+	void InitializeRandomEngine();
+	// パイプラインの生成 / 初期化処理内部
+	void CreatePipeline();
+	// ルートシグネチャの作成 / パイプライン生成内部
 	void CreateRootSignature();
-	// 頂点リソース生成
-	void CreateVertexResource();
-	// 頂点バッファビューの(VBV)の作成
+	// グラフィックスパイプラインの設定 / パイプライン生成内部
+	void SetGraphicsPipeline();
+	// ブレンドモードの設定 / パイプライン生成内部
+	void SetBlendMode(D3D12_BLEND_DESC& desc, BlendMode mode);
+	// 頂点データの初期化(座標) / 初期化処理内部
+	void InitializeVertexData();
+	// バッファービューの作成 / 初期化処理内部
 	void CreateVertexBufferView();
-	// 頂点リソースに頂点データを書き込む
-	void WriteVertexResource();
+	// マテリアルの初期化 / 初期化処理内部
+	void InitializeMaterial();
+
+	// パーティクルグループの作成
+	void CreateParticleGroup(const std::string& name, const std::string textureFilrPath);
+
+	// 更新処理
+	void Update();
+	// 行列更新 / 更新処理内部
+	void UpdateMatrix();
+	//  パーティクル更新 / 更新処理内部
+	void UpdateParticle();
+	// 当たり判定 / 更新処理内部 / パーティクル更新
+	bool IsCollision(const AABB& aabb, const Vector3& point);
+
+	// 描画処理
+	void Draw();
+
+	// パーティクルの発生
+	void Emit(const std::string& name, const Vector3& position, uint32_t count);
+	// 通常パーティクル
+	Particle MakeParticle(std::mt19937& randomEngine, const Vector3& position);
+
+
 private:
-	// 絶対にnewしない
 	DirectXCommon* dxCommon;
-	// 絶対にnewしない
 	SrvManager* srvManager;
-	// カメラクラス
+	VertexData* vertexData = nullptr;
 	Camera* camera = nullptr;
 
-	// ルートシグネチャ
-	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature = nullptr;
-	// パイプラインステートの作成
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState = nullptr;
-	// 入力レイアウトの記述を設定
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDescs{};
-	// 入力要素の定義配列を初期化
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-	// 頂点シェーダーのコンパイル結果を格納するBlob
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
-	// ピクセルシェーダーのコンパイル結果を格納するBlob
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
-	// ブレンドステートの設定
-	D3D12_BLEND_DESC blendDesc{};
-	// ラスタライザーステートの設定
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	// DepthStencilStateの設定
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	// RootSignature作成
-	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-	// バーテックスバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	// ランダムエンジン
-	std::random_device seedGenaerator;
 	std::mt19937 randomEngine;
-	// 頂点データ
-	Microsoft::WRL::ComPtr<ID3D12Resource>vertexResource = nullptr;
-	// 頂点データの初期化(座標等)
-	std::vector<VertexData> vertexData = {};
 
-	// パーティクルグループコンテナ
+	// ルートシグネチャ
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	D3D12_DESCRIPTOR_RANGE descriptorRangeInstancing[1] = {};
+	// ルートパラメーター
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	// サンプラー
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+	// ルートシグネチャ
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
+	// インプットレイアウト
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3];
+	// パイプラインステート
+
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+	// インプットレイアウト
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
+
+	// ブレンド
+	BlendMode blendMode;
+	BlendMode currentBlendMode;
+	D3D12_BLEND_DESC blendDesc{};
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	D3D12_RASTERIZER_DESC rasterrizerDesc{};
+	// グラフィックスパイプライン
+	ID3D12PipelineState* graphicsPipelineState = nullptr;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc;
+	// シェーダーバイナリ
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
+
+	// パーティクルの発生上限
+	static const int kMaxParticle = 1000;
+
+	// 頂点バッファ
+	//Microsoft::WRL::ComPtr<ID3D12Resource> instanceingResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
+
+	// パーティクルデータ
+	//ParticleForGPU* instancingData = nullptr;
+	// パーティクルのモデルデータ
+	ModelData modelData;
+	// バッファービュー
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	// マテリアルリソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr;
+	// マテリアルデータ
+	Material* materialData = nullptr;
+	// パーティクルグループ / グループ名をキーにしてパーティクルグループを管理
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
+	// 
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
+
+	// カメラ行列
+	Matrix4x4 cameraMatrix;
+	// ワールドビュープロジェクション行列
+	Matrix4x4 viewMatrix;
+	// プロジェクション行列
+	Matrix4x4 projectionMatrix;
+	// ビューポート行列
+	Matrix4x4 backToFrontMatrix;
+	// ビルボード行列
+	Matrix4x4 billboardMatrix;
+	bool useBillboard = false;
+
+	// パーティクルのリスト
+	std::list<Particle>particles;
+	// 加速度フィールド
+	AccelerationField accelerationField;
 	// Δtを定義６０fos固定
 	const float kDeltaTime = 1.0f / 60.0f;
+	
+
 };
 

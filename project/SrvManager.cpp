@@ -11,7 +11,7 @@ void SrvManager::Initialize(DirectXCommon* dxCommon)
 
 }
 
-uint32_t SrvManager::Allocater()
+uint32_t SrvManager::Allocate()
 {
 	// 上限に達していないか確認
 	if (kMaxSRVCount<= useIndex) {

@@ -9,6 +9,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include "MakeMatrix.h"
+#include "MyMath.h"
 using namespace std;
 class Model
 {

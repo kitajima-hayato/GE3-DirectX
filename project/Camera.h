@@ -22,20 +22,17 @@ public:
 	void SetNearClip(float nearClip) { this->nearClip = nearClip; }
 	void SetFarClip(float farClip) { this->farClip = farClip; }
 	// getter
-	const Matrix4x4& GetCameraMatrix()const { return worldMatrix; }
+	const Matrix4x4& GetWorldMatrix()const { return worldMatrix; }
 	const Matrix4x4& GetViewMatrix()const { return viewMatrix; }
 	const Matrix4x4& GetProjectionMatrix()const { return projectionMatrix; }
 	const Matrix4x4& GetViewProjectionMatrix()const { return viewProjectionMatrix; }
-	Vector3& GetRotate() { return transform.rotate; }
-	Vector3& GetTranslate() { return transform.translate; }
+	const Vector3& GetScale()const { return transform.scale; }
+	const Vector3& GetRotate()const { return transform.rotate; }
+	const Vector3& GetTranslate()const { return transform.translate; }
 
 
 private:
 	Transform transform;
-	Matrix4x4 worldMatrix;
-	Matrix4x4 viewMatrix;
-
-	Matrix4x4 projectionMatrix;
 	// 水平方向視野角
 	float fovY = 0.45f;
 	// アスペクト比
@@ -44,6 +41,11 @@ private:
 	float nearClip = 0.1f;
 	// ファークリップ
 	float farClip = 100.0f;
+
+	Matrix4x4 worldMatrix;
+	Matrix4x4 viewMatrix;
+
+	Matrix4x4 projectionMatrix;
 
 	// ビュープロジェクション行列
 	Matrix4x4 viewProjectionMatrix;

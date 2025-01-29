@@ -19,8 +19,6 @@ void Framework::Initialize()
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
-	
-	
 
 #ifdef _DEBUG
 	// ImGuiの初期化
@@ -44,11 +42,11 @@ void Framework::Initialize()
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
 	object3DCommon->SetDefaultCamera(camera);
 
+	// パーティクル
+	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager,camera);
+
 
 #pragma endregion
-
-	
-
 }
 
 void Framework::Update()
@@ -65,6 +63,8 @@ void Framework::Update()
 
 	Input::GetInstance()->Update();
 
+	ParticleManager::GetInstance()->Update();
+
 
 	// ESCキーで終了
 	if (Input::GetInstance()->TriggerKey(DIK_ESCAPE))
@@ -77,6 +77,8 @@ void Framework::Update()
 
 void Framework::Finalize()
 {
+	// パーティクルの終了処理
+	ParticleManager::GetInstance()->DeleteInstance();
 	delete sceneFactory_;
 	SceneManager::GetInstance()->Finalize();
 	delete dxCommon;

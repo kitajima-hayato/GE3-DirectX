@@ -1,31 +1,36 @@
 #include "ParticleEmitter.h"
-#ifdef DEBUG
-#include <imgui.h>
-#endif // DEBUG
 
-
-
-void ParticleEmitter::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager, Camera* camera)
+ParticleEmitter::ParticleEmitter()
+    : currentTime(0.0f)
 {
-	assert(dxCommon); assert(srvManager); assert(camera);
-	this->dxCommon = dxCommon;
-	this->srvManager = srvManager;
-	this->camera = camera;
-
-	ParticleManager::GetInstance()->CreateParticleGroup("test", "Resources/Textures/circle.png");
+    emitter.transform.translate = { 0.0f, 0.0f, 0.0f };
+    emitter.count = 2;
+    emitter.frequency = 1.0f;
+    emitter.frequencyTime = 0.0f;
 }
+
+ParticleEmitter::~ParticleEmitter()
+{
+   
+}
+
 
 void ParticleEmitter::Update()
 {
-	emitter.frequencyTime += deltaTime;
-	if (emitter.frequency <= emitter.frequencyTime) {
-		// パーティクルを生成してグループに追加
-		Emit();
-		emitter.frequencyTime -= emitter.frequency;
-	}
+    // 時刻を進める
+    currentTime += kDeltaTime;
+
+    // 発生頻度より大きいなら発生
+    if (currentTime >= emitter.frequency)
+    {
+        Emit();
+        // カレントタイムをリセット
+        currentTime = 0.0f;
+    }
 }
 
 void ParticleEmitter::Emit()
 {
-	ParticleManager::GetInstance()->Emit(emitter.name, emitter.transform, emitter.count);
+    // パーティクルを発生させる
+    ParticleManager::GetInstance()->Emit(particleName, emitter.transform.translate, emitter.count);
 }
