@@ -77,25 +77,25 @@ void Framework::Update()
 
 void Framework::Finalize()
 {
-	// パーティクルの終了処理
-	ParticleManager::GetInstance()->DeleteInstance();
-	delete sceneFactory_;
-	SceneManager::GetInstance()->Finalize();
-	delete dxCommon;
-	winAPI->Finalize();
-	Input::GetInstance()->DeleteInstance();
-	delete srvManager;
-	TextureManager::GetInstance()->Finalize();
-	delete modelCommon;
-	delete object3DCommon;
-	delete camera;
-
-	ModelManager::GetInstance()->Finalize();
+	// パーティクルの終了処理 / newとは逆順で
 #ifdef _DEBUG
-		delete	imGui;
+	delete imGui;
 #endif
+	delete camera;
+	delete object3DCommon;
+	delete modelCommon;
+	delete srvManager;
+	winAPI->Finalize();
+	delete dxCommon;
+	delete sceneFactory_;
+
+	SceneManager::GetInstance()->Finalize();
+	Input::GetInstance()->DeleteInstance();
+	TextureManager::GetInstance()->DeleteInstance();
+	ModelManager::GetInstance()->Finalize();
+	ParticleManager::GetInstance()->DeleteInstance();
+
 	delete winAPI;
-	
 }
 
 void Framework::Run()

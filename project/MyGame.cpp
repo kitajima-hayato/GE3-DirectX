@@ -67,8 +67,6 @@ void MyGame::Finalize()
 	ModelManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
-	
-
 #pragma endregion
 
 	Framework::Finalize();
