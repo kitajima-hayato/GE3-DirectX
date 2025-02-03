@@ -91,7 +91,7 @@ private:
 
 	
 	// スプライト
-	std::vector<Sprite*> sprites;
+	Sprite* sprite = nullptr;
 	// 3Dオブジェクト
 	
 	// 3Dモデル

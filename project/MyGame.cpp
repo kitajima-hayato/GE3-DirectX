@@ -26,14 +26,12 @@ void MyGame::Initialize()
 	srand(static_cast<unsigned int>(std::time(nullptr)));
 
 	// スプライトの初期化
-	std::vector<Sprite*> sprites;
-	sprites.clear();
-	Sprite* sprite = new Sprite();
+	
+	sprite = new Sprite();
 	sprite->Initialize(spriteCommon, "resources/colerJump.png");
 	Vector2 pos = { 0,0 };
 	sprite->SetSize({ 1.0f,1.0f });
 	sprite->SetPosition(pos);
-	sprites.push_back(sprite);
 #pragma endregion
 
 	Vector3 cameraPos = camera->GetTranslate();
@@ -51,7 +49,7 @@ void MyGame::Update()
 	if (isGameOver) {
 		// ゲームオーバー処理
 		HandleGameOver();
-		return;
+		
 	}
 
 
@@ -65,6 +63,8 @@ void MyGame::Update()
 	// ImGuiの処理
 	imGui->Begin();
 #endif
+
+	sprite->Update();
 
 	// ゲームの処理
 	// 床の生成
@@ -86,9 +86,7 @@ void MyGame::Update()
 	// プレイヤーの更新
 	player->Update();
 
-	for (Sprite* sprite : sprites) {
-		sprite->Update();
-	}
+	
 #ifdef _DEBUG
 
 	//ImGui::Text("Hello, world %d", 123);
@@ -131,10 +129,7 @@ void MyGame::Draw()
 	//Spriteの描画準備。Spriteの描画に共通のグラフィックスコマンドを積む
 	spriteCommon->DrawSettingCommon();
 
-	for (Sprite* sprite : sprites) {
-		sprite->Draw();
-	}
-
+	sprite->Draw();
 #ifdef _DEBUG
 	// ImGuiの描画
 	imGui->Draw();
@@ -155,8 +150,17 @@ void MyGame::Finalize()
 	ModelManager::GetInstance()->Finalize();
 	winAPI->Finalize();
 
-#pragma endregion
+	// ブロックの解放
+	for (Blocks* block : blocks) {
+		delete block;
+	}
+	for (Blocks* block : hindranceBlocks) {
+		delete block;
+	}
 
+
+#pragma endregion
+	delete sprite;
 	delete model;
 	delete player;
 	delete skyDome;
