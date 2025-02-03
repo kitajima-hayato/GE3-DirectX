@@ -8,6 +8,7 @@ class SceneManager
 public:
 	// インスタンスの取得
 	static SceneManager* GetInstance();
+	static void Deletenstance();
 	// コンストラクタ
 	SceneManager() = default;
 	// デストラクタ 
