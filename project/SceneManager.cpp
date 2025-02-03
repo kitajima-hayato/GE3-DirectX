@@ -12,6 +12,15 @@ SceneManager* SceneManager::GetInstance()
 	return instance;
 }
 
+void SceneManager::Deletenstance()
+{
+	if (instance != nullptr)
+	{
+		delete instance;
+		instance = nullptr;
+	}
+}
+
 void SceneManager::Update(DirectXCommon* dxCommon)
 {
     // 次のシーンが予約されている場合
@@ -34,6 +43,7 @@ void SceneManager::Update(DirectXCommon* dxCommon)
     }
 }
 
+
 void SceneManager::Draw()
 {
     // 実行中シーンが存在する場合のみ描画
@@ -55,8 +65,8 @@ void SceneManager::Finalize()
 
 void SceneManager::ChangeScene(const std::string& sceneName)
 {
-    assert(sceneFactory_);
     assert(nextScene_ == nullptr);
+    assert(sceneFactory_);
 
 	// 次のシーン生成
 	nextScene_ = sceneFactory_->CreateScene(sceneName);
