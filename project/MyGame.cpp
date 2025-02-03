@@ -90,7 +90,7 @@ void MyGame::Update()
 		sprite->Update();
 	}
 #ifdef _DEBUG
-	
+
 	//ImGui::Text("Hello, world %d", 123);
 	//if (ImGui::Button("Save")) {
 	//	OutputDebugStringA("Save\n");
@@ -216,7 +216,7 @@ void MyGame::CreateHandrance()
 		newBlock3->PoPBlock(HadranceBlockPos3);
 		// ブロックをリストに追加
 		hindranceBlocks.push_back(newBlock3);
-		
+
 
 	}
 	if (val == 1) {
@@ -276,11 +276,11 @@ void MyGame::HitCheckAll()
 	for (Blocks* block : hindranceBlocks) {
 		Vector3 blockPos = block->GetTranslate();
 		Vector3 blockScale = block->GetScale();
-		if (HitCheck({ 
-			playerPos.x-0.71f,
+		if (HitCheck({
+			playerPos.x - 0.71f,
 			playerPos.y - 0.71f,
 			playerPos.z - 0.71f
-			}, { 
+			}, {
 			blockPos.x - 0.71f,
 			blockPos.y - 0.71f,
 			blockPos.z - 0.71f
