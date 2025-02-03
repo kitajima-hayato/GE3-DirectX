@@ -2,7 +2,6 @@
 #include "DirectXCommon.h"
 
 class SceneManager;
-
 class BaseScene
 {
 public:

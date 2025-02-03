@@ -80,6 +80,7 @@ void Framework::Finalize()
 	// パーティクルの終了処理 / newとは逆順で
 
 	winAPI->Finalize();
+	
 
 	SceneManager::GetInstance()->Finalize();
 	Input::GetInstance()->DeleteInstance();
