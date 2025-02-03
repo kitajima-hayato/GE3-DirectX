@@ -8,7 +8,6 @@
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
-using namespace Logger;
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -16,6 +15,7 @@ using namespace Logger;
 #pragma comment(lib,"dxguid.lib")
 
 using namespace Microsoft::WRL;
+using namespace Logger;
 
 
 
@@ -349,10 +349,6 @@ void DirectXCommon::PreDraw()
 	float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };  // 青っぽい色。RGBAの順
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 #pragma endregion
-
-
-
-
 
 #pragma region ビューポート領域の設定
 	commandList->RSSetViewports(1, &viewport);			// Viewportを設定

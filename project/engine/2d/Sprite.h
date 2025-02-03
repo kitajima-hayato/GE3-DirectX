@@ -8,7 +8,7 @@ class Sprite
 {
 public:	// メンバ関数
 	// 初期化
-	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
+	void Initialize(std::string textureFilePath);
 	void Update();
 	void Draw();
 
@@ -54,10 +54,7 @@ private:	// メンバ関数
 	//void DrawSetting();
 private:	// メンバ変数
 	std::string textureFilePath;
-
-	// CreateBufferResourceを呼びたい
-	// スプライトの設定用クラス
-	SpriteCommon* spriteCommon = nullptr;
+	
 	// バッファリソース
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource;
 	Microsoft::WRL::ComPtr <ID3D12Resource> indexResource;

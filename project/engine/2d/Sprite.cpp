@@ -1,9 +1,8 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "TextureManager.h"
-void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
+void Sprite::Initialize( std::string textureFilePath)
 {
-	this->spriteCommon = spriteCommon;
 	this->textureFilePath = textureFilePath;
 	CreateVertexResourceData();
 	CreateMaterialResource();
@@ -18,8 +17,6 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 void Sprite::Update()
 {
 #pragma region 頂点データの設定
-
-
 	float left = 0.0f - anchorPoint.x;
 	float right = 1.0f - anchorPoint.x;
 	float top = 0.0f - anchorPoint.y;
@@ -99,19 +96,18 @@ void Sprite::Update()
 void Sprite::Draw()
 {
 	// VertexbufferViewを設定
-	spriteCommon->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-
+	SpriteCommon::GetInstance()->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 	// IndexBufferViewを設定
-	spriteCommon->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
+	SpriteCommon::GetInstance()->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
 	// マテリアルCBufferの場所を設定
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	SpriteCommon::GetInstance()->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	// 座標変換行列CBufferの場所を設定
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	SpriteCommon::GetInstance()->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	// SRVのDescriptorHeapの場所を設定
-	spriteCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath));
-
+	SpriteCommon::GetInstance()->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath));
 	// 描画
-	spriteCommon->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+	//spriteCommon->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+	SpriteCommon::GetInstance()->GetDxCommon()->GetCommandList()->DrawInstanced(6, 1, 0, 0);
 	//spriteCommon->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
@@ -119,7 +115,7 @@ void Sprite::CreateVertexResourceData()
 {
 
 	// VertexResourceを作る
-	vertexResource = spriteCommon->CreateSpriteVertexResource();
+	vertexResource = SpriteCommon::GetInstance()->CreateSpriteVertexResource();
 	// VertexBufferViewを作成する(値を設定するだけ)
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	// 6個分のデータを書き込むので6倍
@@ -128,7 +124,7 @@ void Sprite::CreateVertexResourceData()
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
 	// IndexResourceを作る
-	indexResource = spriteCommon->CreateSpriteIndexResource();
+	indexResource = SpriteCommon::GetInstance()->CreateSpriteIndexResource();
 
 	// IndexBufferViewを作成する
 	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
@@ -154,7 +150,7 @@ void Sprite::CreateVertexResourceData()
 
 void Sprite::CreateMaterialResource() {
 	// マテリアルデータを作成する
-	materialResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(Material));
+	materialResource = SpriteCommon::GetInstance()->GetDxCommon()->CreateBufferResource(sizeof(Material));
 	// マテリアルリソースにデータを書き込むためのアドレスを取得してmaterialに割り当てる
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));	// マップする
 
@@ -167,7 +163,7 @@ void Sprite::CreateMaterialResource() {
 void Sprite::CreateTransformationMatrixData()
 {
 	// 変換行列データを作成する
-	transformationMatrixResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
+	transformationMatrixResource = SpriteCommon::GetInstance()->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
 
 	// 変換行列リソースにデータを書き込むためのアドレスを取得してtransformationMatrixに割り当てる
 	transformationMatrix = nullptr; // nullptrを代入しておく

@@ -49,30 +49,24 @@ protected:
 
 protected:// Initialize関連
 	// ウィンドウAPI
-	WinAPI* winAPI = nullptr;
+	std::unique_ptr<WinAPI> winAPI;
 	// DirectX共通部
-	DirectXCommon* dxCommon = nullptr;
+	std::unique_ptr<DirectXCommon> dxCommon;
 	// ImGui
 #ifdef _DEBUG
-	ImGuiManager* imGui = nullptr;
+	std::unique_ptr<ImGuiManager> imGui;
 #endif
 	// SRVマネージャー
-	SrvManager* srvManager = nullptr;
-	// テクスチャマネージャー
-	TextureManager* textureManager = nullptr;
-	// 3Dモデルマネージャー
-	ModelManager* modelManager = nullptr;
+	std::unique_ptr<SrvManager> srvManager;
 	// モデル共通部
-	ModelCommon* modelCommon = nullptr;
-	// スプライト共通部
-	SpriteCommon* spriteCommon = nullptr;
+	std::unique_ptr<ModelCommon> modelCommon;
 	// 3Dオブジェクト共通部
-	Object3DCommon* object3DCommon = nullptr;
+	std::unique_ptr<Object3DCommon> object3DCommon;
 	// カメラ
-	Camera* camera = nullptr;
+	std::unique_ptr<Camera> camera;
 public:
 	// シーンファクトリー
-	AbstractSceneFactory* sceneFactory_ = nullptr;
+	std::unique_ptr<AbstractSceneFactory> sceneFactory_ = nullptr;
 private:
 	// リークチェッカー
 	D3DResourceLeakChecker leakCheck;
