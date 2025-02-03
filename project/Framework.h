@@ -25,7 +25,7 @@ class Framework
 {
 
 public:
-	virtual ~Framework() {}
+	virtual ~Framework() = default;
 public:	// メンバ関数
 	// 初期化
 	virtual void Initialize();
@@ -39,6 +39,7 @@ public:	// メンバ関数
 	void Run();
 	// 終了リクエスト
 	bool IsEndRequst() { return isEndRequst; }
+
 protected:
 	// 終了リクエスト
 	bool isEndRequst = false;
