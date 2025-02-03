@@ -3,47 +3,47 @@
 void Framework::Initialize()
 {
 	//WindowsAPIの初期化
-	winAPI = new WinAPI();
+	winAPI = make_unique<WinAPI>();
 	winAPI->Initialize();
 	// dxCommonの初期化
-	dxCommon = new DirectXCommon();
-	dxCommon->Initialize(winAPI);
+	dxCommon = make_unique<DirectXCommon>();
+	dxCommon->Initialize(winAPI.get());
 
 	// 入力処理のクラスポインタ
 	
-	Input::GetInstance()->Initialize(winAPI);
+	Input::GetInstance()->Initialize(winAPI.get());
 
 	// SRVマネージャーの初期化
-	srvManager = new SrvManager();
-	srvManager->Initialize(dxCommon);
+	srvManager = make_unique<SrvManager>();
+	srvManager->Initialize(dxCommon.get());
 	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
+	TextureManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 
 
 #ifdef _DEBUG
 	// ImGuiの初期化
-	imGui = new ImGuiManager();
-	imGui->Initialize(winAPI, dxCommon);
+	imGui = make_unique<ImGuiManager>();
+	imGui->Initialize(winAPI.get(), dxCommon.get());
 #endif
 
 	// 3Dモデルマネージャの初期化
-	ModelManager::GetInstance()->Initialize(dxCommon);
+	ModelManager::GetInstance()->Initialize(dxCommon.get());
 	// 3Dオブジェクト共通部の初期化
-	object3DCommon = new Object3DCommon();
-	object3DCommon->Initialize(dxCommon);
+	object3DCommon = make_unique<Object3DCommon>();
+	object3DCommon->Initialize(dxCommon.get());
 
 	// モデル共通部の初期化
-	modelCommon = new ModelCommon();
-	modelCommon->Initialize(dxCommon);
+	modelCommon = make_unique<ModelCommon>();
+	modelCommon->Initialize(dxCommon.get());
 
 	// カメラ
-	camera = new Camera();
+	camera = make_unique<Camera>();
 	camera->SetRotate({ 0.0f, 0.0f, 0.0f });
 	camera->SetTranslate({ 0.0f, 0.0f, -5.0f });
-	object3DCommon->SetDefaultCamera(camera);
+	object3DCommon->SetDefaultCamera(camera.get());
 
 	// パーティクル
-	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager,camera);
+	ParticleManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get(), camera.get());
 
 
 #pragma endregion
@@ -59,7 +59,7 @@ void Framework::Update()
 		return;
 	}
 #pragma endregion
-	SceneManager::GetInstance()->Update(dxCommon);
+	SceneManager::GetInstance()->Update(dxCommon.get());
 
 	Input::GetInstance()->Update();
 
@@ -78,16 +78,8 @@ void Framework::Update()
 void Framework::Finalize()
 {
 	// パーティクルの終了処理 / newとは逆順で
-#ifdef _DEBUG
-	delete imGui;
-#endif
-	delete camera;
-	delete object3DCommon;
-	delete modelCommon;
-	delete srvManager;
+
 	winAPI->Finalize();
-	delete dxCommon;
-	delete sceneFactory_;
 
 	SceneManager::GetInstance()->Finalize();
 	Input::GetInstance()->DeleteInstance();
@@ -95,7 +87,6 @@ void Framework::Finalize()
 	ModelManager::GetInstance()->Finalize();
 	ParticleManager::GetInstance()->DeleteInstance();
 
-	delete winAPI;
 }
 
 void Framework::Run()

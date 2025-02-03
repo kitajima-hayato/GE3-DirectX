@@ -20,15 +20,15 @@ void TitleScene::Initialize(DirectXCommon* dxCommon)
 	// スプライトの初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);
 
-	sprite_ = new Sprite();
-	sprite_->Initialize(SpriteCommon::GetInstance(), "resources/monsterball.png");
+	sprite_ = make_unique<Sprite>();
+	sprite_->Initialize("resources/monsterball.png");
 	sprite_->SetPosition({ 0.0f,0.0f });
 	sprite_->SetRotation(0.0f);
 	// パーティクルグループを作成
 	ParticleManager::GetInstance()->CreateParticleGroup("Particle", "resources/checkerBoard.png");
 
 	// パーティクルエミッターの初期化
-	particleEmitter = new ParticleEmitter();
+	particleEmitter = make_unique<ParticleEmitter>();
 	particleEmitter->SetTransform({ {0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},{1.0f,1.0f,1.0f} });
 	particleEmitter->SetParticleName("Particle");
 
@@ -58,8 +58,7 @@ void TitleScene::Draw()
 
 void TitleScene::Finalize()
 {
-	delete particleEmitter;
-	delete sprite_;
+
 
 	// オーディオの終了処理
 	Audio::GetInstance()->SoundUnload(&soundData);

@@ -5,8 +5,8 @@ void MyGame::Initialize()
 	Framework::Initialize();
 
 	// シーンファクトリーの生成
-	sceneFactory_ = new SceneFactory();
-	SceneManager::GetInstance()->SetSceneFactory(sceneFactory_);
+	sceneFactory_ = make_unique<SceneFactory>();
+	SceneManager::GetInstance()->SetSceneFactory(sceneFactory_.get());
 	// シーンmanagerに最初のシーンをセット
 	SceneManager::GetInstance()->ChangeScene("TITLE");
 	

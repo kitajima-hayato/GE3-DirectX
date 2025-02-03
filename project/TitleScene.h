@@ -31,10 +31,10 @@ private:
 	IXAudio2* xaudio2_;
 
 	// スプライト
-	Sprite* sprite_ = nullptr;
+	std::unique_ptr<Sprite> sprite_;
 
 	// パーティクルエミッター
-	ParticleEmitter* particleEmitter;
+	std::unique_ptr<ParticleEmitter> particleEmitter;
 
 };
 
