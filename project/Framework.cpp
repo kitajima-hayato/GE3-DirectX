@@ -2,7 +2,7 @@
 
 void Framework::Initialize()
 {
-	
+
 
 #pragma region 基盤システムの初期化
 	//WindowsAPIの初期化
@@ -58,7 +58,7 @@ void Framework::Update()
 	//Windowのメッセージ処理
 	if (winAPI->ProcessMessage()) {
 		//ゲームループを抜ける
-
+		isEndRequst = true;
 		return;
 	}
 #pragma endregion
