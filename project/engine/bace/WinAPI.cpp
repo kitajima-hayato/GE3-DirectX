@@ -5,6 +5,24 @@
 #pragma comment(lib,"winmm.lib")
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwndm, UINT msg, WPARAM wParam, LPARAM lParam);
+WinAPI* WinAPI::instance = nullptr;
+
+WinAPI* WinAPI::GetInstance()
+{
+	if (instance == nullptr) {
+		instance = new WinAPI();
+	}
+	return instance;
+}
+
+void WinAPI::DeleteInstance()
+{
+	if (instance != nullptr) {
+		delete instance;
+		instance = nullptr;
+	}
+}
+
 
 LRESULT WinAPI::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {

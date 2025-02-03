@@ -2,9 +2,21 @@
 #include "DirectXCommon.h"
 #include "Camera.h"
 // 3Dオブジェクト共通部
+// シングルトンクラス
 class Object3DCommon
 {
 public:	// メンバ関数
+	static Object3DCommon* GetInstance();
+	static void Deletenstance();
+
+private:
+	static Object3DCommon* instance;
+	Object3DCommon() = default;
+	~Object3DCommon() = default;
+	Object3DCommon(Object3DCommon&) = delete;
+	Object3DCommon& operator=(Object3DCommon&) = delete;
+public:
+
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon);
 	// 共通描画設定

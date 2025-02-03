@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <ImGuiManager.h>
 
 Camera::Camera()
 	: transform({ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} })
@@ -33,4 +34,6 @@ void Camera::Update()
 
 void Camera::Draw()
 {
+	ImGui::Begin("Camera");
+
 }

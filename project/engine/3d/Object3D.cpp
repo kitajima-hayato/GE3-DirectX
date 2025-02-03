@@ -6,10 +6,9 @@
 #include "MakeMatrix.h"
 #include "ModelManager.h"
 using namespace std;
-void Object3D::Initialize(Object3DCommon* obj3dCommon)
+void Object3D::Initialize()
 {
-	this->object3DCommon = obj3dCommon;
-	this->camera = obj3dCommon->GetDefaultCamera();
+	this->camera = Object3DCommon::GetInstance()->GetDefaultCamera();
 
 	CreateTransformationMatrixData();
 	CreateDirectionalLightResource();
@@ -35,9 +34,9 @@ else {
 
 void Object3D::Draw()
 {// 座標変換行列をセット
-	object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+	Object3DCommon::GetInstance()->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 	// 平行光源データをセット
-	object3DCommon->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	Object3DCommon::GetInstance()->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 	// 3Dモデルが割り当てられていれば描画する
 	if (model) {
 		model->Draw();
@@ -57,7 +56,7 @@ void Object3D::SetModel(const std::string& filePath)
 void Object3D::CreateTransformationMatrixData()
 {
 	// 変換行列リソースを作成
-	wvpResource = object3DCommon->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
+	wvpResource = Object3DCommon::GetInstance()->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
 	// 変換行列リソ
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 	// 変換行列データの初期化
@@ -69,7 +68,7 @@ void Object3D::CreateTransformationMatrixData()
 void Object3D::CreateDirectionalLightResource()
 {
 	// 平行光源リソースを作成
-	directionalLightResource = object3DCommon->GetDxCommon()->CreateBufferResource(sizeof(DirectionalLight));
+	directionalLightResource = Object3DCommon::GetInstance()->GetDxCommon()->CreateBufferResource(sizeof(DirectionalLight));
 	// 平行光源リソースにデータを書き込むためのアドレスを取得してdirectionalLightDataに割り当てる
 	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 	// 平行光源データの初期化 / デフォルト値

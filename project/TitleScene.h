@@ -6,6 +6,9 @@
 #include "SceneManager.h"
 #include "ParticleManager.h"
 #include "ParticleEmitter.h"
+#include "Object3D.h"
+#include "ModelManager.h"
+#include "ImGuiManager.h"
 class TitleScene :public BaseScene
 {
 public:
@@ -36,5 +39,9 @@ private:
 	// パーティクルエミッター
 	std::unique_ptr<ParticleEmitter> particleEmitter;
 
+	std::unique_ptr<Object3D> object3D;
+
+	// imgui	
+	std::unique_ptr<ImGuiManager> imGui;
 };
 

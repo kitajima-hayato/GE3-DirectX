@@ -48,8 +48,7 @@ protected:
 	bool isEndRequst = false;
 
 protected:// Initialize関連
-	// ウィンドウAPI
-	std::unique_ptr<WinAPI> winAPI;
+
 	// DirectX共通部
 	std::unique_ptr<DirectXCommon> dxCommon;
 	// ImGui
@@ -60,8 +59,6 @@ protected:// Initialize関連
 	std::unique_ptr<SrvManager> srvManager;
 	// モデル共通部
 	std::unique_ptr<ModelCommon> modelCommon;
-	// 3Dオブジェクト共通部
-	std::unique_ptr<Object3DCommon> object3DCommon;
 	// カメラ
 	std::unique_ptr<Camera> camera;
 public:

@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <cstdint>
+// シングルトンクラス
 class WinAPI
 {
 public:
@@ -9,6 +10,9 @@ public:
 	//クライアント領域のサイズ
 	static const int32_t kClientWidth = 1280;
 	static const int32_t kClientHeight = 720;
+
+	static WinAPI* GetInstance();
+	static void DeleteInstance();
 
 public:
 	//終了
@@ -24,6 +28,12 @@ public:
 	HWND GetHwnd() const { return hwnd; }
 	HINSTANCE GetHInstance()const { return wc.hInstance; }
 private:
+	static WinAPI* instance;
+	WinAPI() = default;
+	~WinAPI() = default;
+	WinAPI(WinAPI&) = delete;
+	WinAPI& operator=(WinAPI&) = delete;
+
 	//ウィンドウハンドル
 	HWND hwnd = nullptr;
 

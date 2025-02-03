@@ -16,7 +16,7 @@ class Object3D
 
 public:	// メンバ関数
 	// 初期化
-	void Initialize(Object3DCommon* obj3dCommon);
+	void Initialize();
 	// 更新
 	void Update();
 	// 描画
@@ -46,8 +46,6 @@ private: // メンバ関数
 private:// メンバ変数
 	// カメラ
 	Camera* camera = nullptr;
-	// 3Dオブジェクト共通部
-	Object3DCommon* object3DCommon = nullptr;
 	// モデルデータ
 	Model* model = nullptr;
 	// バッファリソース / 座標変換行列リソース

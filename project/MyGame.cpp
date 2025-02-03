@@ -14,7 +14,7 @@ void MyGame::Initialize()
 
 void MyGame::Update()
 {
-	Framework::Update();
+	
 
 #pragma region ゲームの更新
 	
@@ -25,10 +25,8 @@ void MyGame::Update()
 	// ImGuiの処理
 	imGui->Begin();
 
-	ImGui::Text("Hello, world %d", 123);
-	if (ImGui::Button("Save")) {
-		OutputDebugStringA("Save\n");
-	}
+	Framework::Update();
+
 	imGui->End();
 #endif
 }
@@ -40,7 +38,7 @@ void MyGame::Draw()
 	srvManager->PreDraw();
 	
 	// 3Dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
-	object3DCommon->DrawSettingCommon();
+	Object3DCommon::GetInstance()->DrawSettingCommon();
 
 
 	// シーンマネージャーの描画	
@@ -65,7 +63,7 @@ void MyGame::Finalize()
 	TextureManager::GetInstance()->Finalize();
 	// モデルマネージャの終了処理
 	ModelManager::GetInstance()->Finalize();
-	winAPI->Finalize();
+
 
 #pragma endregion
 
