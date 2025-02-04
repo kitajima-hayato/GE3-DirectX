@@ -87,3 +87,30 @@ bool WinAPI::ProcessMessage()
 	}
 	return false;
 }
+
+void WinAPI::CreateSecondWindow(const wchar_t* title, int width, int height)
+{
+	w2.cbSize = sizeof(WNDCLASSEX);
+	w2.lpfnWndProc = (WNDPROC)WindowProc;
+	w2.lpszClassName = L"SecondWindow";
+	w2.hInstance = GetModuleHandle(nullptr);
+	w2.hCursor = LoadCursor(NULL, IDC_ARROW);
+
+	RegisterClassEx(&w2);
+
+	RECT wrc = { 0, 0, width, height };
+	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+
+	hwnd2 = CreateWindow(w2.lpszClassName,
+		title,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		wrc.right - wrc.left,
+		wrc.bottom - wrc.top,
+		nullptr,
+		nullptr,
+		w2.hInstance,
+		nullptr);
+
+	ShowWindow(hwnd2, SW_SHOW);
+}

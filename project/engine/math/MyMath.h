@@ -67,3 +67,10 @@ struct SpriteData {
 	float rotate;
 	Vector4 color;
 };
+
+struct CollisionBox {
+	Vector3 center;    // 中心座標
+	Vector3 size;      // サイズ（幅、高さ、奥行き）
+	Vector3 minPos;    // 最小座標
+	Vector3 maxPos;    // 最大座標
+};

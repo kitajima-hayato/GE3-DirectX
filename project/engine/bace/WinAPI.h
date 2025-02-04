@@ -20,15 +20,20 @@ public:
 	//メッセージの処理
 	bool ProcessMessage();
 
+	// 2つ目のウィンドウ作成用の関数を追加
+	void CreateSecondWindow(const wchar_t* title, int width, int height);
+	// ゲッター
+	HWND GetHwnd2() { return hwnd2; }
+
 	//getter
 	HWND GetHwnd() const { return hwnd; }
 	HINSTANCE GetHInstance()const { return wc.hInstance; }
 private:
 	//ウィンドウハンドル
 	HWND hwnd = nullptr;
-
+	HWND hwnd2;
 	//ウィンドウクラスの設定
 	WNDCLASS wc{};
-
+	WNDCLASSEX w2{}; // 2つ目のウィンドウ用
 };
 

@@ -60,7 +60,9 @@ public:
 	void HitCheckAll();
 	void HandleGameOver();
 
+	void ResetGame();
 
+	void CreateInitialFloor();
 	// シーンごとの関数
 	
 
@@ -92,6 +94,8 @@ private:
 	
 	// スプライト
 	Sprite* sprite = nullptr;
+	Sprite* sprite2 = nullptr;
+	float spriteSpeed = 2.0f; // スプライトの移動速度
 	// 3Dオブジェクト
 	
 	// 3Dモデル
