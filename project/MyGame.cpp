@@ -3,28 +3,19 @@
 void MyGame::Initialize()
 {
 	Framework::Initialize();
-
 	// シーンファクトリーの生成
 	sceneFactory_ = make_unique<SceneFactory>();
 	SceneManager::GetInstance()->SetSceneFactory(sceneFactory_.get());
 	// シーンmanagerに最初のシーンをセット
 	SceneManager::GetInstance()->ChangeScene("TITLE");
-	
 }
 
 void MyGame::Update()
 {
 	Framework::Update();
-
-#pragma region ゲームの更新
-	
-
-#pragma endregion
-
 #ifdef _DEBUG // デバッグ時のみ有効ImGuiの処理
 	// ImGuiの処理
 	imGui->Begin();
-
 	ImGui::Text("Hello, world %d", 123);
 	if (ImGui::Button("Save")) {
 		OutputDebugStringA("Save\n");
