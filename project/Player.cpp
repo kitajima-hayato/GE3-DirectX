@@ -1,5 +1,7 @@
 #include "Player.h"
+#ifdef _DEBUG
 #include <ImGuiManager.h>
+#endif
 Player::Player()
 {
 }

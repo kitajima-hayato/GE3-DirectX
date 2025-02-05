@@ -1,6 +1,4 @@
 #pragma once
-#include"externals/imgui/imgui_impl_dx12.h"
-#include"externals/imgui/imgui_impl_win32.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include<vector>
@@ -26,6 +24,8 @@
 #include "Blocks.h"
 #include "Player.h"
 #ifdef _DEBUG
+#include"externals/imgui/imgui_impl_dx12.h"
+#include"externals/imgui/imgui_impl_win32.h"
 #include "ImGuiManager.h"
 #endif
 #include <iostream>

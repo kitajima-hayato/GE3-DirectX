@@ -110,8 +110,8 @@ void MyGame::Update() {
     // プレイヤーの更新
     player->Update();
 
-#ifdef _DEBUG
     camera->Update();
+#ifdef _DEBUG
     imGui->End();
 #endif
 }

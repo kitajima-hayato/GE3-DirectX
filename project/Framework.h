@@ -1,6 +1,5 @@
 #pragma once
-#include"externals/imgui/imgui_impl_dx12.h"
-#include"externals/imgui/imgui_impl_win32.h"
+
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include<vector>
@@ -19,8 +18,11 @@
 #include "Object3D.h"
 #include "Object3DCommon.h"
 #include "ModelManager.h"
+#ifdef _Debug
+#include"externals/imgui/imgui_impl_dx12.h"
+#include"externals/imgui/imgui_impl_win32.h"
 #include "ImGuiManager.h"
-
+#endif
 class Framework
 {
 
