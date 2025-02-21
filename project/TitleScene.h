@@ -19,12 +19,12 @@ public:
 	void Draw()override;
 	// 終了処理
 	void Finalize()override;
+	// スレッド用の関数
+	void LoadAudio();
+	void LoadSprite();
 
 private:
-	// ゲームオブジェクト
-	// 3Dオブジェクト
-	// シーン遷移
-	
+
 	// オーディオ
 	// サウンドデータ
 	SoundData soundData;
