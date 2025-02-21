@@ -73,7 +73,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)imgui;$(SolutionDir)DirectXTex;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
@@ -151,10 +150,8 @@
     <ClCompile Include="..\externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\externals\imgui\imconfig.h" />
     <ClInclude Include="..\externals\imgui\imgui.h" />
     <ClInclude Include="..\externals\imgui\imgui_impl_dx12.h" />
     <ClInclude Include="..\externals\imgui\imgui_impl_win32.h" />
@@ -162,7 +159,6 @@
     <ClInclude Include="..\externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\externals\imgui\imstb_textedit.h" />
     <ClInclude Include="..\externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="ImGuiManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
