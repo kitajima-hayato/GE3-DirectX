@@ -37,6 +37,8 @@ void ImGuiManager::Initialize(WinAPI* winAPI, DirectXCommon* dxCommon)
 		// ImGuiに割り当てるSRVのヒープハンドル / GPU側のヒープハンドル
 		srvHeap_->GetGPUDescriptorHandleForHeapStart()
 	);
+	//ImGuiIO& io = ImGui::GetIO();
+	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // ドッキングを有効にする
 }
 
 void ImGuiManager::Finalize()

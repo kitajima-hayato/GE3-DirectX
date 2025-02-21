@@ -1,18 +1,10 @@
 #pragma once
-#include"externals/imgui/imgui_impl_dx12.h"
-#include"externals/imgui/imgui_impl_win32.h"
-#include"externals/DirectXTex/DirectXTex.h"
-#include"externals/DirectXTex/d3dx12.h"
-#include<vector>
 #include<fstream>
 #include<sstream>
 #include<wrl.h>
 #include "numbers"
-#include "Input.h"
 #include "WinAPI.h"
 #include "DirectXCommon.h"
-#include "Logger.h"
-#include "D3DResourceLeakChecker.h"
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "TextureManager.h"
@@ -22,8 +14,10 @@
 #include "ImGuiManager.h"
 #include "Audio.h"
 #include "SceneManager.h"
-#include "AbstractSceneFactory.h"
 #include "ParticleManager.h"
+#include "AbstractSceneFactory.h"
+#include "D3DResourceLeakChecker.h"
+#include "Input.h"
 class Framework
 {
 
@@ -46,7 +40,6 @@ public:	// メンバ関数
 protected:
 	// 終了リクエスト
 	bool isEndRequst = false;
-
 protected:// Initialize関連
 	// ウィンドウAPI
 	std::unique_ptr<WinAPI> winAPI;
