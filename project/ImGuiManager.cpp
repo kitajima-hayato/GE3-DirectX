@@ -1,6 +1,6 @@
 #include "ImGuiManager.h"
-#include "../externals/imgui/imgui_impl_win32.h"
-#include "../externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
+#include "externals/imgui/imgui_impl_dx12.h"
 
 
 void ImGuiManager::Initialize(WinAPI* winAPI, DirectXCommon* dxCommon)
@@ -37,6 +37,8 @@ void ImGuiManager::Initialize(WinAPI* winAPI, DirectXCommon* dxCommon)
 		// ImGuiに割り当てるSRVのヒープハンドル / GPU側のヒープハンドル
 		srvHeap_->GetGPUDescriptorHandleForHeapStart()
 	);
+	//ImGuiIO& io = ImGui::GetIO();
+	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // ドッキングを有効にする
 }
 
 void ImGuiManager::Finalize()
@@ -60,6 +62,7 @@ void ImGuiManager::Begin()
 
 void ImGuiManager::End()
 {
+	
 	// ImGuiのフレームを終了
 	ImGui::Render();
 }

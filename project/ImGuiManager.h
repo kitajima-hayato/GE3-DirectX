@@ -1,9 +1,9 @@
 #pragma once
-
-#include "../externals/imgui/imgui.h"
-#include "../engine/bace/WinAPI.h" 
 #include <d3d12.h>
-#include "../engine/bace/DirectXCommon.h"
+
+#include "externals/imgui/imgui.h"
+#include "engine/bace/WinAPI.h" 
+#include "engine/bace/DirectXCommon.h"
 
 class ImGuiManager
 {

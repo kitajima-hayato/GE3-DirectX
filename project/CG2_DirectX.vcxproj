@@ -47,11 +47,13 @@
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
+    <IncludePath>$(SolutionDir)imgui;$(SolutionDir)DirectXTex;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
+    <IncludePath>$(SolutionDir)imgui;$(SolutionDir)DirectXTex;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,6 +115,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\bace\Logger.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GamePlayScene.cpp" />
+    <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\math\MakeMatrix.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
@@ -156,6 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\bace\WinAPI.h" />
     <ClInclude Include="Framework.h" />
     <ClInclude Include="GamePlayScene.h" />
+    <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="MyGame.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleManager.h" />
@@ -171,7 +175,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
       <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
     </ProjectReference>
-    <ProjectReference Include="imgui\imgui.vcxproj">
+    <ProjectReference Include="externals\imgui\imgui.vcxproj">
       <Project>{3615d1d0-f58b-48e5-99da-7c49489f3374}</Project>
     </ProjectReference>
   </ItemGroup>
