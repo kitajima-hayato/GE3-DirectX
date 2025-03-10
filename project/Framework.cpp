@@ -81,12 +81,12 @@ void Framework::Finalize()
 
 	winAPI->Finalize();
 
+	ParticleManager::GetInstance()->DeleteInstance();
 	SceneManager::GetInstance()->Finalize();
 	SceneManager::Deletenstance();
 	Input::GetInstance()->DeleteInstance();
 	TextureManager::GetInstance()->DeleteInstance();
 	ModelManager::GetInstance()->Finalize();
-	ParticleManager::GetInstance()->DeleteInstance();
 
 }
 

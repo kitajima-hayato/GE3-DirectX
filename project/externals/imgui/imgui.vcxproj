@@ -18,6 +18,31 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imconfig.h" />
+    <ClInclude Include="imgui.h" />
+    <ClInclude Include="imgui_impl_dx12.h" />
+    <ClInclude Include="imgui_impl_win32.h" />
+    <ClInclude Include="imgui_internal.h" />
+    <ClInclude Include="imstb_rectpack.h" />
+    <ClInclude Include="imstb_textedit.h" />
+    <ClInclude Include="imstb_truetype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="imgui.cpp" />
+    <ClCompile Include="imgui_demo.cpp" />
+    <ClCompile Include="imgui_draw.cpp" />
+    <ClCompile Include="imgui_impl_dx12.cpp" />
+    <ClCompile Include="imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui_tables.cpp" />
+    <ClCompile Include="imgui_widgets.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgui.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="LICENSE.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -142,24 +167,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\externals\imgui\imgui.cpp" />
-    <ClCompile Include="..\externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="..\externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\externals\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\externals\imgui\imgui_widgets.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\externals\imgui\imgui.h" />
-    <ClInclude Include="..\externals\imgui\imgui_impl_dx12.h" />
-    <ClInclude Include="..\externals\imgui\imgui_impl_win32.h" />
-    <ClInclude Include="..\externals\imgui\imgui_internal.h" />
-    <ClInclude Include="..\externals\imgui\imstb_rectpack.h" />
-    <ClInclude Include="..\externals\imgui\imstb_textedit.h" />
-    <ClInclude Include="..\externals\imgui\imstb_truetype.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
